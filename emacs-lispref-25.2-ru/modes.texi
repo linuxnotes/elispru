@@ -4,91 +4,105 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Modes
-@chapter Major and Minor Modes
+@chapter Основные и Второстепенные режимыn
 @cindex mode
 
-  A @dfn{mode} is a set of definitions that customize Emacs behavior
-in useful ways.  There are two varieties of modes: @dfn{minor modes},
-which provide features that users can turn on and off while editing;
-and @dfn{major modes}, which are used for editing or interacting with
-a particular kind of text.  Each buffer has exactly one @dfn{major
-mode} at a time.
+  Режим (@dfn{mode}) это набор определений который добавляет в Emacs полезные функции. 
+Различают 2 вида режимов: второстепенные режимы @dfn{minor modes},
+которые предоставляют функции которые можно включить и выключить во время редактирования;
+и Основные режимы @dfn{major modes}, которые используются для редактирования или взаимодействия
+с определенным видом текста. Буфер может иметь равно один Основной @dfn{major
+mode} в каждый момент времени (основной режим можно менять).
 
-  This chapter describes how to write both major and minor modes, how to
-indicate them in the mode line, and how they run hooks supplied by the
-user.  For related topics such as keymaps and syntax tables, see
-@ref{Keymaps}, and @ref{Syntax Tables}.
+Данная глава описывает как писать Основные и Второстепенные режимы, как показывать их
+в строке режимов, и как режимы выполняют функции перехватчики (hook) предоставленные пользователем.
+Связанные темы раскладки и синтаксические таблицы описаны в разделах:
+@ref{Keymaps}, и @ref{Syntax Tables}.
 
 @menu
-* Hooks::             How to use hooks; how to write code that provides hooks.
-* Major Modes::       Defining major modes.
-* Minor Modes::       Defining minor modes.
-* Mode Line Format::  Customizing the text that appears in the mode line.
-* Imenu::             Providing a menu of definitions made in a buffer.
-* Font Lock Mode::    How modes can highlight text according to syntax.
-* Auto-Indentation::  How to teach Emacs to indent for a major mode.
-* Desktop Save Mode:: How modes can have buffer state saved between
-                        Emacs sessions.
+* Hooks::             Как использовать функции перехватчики; как написать код который предоставляет перехватчики.
+* Major Modes::       Определение Основных режимов.
+* Minor Modes::       Определение Второстепенных режимов.
+* Mode Line Format::  Настройка отображения текста для строки режимов.
+* Imenu::             Предоставление menu для определений из буфера.
+* Font Lock Mode::    Подсветка синтаксиса в режиме.
+* Auto-Indentation::  Как научить Emacs выполнять отступы в Основном режиме.
+* Desktop Save Mode:: Как режимы могут сохранять состояние буфера между сессиями Emacs.
 @end menu
 
 @node Hooks
-@section Hooks
+@section Hooks Перехватчики (Ловушки)
 @cindex hooks
 
-  A @dfn{hook} is a variable where you can store a function or functions
-to be called on a particular occasion by an existing program.  Emacs
-provides hooks for the sake of customization.  Most often, hooks are set
-up in the init file (@pxref{Init File}), but Lisp programs can set them also.
-@xref{Standard Hooks}, for a list of some standard hook variables.
+  Перехватчик @dfn{hook} это переменная которая может хранить функцию
+или функции, которые могут быть вызваны в определенном случае
+выполняемой программой. В Emacs перехватчики используются для
+настройки. Как правило, перехватчики задаются в init файле
+(@pxref{Init File}), но Lisp программы тоже могут задавать
+перехватчики.  В @xref{Standard Hooks}, описывается часть стандартных
+переменных перехватчиков.
 
 @cindex normal hook
-  Most of the hooks in Emacs are @dfn{normal hooks}.  These variables
-contain lists of functions to be called with no arguments.  By
-convention, whenever the hook name ends in @samp{-hook}, that tells
-you it is normal.  We try to make all hooks normal, as much as
-possible, so that you can use them in a uniform way.
+@cindex Обыкновенный перехватчик
+  Большинство перехватчиков являются обыкновенными @dfn{normal
+hooks}. Это переменные, которые содержат списки функций вызываемых без
+аргументов. По соглашению, если имя перехватчика оканчивается на
+@samp{-hook}, это означает что перехватчик является обыкновенным. Мы
+пытаемся сделать все перехватчики обыкновенными, насколько это
+возможно, чтобы их можно было использовать единообразно.
 
-  Every major mode command is supposed to run a normal hook called the
-@dfn{mode hook} as one of the last steps of initialization.  This makes
-it easy for a user to customize the behavior of the mode, by overriding
-the buffer-local variable assignments already made by the mode.  Most
-minor mode functions also run a mode hook at the end.  But hooks are
-used in other contexts too.  For example, the hook @code{suspend-hook}
-runs just before Emacs suspends itself (@pxref{Suspending Emacs}).
+  Команда каждого основного режима (например list-mode), поддерживает
+выполнение обыкновенного перехватчика, называемого перехватчик
+@dfn{mode hook}, как часть завершающего шага инициализации. Это
+позволяет просто настроить режим переназначив уже заданные для буфера
+значения локальных переменных.  (первоначально они устанавливаются
+при включении режима, после чего в перехватчике они могут быть
+переопределены). Большинство вспомогательных режимов так же выполняют
+перехватчик режима при включении. Перехватчики могут использоваться и в другом
+контексте. Например перехватчик @code{suspend-hook} выполняется перед
+тем как Emacs остановит (suspend) свою работу (@pxref{Suspending Emacs}).
 
-  The recommended way to add a hook function to a hook is by calling
-@code{add-hook} (@pxref{Setting Hooks}).  The hook functions may be any
-of the valid kinds of functions that @code{funcall} accepts (@pxref{What
-Is a Function}).  Most normal hook variables are initially void;
-@code{add-hook} knows how to deal with this.  You can add hooks either
-globally or buffer-locally with @code{add-hook}.
+  Рекомендуется добавлять функции перехватчики к перехватчику путем
+вызова @code{add-hook} (@pxref{Setting Hooks}). Функция перехватчик
+может быть любым из допустимых функций для которых поддерживается
+вызов @code{funcall} (@pxref{What Is a Function}). Большинство
+переменных обычных перехватчиков имеют начальное значение void; и
+@code{add-hook} умеет обрабатывать данную ситуацию. Используя
+@code{add-hook} можно добавлять перехватчики как глобально, так и
+локально для буфера.
 
 @cindex abnormal hook
-  If the hook variable's name does not end with @samp{-hook}, that
-indicates it is probably an @dfn{abnormal hook}.  That means the hook
-functions are called with arguments, or their return values are used
-in some way.  The hook's documentation says how the functions are
-called.  You can use @code{add-hook} to add a function to an abnormal
-hook, but you must write the function to follow the hook's calling
-convention.  By convention, abnormal hook names end in @samp{-functions}.
+@cindex Необычный перехватчик
+  Если имя переменной перехватчика не оканчивается на @samp{-hook},
+это является признаком того, что данная переменная @dfn{abnormal hook}
+(необычный перехватчик).  Это означает, что функции перехватчика
+вызываются с аргументами, или их возвращаемые значение каким-то
+образом используются. Документация перехватчика описывает как функции
+вызываются.  Можно использовать @code{add-hook} для добавления функций
+к необычному перехватчику, но функция должна быть написана в
+соответствии с соглашением по вызову.  Условлено, что имена для
+необычных перехватчиков оканчиваются на @samp{-functions}.
 
 @cindex single-function hook
-If the variable's name ends in @samp{-function}, then its value is
-just a single function, not a list of functions.  @code{add-hook} cannot be
-used to modify such a @emph{single function hook}, and you have to use
-@code{add-function} instead (@pxref{Advising Functions}).
+@cindex перехватчик с одной функцией
+Если имя переменной заканчивается на @samp{-function} это значит что
+значение переменной просто одна функция, а не список
+функций. @code{add-hook} не может быть использована для изменения
+таких перехватчиков @emph{single function hook}.  Для изменения таких
+перехватчиков нужно использовать @code{add-function} (@pxref{Advising Functions}).
 
 @menu
-* Running Hooks::    How to run a hook.
-* Setting Hooks::    How to put functions on a hook, or remove them.
+* Running Hooks::    Как выполнить перехватчик.
+* Setting Hooks::    Как поместить и удалить функцию в перехватчик.
 @end menu
 
 @node Running Hooks
+      (Запуск перехватчиков)
 @subsection Running Hooks
 
-  In this section, we document the @code{run-hooks} function, which is
-used to run a normal hook.  We also document the functions for running
-various kinds of abnormal hooks.
+  В данном разделе рассматривается функция @code{run-hooks}, которая используется
+для запуска обыкновенных перехватчиков. А так же функции для запуска
+различных видов необычных перехватчиков.
 
 @defun run-hooks &rest hookvars
 This function takes one or more normal hook variable names as
