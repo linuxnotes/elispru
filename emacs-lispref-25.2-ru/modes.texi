@@ -3,11 +3,20 @@
 @c Copyright (C) 1990-1995, 1998-1999, 2001-2017 Free Software
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
+
+@documentencoding UTF-8
+@documentlanguage ru
+@c@documentencoding UTF-8
+
+@c\usepackage{babel}
+@c\usepackage[utf8]{inputenc}
+@c\usepackage[russian]{babel}
+
 @node Modes
-@chapter Основные и Второстепенные режимыn
+@chapter Основные и Второстепенные режимы
 @cindex mode
 
-  Режим (@dfn{mode}) это набор определений который добавляет в Emacs полезные функции. 
+  Режим (@dfn{mode}) это набор определений который добавляет в Emacs полезные функции.
 Различают 2 вида режимов: второстепенные режимы @dfn{minor modes},
 которые предоставляют функции которые можно включить и выключить во время редактирования;
 и Основные режимы @dfn{major modes}, которые используются для редактирования или взаимодействия
@@ -124,7 +133,7 @@ hooks}. Это переменные, которые содержат списк�
 @end defun
 
 @defun run-hook-with-args hook &rest args
-Данная функция запускает необычные перехватчика путем вызова всех функций перехватчика 
+Данная функция запускает необычные перехватчика путем вызова всех функций перехватчика
 @var{hook}, с передачей каждому параметров @var{args}.
 @end defun
 
@@ -188,7 +197,7 @@ hooks}. Это переменные, которые содержат списк�
 значение одна функция, она устанавливает или изменяет значение на
 список функций.
 
-Если @var{local}  не-@Code{nil}, тогда @var{function} добавляется к локальному
+Если @var{local}  не-@code{nil}, тогда @var{function} добавляется к локальному
 для буфера списку перехватчика, а не к глобальному. При этом создается перехватчик локальный для буфера
 и добавляется @code{t} к локальному перехватчику, чтобы вызывались и функции из глобального (см. run-hook).
 @end defun
@@ -203,280 +212,301 @@ hooks}. Это переменные, которые содержат списк�
 @end defun
 
 @node Major Modes
-@section Major Modes
+@section Major Modes (Основные режимы)
 @cindex major mode
+@cindex основной режим
 
 @cindex major mode command
-  Major modes specialize Emacs for editing or interacting with
-particular kinds of text.  Each buffer has exactly one major mode at a
-time.  Every major mode is associated with a @dfn{major mode command},
-whose name should end in @samp{-mode}.  This command takes care of
-switching to that mode in the current buffer, by setting various
-buffer-local variables such as a local keymap.  @xref{Major Mode
-Conventions}.  Note that unlike minor modes there is no way to ``turn
-off'' a major mode, instead the buffer must be switched to a different
-one.
+@cindex команда основного режима
+  Основной режим настраивает Emacs для редактирования и взаимодействия
+с определенным видом текста. Каждый буфер имеет ровно один основной
+режим в каждый момент времени. Каждый основной режим связан с
+@dfn{major mode command} (командой основного режима), чье имя должно
+оканчиваться на @samp{-mode}. Такая команда выполняет переключение на
+соответствующий режим текущего буфера, путем установки различных
+локальных для буфера переменных таких как локальная раскладка(keymap).
+@xref{Major Mode Conventions}. Стоит отметить, что в отличие от
+вспомогательных режимов основные режимы не возможно ``выключить'',
+можно только переключиться на другой основной режим.
 
-  The least specialized major mode is called @dfn{Fundamental mode},
-which has no mode-specific definitions or variable settings.
+  Наименее специализированный основной режим называется
+@dfn{Fundamental mode}, который не содержит каких-то определений или
+настроек переменных.
 
 @deffn Command fundamental-mode
-This is the major mode command for Fundamental mode.  Unlike other mode
-commands, it does @emph{not} run any mode hooks (@pxref{Major Mode
-Conventions}), since you are not supposed to customize this mode.
+Это команда переключения в основной режим Fundamental. В отличие от
+других команд режимов, она @emph{не} запускает никаких перехватчиков
+(@pxref{Major Mode Conventions}), поскольку не предполагается
+настройка данного режима.
 @end deffn
 
-  The easiest way to write a major mode is to use the macro
-@code{define-derived-mode}, which sets up the new mode as a variant of
-an existing major mode.  @xref{Derived Modes}.  We recommend using
-@code{define-derived-mode} even if the new mode is not an obvious
-derivative of another mode, as it automatically enforces many coding
-conventions for you.  @xref{Basic Major Modes}, for common modes to
-derive from.
+Проще всего создать основной режим, если воспользоваться макросом
+@code{define-derived-mode}, который создаст новый режим как вариант
+уже существующего основного режима. @xref{Derived
+Modes}. Рекомендуется использовать @code{define-derived-mode} даже в
+том случае если новый режим не является очевидной производной другого
+режима, так как макрос автоматически обеспечивает выполнения множества
+соглашений по кодированию. @xref{Basic Major Modes}, for common modes
+to derive from.
 
-  The standard GNU Emacs Lisp directory tree contains the code for
-several major modes, in files such as @file{text-mode.el},
-@file{texinfo.el}, @file{lisp-mode.el}, and @file{rmail.el}.  You can
-study these libraries to see how modes are written.
+Стандартное дерево каталогов GNU Emacs Lisp содержит код для нескольких
+основных режимов, в таких файлах как @file{text-mode.el},
+@file{texinfo.el}, @file{lisp-mode.el}, и @file{rmail.el}. Вы можете
+изучить эти библиотеки, чтобы разобраться как пишутся режимы.
 
 @defopt major-mode
-The buffer-local value of this variable holds the symbol for the current
-major mode.  Its default value holds the default major mode for new
-buffers.  The standard default value is @code{fundamental-mode}.
+Локальное для буфера значение данной переменной хранит символ текущего
+основного режима. Значением по умолчанию является режим по умолчанию
+для новых буферов. Обычное значение по умолчанию
+@code{fundamental-mode}.
 
-If the default value is @code{nil}, then whenever Emacs creates a new
-buffer via a command such as @kbd{C-x b} (@code{switch-to-buffer}), the
-new buffer is put in the major mode of the previously current buffer.
-As an exception, if the major mode of the previous buffer has a
-@code{mode-class} symbol property with value @code{special}, the new
-buffer is put in Fundamental mode (@pxref{Major Mode Conventions}).
+Если значение по умолчанию @code{nil}, тогда при создании нового буфера,
+например с таким образом @kbd{C-x b} (@code{switch-to-buffer}), для нового
+буфера устанавливается основной режим такой же как у предыдущего выбранного буфера.
+За исключением случаев, если символ основного режима предыдущего буфера содержит
+свойство @code{mode-class} со значением @code{special}, тогда для нового буфера
+основным режимом выставляется Fundamental (@pxref{Major Mode Conventions}).
 @end defopt
 
 @menu
-* Major Mode Conventions::  Coding conventions for keymaps, etc.
-* Auto Major Mode::         How Emacs chooses the major mode automatically.
-* Mode Help::               Finding out how to use a mode.
-* Derived Modes::           Defining a new major mode based on another major
-                              mode.
-* Basic Major Modes::       Modes that other modes are often derived from.
-* Mode Hooks::              Hooks run at the end of major mode functions.
-* Tabulated List Mode::     Parent mode for buffers containing tabulated data.
-* Generic Modes::           Defining a simple major mode that supports
-                              comment syntax and Font Lock mode.
-* Example Major Modes::     Text mode and Lisp modes.
+* Major Mode Conventions::  Соглашения по кодированию .
+* Auto Major Mode::         Как Emacs автоматически выбирает основной режим.
+* Mode Help::               Получение справки по использованию режима.
+* Derived Modes::           Определение основного режима на основе другого основного режима.
+* Basic Major Modes::       Режимы на основе которых наиболее часто строятся другие режимы.
+* Mode Hooks::              Перехватчики запускаемые в конце функций режимов.
+* Tabulated List Mode::     Родительский режим для буферов с табличными данными..
+* Generic Modes::           Определение простого основного режима с поддержкой комментариев
+                            и Font Lock режимом (режим выполняющий подсветку некоторых конструкций).
+* Example Major Modes::     Текстовые и Lisp режимы.
 @end menu
 
-@node Major Mode Conventions
+@node Major Mode Conventions (Соглашения по основным режимам)
 @subsection Major Mode Conventions
 @cindex major mode conventions
+@cindex соглашения по основным режимам
 @cindex conventions for writing major modes
+@cindex соглашения по написанию основных режимов
 
-  The code for every major mode should follow various coding
-conventions, including conventions for local keymap and syntax table
-initialization, function and variable names, and hooks.
+  Код каждого основного режима должен следовать ряду соглашений,
+включающих соглашения по инициализации локальной раскладки (local
+keymap) и синтаксической таблицы (syntax table), именах функций,
+переменных, и перехватчиков.
 
-  If you use the @code{define-derived-mode} macro, it will take care of
-many of these conventions automatically.  @xref{Derived Modes}.  Note
-also that Fundamental mode is an exception to many of these conventions,
-because it represents the default state of Emacs.
+  Если используется @code{define-derived-mode}, он берет на себя заботу о
+выполнении многих из соглашений автоматически. @xref{Derived Modes}. Отметим
+также, что режим Fundamental является исключением для многих из соглашений,
+потому что представляет состояние Emacs по умолчанию.
 
-  The following list of conventions is only partial.  Each major mode
-should aim for consistency in general with other Emacs major modes, as
-this makes Emacs as a whole more coherent.  It is impossible to list
-here all the possible points where this issue might come up; if the
-Emacs developers point out an area where your major mode deviates from
-the usual conventions, please make it compatible.
+Далее приводится частичный список соглашений. Каждый основной режим
+должен стремиться к согласованности с остальными основными режимами, так
+как это делает Emacs в целом более последовательным и понятным. Не возможно
+перечислить все возможные моменты где могут возникнуть вопросы согласованности;
+в случае если разработчики Emacs укажут где ваш режим отклоняется от соглашений,
+пожалуйста сделайте свой режим совместимым.
 
 @itemize @bullet
 @item
-Define a major mode command whose name ends in @samp{-mode}.  When
-called with no arguments, this command should switch to the new mode in
-the current buffer by setting up the keymap, syntax table, and
-buffer-local variables in an existing buffer.  It should not change the
-buffer's contents.
+Определяйте команду основного режима оканчивающейся на @samp{-mode}.
+Вызываемая без аргументов команда должна переключать текущий буфер в в
+новый режим устанавливая раскладку (keymap), синтаксическую таблицу, и
+локальные для буфера переменные. Команда не должна изменять содержимое
+буфера.
 
 @item
-Write a documentation string for this command that describes the special
-commands available in this mode.  @xref{Mode Help}.
+Напишите комментарий(документацию) для команды, которая описывает команды доступные в
+данном режиме. @xref{Mode Help}.
 
-The documentation string may include the special documentation
-substrings, @samp{\[@var{command}]}, @samp{\@{@var{keymap}@}}, and
-@samp{\<@var{keymap}>}, which allow the help display to adapt
-automatically to the user's own key bindings.  @xref{Keys in
+Строка документации может включать особые подстроки, @samp{\[@var{command}]},
+@samp{\@{@var{keymap}@}}, и
+@samp{\<@var{keymap}>}, которые позволяют справке автоматически определять и показывать
+пользовательские настройки привязки клавиш.  @xref{Keys in
 Documentation}.
 
 @item
-The major mode command should start by calling
-@code{kill-all-local-variables}.  This runs the normal hook
-@code{change-major-mode-hook}, then gets rid of the buffer-local
-variables of the major mode previously in effect.  @xref{Creating
-Buffer-Local}.
+Команда основного режима должна начинаться вызовом
+@code{kill-all-local-variables}.  Который запускает обычный перехватчик
+@code{change-major-mode-hook}, который уничтожает переменные буфера предыдущего
+основного режима.  @xref{Creating Buffer-Local}.
 
 @item
-The major mode command should set the variable @code{major-mode} to the
-major mode command symbol.  This is how @code{describe-mode} discovers
-which documentation to print.
+Команда основного режима должна присвоить переменной @code{major-mode}
+символ команды основного режима. На основе этого значения @code{describe-mode}
+определяет какая документация должна быть показана.
 
 @item
-The major mode command should set the variable @code{mode-name} to the
-``pretty'' name of the mode, usually a string (but see @ref{Mode Line
-Data}, for other possible forms).  The name of the mode appears
-in the mode line.
+Команда основного режима должна присвоить переменной @code{mode-name}
+``удобное''(``pretty'') название режима, обычно являющееся строкой
+(см. @ref{Mode Line Data}, с описание других возможных вариантов).
+Это имя режима будет отображаться в строке режима.
 
 @item
 @cindex functions in modes
-Since all global names are in the same name space, all the global
-variables, constants, and functions that are part of the mode should
-have names that start with the major mode name (or with an abbreviation
-of it if the name is long).  @xref{Coding Conventions}.
+@cindex функции в режимах
+Поскольку все глобальные имена находятся в одном пространстве имен, все
+глобальные переменные, константы, и функции которые относятся к режиму должны
+иметь имена, которые начинаются с имени режима (или с его сокращения если имя
+длинное). @xref{Coding Conventions}.
 
 @item
-In a major mode for editing some kind of structured text, such as a
-programming language, indentation of text according to structure is
-probably useful.  So the mode should set @code{indent-line-function}
-to a suitable function, and probably customize other variables
-for indentation.  @xref{Auto-Indentation}.
+В основном режиме предназначенном для редактирования структурированного текста,
+например программ, отступы соответствующие структуре вероятно будет полезными.
+Поэтому стоит установит для @code{indent-line-function} переменной подходящее
+значение, и вероятно настроить другие переменные отвечающие
+за расстановку отступов. @xref{Auto-Indentation}.
 
 @item
 @cindex keymaps in modes
-The major mode should usually have its own keymap, which is used as the
-local keymap in all buffers in that mode.  The major mode command should
-call @code{use-local-map} to install this local map.  @xref{Active
-Keymaps}, for more information.
+@cindex привязки клавиш в режимах
+Основной режим как правило должен иметь свою собственную раскладку, которая
+используется как локальная для всех буферов с данным режимом. Команда
+основного режима должная вызывать @code{use-local-map} для установки
+локальной раскладки. @xref{Active Keymaps} для получения
+более полной информации.
 
-This keymap should be stored permanently in a global variable named
-@code{@var{modename}-mode-map}.  Normally the library that defines the
-mode sets this variable.
+Данная раскладка должна быть перманентно загруженной в глобальной
+переменной с именем @code{@var{modename}-mode-map}. Как правило библиотека
+определяющая режим устанавливает эту переменную.
 
-@xref{Tips for Defining}, for advice about how to write the code to set
-up the mode's keymap variable.
-
-@item
-The key sequences bound in a major mode keymap should usually start with
-@kbd{C-c}, followed by a control character, a digit, or @kbd{@{},
-@kbd{@}}, @kbd{<}, @kbd{>}, @kbd{:} or @kbd{;}.  The other punctuation
-characters are reserved for minor modes, and ordinary letters are
-reserved for users.
-
-A major mode can also rebind the keys @kbd{M-n}, @kbd{M-p} and
-@kbd{M-s}.  The bindings for @kbd{M-n} and @kbd{M-p} should normally
-be some kind of moving forward and backward, but this does not
-necessarily mean cursor motion.
-
-It is legitimate for a major mode to rebind a standard key sequence if
-it provides a command that does the same job in a way better
-suited to the text this mode is used for.  For example, a major mode
-for editing a programming language might redefine @kbd{C-M-a} to
-move to the beginning of a function in a way that works better for
-that language.
-
-It is also legitimate for a major mode to rebind a standard key
-sequence whose standard meaning is rarely useful in that mode.  For
-instance, minibuffer modes rebind @kbd{M-r}, whose standard meaning is
-rarely of any use in the minibuffer.  Major modes such as Dired or
-Rmail that do not allow self-insertion of text can reasonably redefine
-letters and other printing characters as special commands.
+@xref{Tips for Defining}, для получения советов по установки
+значения переменной отвечающей за раскладку в режиме.
 
 @item
-Major modes for editing text should not define @key{RET} to do
-anything other than insert a newline.  However, it is ok for
-specialized modes for text that users don't directly edit, such as
-Dired and Info modes, to redefine @key{RET} to do something entirely
-different.
+Комбинации клавиш в основном режиме обычно должно начинаться с
+@kbd{C-c}, за которым следует контрольный символ или цифра, или @kbd{@{},
+@kbd{@}}, @kbd{<}, @kbd{>}, @kbd{:} или и@kbd{;}. Другие символы пунктуации
+зарезервированы для второстепенных режимов, и обычные буквы зарезервированы
+для пользователей.
+
+Основной режим можно так же переназначить @kbd{M-n}, @kbd{M-p} и
+@kbd{M-s}. Привязки @kbd{M-n} и @kbd{M-p} должны быть разновидностями
+движения вперед и назад, что однако, не обязательно означает перемещение
+курсора.
+
+В основном режиме допускается переопределение стандартных комбинаций
+если предоставляемые команды делают схожие действия но более подходят
+для текста с которым должен работать режим. Например, основной режим
+для редактирования программ может переопределить @kbd{C-M-a} для перехода
+в начало функции способом который подходит для редактируемого языка.
+
+Кроме того допускается переопределять редко используемые в данном
+режиме клавиши. Например, режим минибуфера переопределяет @kbd{M-r},
+чье обычное назначение (прим. @code{move-to-window-line-top-bottom})
+редко может быть использовано в минибуфере. Основные режимы такие как
+Dired или Rmail которые не выполняют непосредственную работу с текстом
+могут вполне обосновано переопределять буквы и другие печатные символы
+для выполнения команд.
 
 @item
-Major modes should not alter options that are primarily a matter of user
-preference, such as whether Auto-Fill mode is enabled.  Leave this to
-each user to decide.  However, a major mode should customize other
-variables so that Auto-Fill mode will work usefully @emph{if} the user
-decides to use it.
+Основные режимы для редактирования текста не должны определять для @key{RET}
+действия отличные от вставки новой строки. Однако, вполне нормально для
+специальных режимов в которых не выполняется редактирование текста, таких
+как Dired, переопределить @key{RET} для выполнения совершенно
+других действий.
+
+@item
+Основной режим не должен изменять параметр, которые должен определить
+пользователь в соответствии со своими предпочтениями, такие как
+использование Auto-Fill режима. Оставьте это на усмотрение пользователя.
+Однако, основной режим должен настроить другие переменные таким образом,
+чтобы режим Auto-Fill был полезен в случае @emph{если} (@emph{if}) пользователь
+решит его использовать.
 
 @item
 @cindex syntax tables in modes
-The mode may have its own syntax table or may share one with other
-related modes.  If it has its own syntax table, it should store this in
-a variable named @code{@var{modename}-mode-syntax-table}.  @xref{Syntax
-Tables}.
+@cindex синтаксические таблицы в режимах
+Режим может использовать свою собственную синтаксическую таблицу или
+использовать общую вместе с другими связанными режимами. Если режим
+имеет собственную таблицу, то она должна хранится в переменной
+@code{@var{modename}-mode-syntax-table}.  @xref{Syntax Tables}.
 
 @item
-If the mode handles a language that has a syntax for comments, it should
-set the variables that define the comment syntax.  @xref{Options for
+В режимах для языков которые содержат комментарии, нужно установить
+переменные которые определяют синтаксис комментариев. @xref{Options for
 Comments,, Options Controlling Comments, emacs, The GNU Emacs Manual}.
 
 @item
 @cindex abbrev tables in modes
-The mode may have its own abbrev table or may share one with other
-related modes.  If it has its own abbrev table, it should store this
-in a variable named @code{@var{modename}-mode-abbrev-table}.  If the
-major mode command defines any abbrevs itself, it should pass @code{t}
-for the @var{system-flag} argument to @code{define-abbrev}.
+@cindex Таблицы сокращений в режимах
+Режим может содержать свою таблицу сокращений или использовать общую с
+другими связанными режимами. Если режим имеет собственную таблицу, то
+она должна хранится в переменной  @code{@var{modename}-mode-abbrev-table}.
+Если команда основного режима определяет какие-то сокращения должен быть
+установлен в @code{t} аргумент флаг @var{system-flag} функции
+@code{define-abbrev} используемой для определения сокращений.
 @xref{Defining Abbrevs}.
 
 @item
-The mode should specify how to do highlighting for Font Lock mode, by
-setting up a buffer-local value for the variable
-@code{font-lock-defaults} (@pxref{Font Lock Mode}).
+Режим должен определять как подсвечивать режим Font Lock, путем
+установки локальной для буфера переменной @code{font-lock-defaults}
+(@pxref{Font Lock Mode}).
 
 @item
-Each face that the mode defines should, if possible, inherit from an
-existing Emacs face.  @xref{Basic Faces}, and @ref{Faces for Font Lock}.
+Каждый начертание шрифта(face, дальше просто начертание) который
+определят режим, должен наследоваться, если это возможно, от
+существующего в Emacs начертания.
+@xref{Basic Faces}, и @ref{Faces for Font Lock}.
 
 @item
-The mode should specify how Imenu should find the definitions or
-sections of a buffer, by setting up a buffer-local value for the
-variable @code{imenu-generic-expression}, for the two variables
-@code{imenu-prev-index-position-function} and
-@code{imenu-extract-index-name-function}, or for the variable
+Режим должен определить как Imenu будет находить определение разделов
+буфера, путем установки локальной (для буфера) переменных
+@code{imenu-generic-expression}, и
+@code{imenu-prev-index-position-function} и
+@code{imenu-extract-index-name-function} или переменной
 @code{imenu-create-index-function} (@pxref{Imenu}).
 
 @item
-The mode can specify a local value for
-@code{eldoc-documentation-function} to tell ElDoc mode how to handle
-this mode.
+Режим может задать локальное значение для @code{eldoc-documentation-function},
+чтобы определить как режим ElDoc будет обрабатывать данный режим.
 
 @item
-The mode can specify how to complete various keywords by adding one or
-more buffer-local entries to the special hook
+Режим может определить как завершать разные ключевые слова добавив один или
+более локальных перехватчиков в специальный перехватчик
 @code{completion-at-point-functions}.  @xref{Completion in Buffers}.
 
 @item
 @cindex buffer-local variables in modes
-To make a buffer-local binding for an Emacs customization variable, use
-@code{make-local-variable} in the major mode command, not
-@code{make-variable-buffer-local}.  The latter function would make the
-variable local to every buffer in which it is subsequently set, which
-would affect buffers that do not use this mode.  It is undesirable for a
-mode to have such global effects.  @xref{Buffer-Local Variables}.
+@cindex локальные (для буфера) переменные в режимах
+Что бы сделать переменную локальной для буфера, следует использовать
+@code{make-local-variable} в основной функции режима, а не
+@code{make-variable-buffer-local}. @code{make-variable-buffer-local}
+делает переменную локальной для всех буферов в которых она устанавливается,
+что будет влиять и на буферы в других режимах. Такой глобальный эффект
+является не желательным для режима. @xref{Buffer-Local Variables}.
 
-With rare exceptions, the only reasonable way to use
-@code{make-variable-buffer-local} in a Lisp package is for a variable
-which is used only within that package.  Using it on a variable used by
-other packages would interfere with them.
+За редким исключением, единственный оправданный способ использования
+@code{make-variable-buffer-local} в Lisp пакете для переменных, которые
+используются только в этом пакете. Использование этой функции на переменных
+используемых другими пакетами может приводить к конфликтам.
 
 @item
 @cindex mode hook
 @cindex major mode hook
-Each major mode should have a normal @dfn{mode hook} named
-@code{@var{modename}-mode-hook}.  The very last thing the major mode command
-should do is to call @code{run-mode-hooks}.  This runs the normal
-hook @code{change-major-mode-after-body-hook}, the mode hook,
-and then the normal hook @code{after-change-major-mode-hook}.
+@cindex перехватчик режима
+@cindex основной перехватчик режима
+Каждый основной режим должен иметь нормальный  @dfn{mode hook} с именем
+@code{@var{modename}-mode-hook}. В конце команда режима должна вызывать
+команда @code{run-mode-hooks}. Которая вызывает обыкновенный перехватчик
+@code{change-major-mode-after-body-hook}, перехватчик режима, после которого
+нормальный перехватчик @code{after-change-major-mode-hook}.
 @xref{Mode Hooks}.
 
 @item
-The major mode command may start by calling some other major mode
-command (called the @dfn{parent mode}) and then alter some of its
-settings.  A mode that does this is called a @dfn{derived mode}.  The
-recommended way to define one is to use the @code{define-derived-mode}
-macro, but this is not required.  Such a mode should call the parent
-mode command inside a @code{delay-mode-hooks} form.  (Using
-@code{define-derived-mode} does this automatically.)  @xref{Derived
-Modes}, and @ref{Mode Hooks}.
+Команда основного режима может может начинаться с вызова нескольких
+команд других основных режимов (называемых @dfn{parent mode} родительские)
+после чего изменить некоторые из их настроек. Выполняющий это ражим
+называется @dfn{derived mode} (дочерний). Рекомендуется, но не требуется
+делать дочерние режимы путем использования макроса
+@code{define-derived-mode}. Такой режим должен вызывать команду родительского
+режима внутри формы @code{delay-mode-hooks}. (При использовании
+@code{define-derived-mode} это делается автоматически.) @xref{Derived
+Modes}, and @ref{Mode Hooks}
 
 @item
-If something special should be done if the user switches a buffer from
-this mode to any other major mode, this mode can set up a buffer-local
-value for @code{change-major-mode-hook} (@pxref{Creating Buffer-Local}).
+В случае необходимости выполнения каких-то специфичных действий при
+переключении на другой режим, данный режим должен установить локальную
+(для буфера) переменную @code{change-major-mode-hook}
+(@pxref{Creating Buffer-Local}).
 
 @item
 If this mode is appropriate only for specially-prepared text produced by
