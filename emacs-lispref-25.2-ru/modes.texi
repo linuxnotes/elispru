@@ -509,11 +509,11 @@ Modes}, and @ref{Mode Hooks}
 (@pxref{Creating Buffer-Local}).
 
 @item
-If this mode is appropriate only for specially-prepared text produced by
-the mode itself (rather than by the user typing at the keyboard or by an
-external file), then the major mode command symbol should have a
-property named @code{mode-class} with value @code{special}, put on as
-follows:
+Если режим предназначен для работы только со специальным текстом созданным
+самим режимом (не как обычно набранного пользователем или внешнего файла),
+тогда для символа команды основного режима должно быть задано свойство
+@code{mode-class} со значением @code{special}.
+Код для задания:
 
 @kindex mode-class @r{(property)}
 @cindex @code{special} modes
@@ -522,33 +522,33 @@ follows:
 @end example
 
 @noindent
-This tells Emacs that new buffers created while the current buffer is in
-Funny mode should not be put in Funny mode, even though the default
-value of @code{major-mode} is @code{nil}.  By default, the value of
-@code{nil} for @code{major-mode} means to use the current buffer's major
-mode when creating new buffers (@pxref{Auto Major Mode}), but with such
-@code{special} modes, Fundamental mode is used instead.  Modes such as
-Dired, Rmail, and Buffer List use this feature.
+Таким образом указав Emacs, что новые буферы созданные из буфера в режиме
+Funny mode не нужно запускать в режиме Funny mode, даже если значение
+по умолчанию свойства @code{major-mode}  @code{nil}. Значение
+@code{nil} для свойства @code{major-mode} предполагает использование
+основного режима текущего буфера при создании новых буферов
+(@pxref{Auto Major Mode}), но для специальных
+@code{special} режимов вместо этого используется Fundamental mode.
+Режимы такие как Dired, Rmail, и Buffer List используют данную особенность.
 
-The function @code{view-buffer} does not enable View mode in buffers
-whose mode-class is special, because such modes usually provide their
-own View-like bindings.
+Функция @code{view-buffer} не включает дополнительный режим View для
+буферов у которых mode-class задан как special, потому что такие режимы
+обычно предоставляют свои привязки для просмотра (см. View mode).
 
-The @code{define-derived-mode} macro automatically marks the derived
-mode as special if the parent mode is special.  Special mode is a
-convenient parent for such modes to inherit from; @xref{Basic Major
-Modes}.
+Макрос @code{define-derived-mode} автоматически помечает дочерний режим
+как специальный если родительский режим специальный.
+@xref{Basic Major Modes}.
 
 @item
-If you want to make the new mode the default for files with certain
-recognizable names, add an element to @code{auto-mode-alist} to select
-the mode for those file names (@pxref{Auto Major Mode}).  If you
-define the mode command to autoload, you should add this element in
-the same file that calls @code{autoload}.  If you use an autoload
-cookie for the mode command, you can also use an autoload cookie for
-the form that adds the element (@pxref{autoload cookie}).  If you do
-not autoload the mode command, it is sufficient to add the element in
-the file that contains the mode definition.
+С помощью добавления элемента в @code{auto-mode-alist}
+можно задать определения имен файлов для которых режим будет
+использоваться по умолчанию (@pxref{Auto Major Mode}). Если
+режим загружается через autoload, нужно поместить добавление
+элемента в @code{auto-mode-alist}, в тот же файл где вызывается @code{autoload}.
+Если используются autoload cookie для команды режима, так же нужно использовать
+autoload cookie для формы добавления элемента (@pxref{autoload cookie}).
+Если autoload не используется, добавление в @code{auto-mode-alist} можно
+выполнить в файле с определением режима.
 
 @item
 @cindex mode loading
