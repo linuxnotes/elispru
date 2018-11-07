@@ -552,134 +552,144 @@ autoload cookie для формы добавления элемента (@pxref{
 
 @item
 @cindex mode loading
-The top-level forms in the file defining the mode should be written so
-that they may be evaluated more than once without adverse consequences.
-For instance, use @code{defvar} or @code{defcustom} to set mode-related
-variables, so that they are not reinitialized if they already have a
-value (@pxref{Defining Variables}).
+@cindex Загрузка режима
+Форма первого уровня (top-level) файла в котором определяется режим,
+должна позволять многократное выполнение без негативных последствий.
+Например, стоит использовать @code{defvar} или @code{defcustom} для установки
+переменных режима, таким образом значения переменных не будут переопределены
+если они уже имеют значения (@pxref{Defining Variables}).
 
 @end itemize
 
 @node Auto Major Mode
+@node Автоматический выбор основного режима
 @subsection How Emacs Chooses a Major Mode
+@subsection Как Emacs выбирает основной режим
 @cindex major mode, automatic selection
+@cindex основной режим, автоматический выбор
 
-  When Emacs visits a file, it automatically selects a major mode for
-the buffer based on information in the file name or in the file itself.
-It also processes local variables specified in the file text.
+Когда Emacs открывает файл, оно автоматически выбирает основной режим
+основываясь на информации об имени файла или информации в самом файле.
+Также обрабатываются локальные переменные определенные в тексте файла.
 
 @deffn Command normal-mode &optional find-file
-This function establishes the proper major mode and buffer-local variable
-bindings for the current buffer.  First it calls @code{set-auto-mode}
-(see below), then it runs @code{hack-local-variables} to parse, and
-bind or evaluate as appropriate, the file's local variables
+Функция устанавливает подходящий основной режим и значение локальных переменных
+для текущего буфера. В этой функции сначала вызывается @code{set-auto-mode}
+(см. ниже), затем запускается функция @code{hack-local-variables}, которая
+разбирает и затем связывает или вычисляет локальные переменные файла
 (@pxref{File Local Variables}).
 
-If the @var{find-file} argument to @code{normal-mode} is non-@code{nil},
-@code{normal-mode} assumes that the @code{find-file} function is calling
-it.  In this case, it may process local variables in the @samp{-*-}
-line or at the end of the file.  The variable
-@code{enable-local-variables} controls whether to do so.  @xref{File
-Variables, , Local Variables in Files, emacs, The GNU Emacs Manual},
-for the syntax of the local variables section of a file.
+Если значение параметра @var{find-file} функии @code{normal-mode} не @code{nil},
+тогда @code{normal-mode} считает, что она была вызвана из @code{find-file} и в этом
+случае выполняется обработка локальных переменных в @samp{-*-} и в конце файла.
+Переменная @code{enable-local-variables} включает или выключает данный
+функционал. @xref{File
+Variables, , Local Variables in Files, emacs, The GNU Emacs Manual}, для получения
+информации по синтаксису секции описания локальных переменных.
 
-If you run @code{normal-mode} interactively, the argument
-@var{find-file} is normally @code{nil}.  In this case,
-@code{normal-mode} unconditionally processes any file local variables.
+В случае интерактивного запуска @code{normal-mode}, аргумент @var{find-file}
+по умолчанию @code{nil}. В этом случае @code{normal-mode} безусловно
+обрабатывает все локальные переменные файла.
 
-The function calls @code{set-auto-mode} to choose a major mode.  If this
-does not specify a mode, the buffer stays in the major mode determined
-by the default value of @code{major-mode} (see below).
+Функция вызывает @code{set-auto-mode} для выбора основного режима.
+Если режим не был определен, основной режим остается равным значению
+основного режима по умолчанию @code{major-mode} см. ниже.
 
 @cindex file mode specification error
-@code{normal-mode} uses @code{condition-case} around the call to the
-major mode command, so errors are caught and reported as a @samp{File
-mode specification error}, followed by the original error message.
+@cindex Ошибка определения основного режима
+@code{normal-mode} вызывает команду режима внутри @code{condition-case}, поэтому
+ошибки ловятся и о них сообщается как @samp{File
+mode specification error} следующей за полученным сообщением об ошибке.
 @end deffn
 
 @defun set-auto-mode &optional keep-mode-if-same
 @cindex visited file mode
-  This function selects the major mode that is appropriate for the
-current buffer.  It bases its decision (in order of precedence) on the
-@w{@samp{-*-}} line, on any @samp{mode:} local variable near the end of
-a file, on the @w{@samp{#!}} line (using @code{interpreter-mode-alist}),
-on the text at the beginning of the buffer (using
-@code{magic-mode-alist}), and finally on the visited file name (using
-@code{auto-mode-alist}).  @xref{Choosing Modes, , How Major Modes are
-Chosen, emacs, The GNU Emacs Manual}.  If @code{enable-local-variables}
-is @code{nil}, @code{set-auto-mode} does not check the @w{@samp{-*-}}
-line, or near the end of the file, for any mode tag.
+@cindex режим для посещенного файла
+ Функция выбирает основной режим который подходит для текущего буфера.
+Выбор основывается на (в порядке предшествования) строке @w{@samp{-*-}},
+на любой @samp{mode:} (используется @code{interpreter-mode-alist}) в
+районе завершения файла, @w{@samp{#!}}
+(используется @code{magic-mode-alist}) в тексте в начале файла, и
+в заключение имени файла (используется auto-mode-alist). @xref{Choosing Modes, ,
+How Major Modes are Chosen, emacs, The GNU Emacs Manual}. Если @code{enable-local-variables}
+равно @code{nil}, @code{set-auto-mode} не проверяет @w{@samp{-*-}} или окончание файла, для
+любого тега режима. (TODO: тут перевод не очень получился)
 
 @vindex inhibit-local-variables-regexps
-There are some file types where it is not appropriate to scan the file
-contents for a mode specifier.  For example, a tar archive may happen to
-contain, near the end of the file, a member file that has a local
-variables section specifying a mode for that particular file.  This
-should not be applied to the containing tar file.  Similarly, a tiff
-image file might just happen to contain a first line that seems to
-match the @w{@samp{-*-}} pattern.  For these reasons, both these file
-extensions are members of the list @code{inhibit-local-variables-regexps}.
-Add patterns to this list to prevent Emacs searching them for local
-variables of any kind (not just mode specifiers).
+Для некоторых типов файлов не выполняется сканирование содержимого
+для определения режима. Например, tar архив может содержать файл,
+который имеет секцию с локальными переменными в конце, определяющими
+режим для этого файла. Но они не будут применены ко всему tar файлу.
+Аналогично, tiff файл изображения может иметь первую строку соответствующую
+шаблону @w{@samp{-*-}}. По этой причини, файлы с таким расширением находятся
+в списке @code{inhibit-local-variables-regexps}. Добавление шаблона в этот
+список предотвращает поиск Emacs-ом поиск локальных переменных (не только
+определяющих режима) в файлах соответствующих шаблону.
 
-If @var{keep-mode-if-same} is non-@code{nil}, this function does not
-call the mode command if the buffer is already in the proper major
-mode.  For instance, @code{set-visited-file-name} sets this to
-@code{t} to avoid killing buffer local variables that the user may
-have set.
+Если переменная @var{keep-mode-if-same} не @code{nil}, функция не
+вызывает команду режима если буфер уже имеет подходящий основной режим.
+Например @code{set-visited-file-name}, выставляет данную переменную в
+@code{t}, чтобы предотвратить уничтожение локальных переменных, которые
+пользователь мог установить
 @end defun
 
 @defun set-buffer-major-mode buffer
-This function sets the major mode of @var{buffer} to the default value of
-@code{major-mode}; if that is @code{nil}, it uses the
-current buffer's major mode (if that is suitable).  As an exception,
-if @var{buffer}'s name is @file{*scratch*}, it sets the mode to
+Функция устанавливает основной режим @var{buffer} в значение по умолчанию
+определяемое @code{major-mode}; если оно @code{nil}, используется
+основной режим текущего режима (если он подходит). Если имя буфера
+@file{*scratch*}, то для него устанавливается режим определяемый значением
 @code{initial-major-mode}.
 
-The low-level primitives for creating buffers do not use this function,
-but medium-level commands such as @code{switch-to-buffer} and
-@code{find-file-noselect} use it whenever they create buffers.
+Низкоуровневые простые функции для создания буфера не используют
+это функцию, но команды среднего уровня такие как @code{switch-to-buffer} и
+@code{find-file-noselect} используют ее как только они создадут
+буфер.
 @end defun
 
 @defopt initial-major-mode
 @cindex @file{*scratch*}
-The value of this variable determines the major mode of the initial
-@file{*scratch*} buffer.  The value should be a symbol that is a major
-mode command.  The default value is @code{lisp-interaction-mode}.
+Значение этой переменной определяет основной режим буфера @file{*scratch*}.
+Значение должно быть символом который является командой основного
+режима. Значение по умолчанию @code{lisp-interaction-mode}.
 @end defopt
 
 @defvar interpreter-mode-alist
-This variable specifies major modes to use for scripts that specify a
-command interpreter in a @samp{#!} line.  Its value is an alist with
-elements of the form @code{(@var{regexp} . @var{mode})}; this says to
-use mode @var{mode} if the file specifies an interpreter which matches
-@code{\\`@var{regexp}\\'}.  For example, one of the default elements
-is @code{("python[0-9.]*" . python-mode)}.
+Переменная определяет основной режим, который будет использоваться для
+скриптов для которых задан командный интерпретатор в @samp{#!} строке.
+Переменная представляет собой ассоциативный список (alist) с элементами
+в форме @code{(@var{regexp} . @var{mode})}, что указывает использовать
+режим @var{mode} если в файле указано использование интерпретатора,
+удовлетворяющее регулярному выражению @code{\\`@var{regexp}\\'}. Например
+по умолчанию есть такое соответствие: @code{("python[0-9.]*" . python-mode)}.
 @end defvar
 
 @defvar magic-mode-alist
-This variable's value is an alist with elements of the form
-@code{(@var{regexp} .  @var{function})}, where @var{regexp} is a
-regular expression and @var{function} is a function or @code{nil}.
-After visiting a file, @code{set-auto-mode} calls @var{function} if
-the text at the beginning of the buffer matches @var{regexp} and
-@var{function} is non-@code{nil}; if @var{function} is @code{nil},
-@code{auto-mode-alist} gets to decide the mode.
+Значением переменной является ассоциативный список (alist) в форме:
+@code{(@var{regexp} .  @var{function})}.
+@var{regexp} - регулярное выражение,
+@var{function} - функция или @code{nil}.
+При посещении файла (открытии) @code{set-auto-mode} вызывает @var{function}
+если текст в начале буфера удовлетворяет @var{regexp} и функция
+@var{function} не-@code{nil}, если @var{function} @code{nil}, то
+режим определяется на основе значения переменной @code{auto-mode-alist}.
 @end defvar
 
 @defvar magic-fallback-mode-alist
-This works like @code{magic-mode-alist}, except that it is handled
-only if @code{auto-mode-alist} does not specify a mode for this file.
+Данная переменная работает так же как @code{magic-mode-alist}, за исключением
+того что она используется только если @code{auto-mode-alist} не определило
+режим для данного файла.
 @end defvar
 
 @defvar auto-mode-alist
-This variable contains an association list of file name patterns
-(regular expressions) and corresponding major mode commands.  Usually,
-the file name patterns test for suffixes, such as @samp{.el} and
-@samp{.c}, but this need not be the case.  An ordinary element of the
-alist looks like @code{(@var{regexp} .  @var{mode-function})}.
+Переменная содержит ассоциативный список @code{(@var{regexp} .  @var{mode-function})},
+@code{(@var{regexp} - регулярное выражение,
+    которому должно удовлетворять имя файла.
+@var{mode-function})} - функция режима которая будет выполнена если
+имя соответствует регулярному выражению.
+Как правило @code{(@var{regexp} проверяет расширение имени файла,
+например @samp{.el} или @samp{.c}, но не обязательно.
 
-For example,
+Например,
 
 @smallexample
 @group
@@ -695,24 +705,23 @@ For example,
 @end group
 @end smallexample
 
-When you visit a file whose expanded file name (@pxref{File Name
-Expansion}), with version numbers and backup suffixes removed using
-@code{file-name-sans-versions} (@pxref{File Name Components}), matches
-a @var{regexp}, @code{set-auto-mode} calls the corresponding
-@var{mode-function}.  This feature enables Emacs to select the proper
-major mode for most files.
+Когда открывается файла чье полное имя (@pxref{File Name
+Expansion}) с удаленными номерами версии и расширениями резервных копий
+@code{file-name-sans-versions} (@pxref{File Name Components}), соответствует
+регулярному выражению @var{regexp}, @code{set-auto-mode} вызывает
+соответствующую @var{mode-function}. Данная способность позволяет Emacs
+выбирать подходящий режим для большинства файлов.
 
-If an element of @code{auto-mode-alist} has the form @code{(@var{regexp}
-@var{function} t)}, then after calling @var{function}, Emacs searches
-@code{auto-mode-alist} again for a match against the portion of the file
-name that did not match before.  This feature is useful for
-uncompression packages: an entry of the form @code{("\\.gz\\'"
-@var{function} t)} can uncompress the file and then put the uncompressed
-file in the proper mode according to the name sans @samp{.gz}.
+Если элемент списка @code{auto-mode-alist} имеет форму @code{(@var{regexp}
+@var{function} t)}, тогда после вызова функции @var{function}, Emacs
+выполняет поиск в @code{auto-mode-alist} снова, для получения соответствия
+для части имени файла которая не могла совпасть ранее.
+Данная возможность полезна например для пакетов архивов, запись @code{("\\.gz\\'"
+@var{function} t)} позволяет распаковать файл и открыть распакованный файл
+в режиме соответствующем части перед @samp{.gz}.
 
-Here is an example of how to prepend several pattern pairs to
-@code{auto-mode-alist}.  (You might use this sort of expression in your
-init file.)
+Пример создания правил задания режимов @code{auto-mode-alist}:
+(Такие выражения можно использовать в init файле)
 
 @smallexample
 @group
@@ -730,111 +739,120 @@ init file.)
 @end defvar
 
 @node Mode Help
+@node Справка по режиму
 @subsection Getting Help about a Major Mode
 @cindex mode help
 @cindex help for major mode
 @cindex documentation for major mode
+@cindex справка по режиму
+@cindex помощь по основному режиму
+@cindex документация по основному режиму
 
-  The @code{describe-mode} function provides information about major
-modes.  It is normally bound to @kbd{C-h m}.  It uses the value of the
-variable @code{major-mode} (@pxref{Major Modes}), which is why every
-major mode command needs to set that variable.
+Функция @code{describe-mode} предоставляет информацию по
+основному режиму. Как правило она вызывается комбинацией @kbd{C-h m}.
+Функция использует значение переменной @code{major-mode} (@pxref{Major Modes}).
+Поэтому каждая команда основного режима должна устанавливать эту переменную.
 
 @deffn Command describe-mode &optional buffer
-This command displays the documentation of the current buffer's major
-mode and minor modes.  It uses the @code{documentation} function to
-retrieve the documentation strings of the major and minor mode
-commands (@pxref{Accessing Documentation}).
+Команда отображает документацию по основному и вспомогательным режимам
+текущего буфера. Команда использует функцию @code{documentation} для
+нахождения строк документации команд основного и вспомогательных режимов
+@pxref{Accessing Documentation}).
 
-If called from Lisp with a non-@code{nil} @var{buffer} argument, this
-function displays the documentation for that buffer's major and minor
-modes, rather than those of the current buffer.
+Если вызывается из Lisp cо значением аргумента @var{buffer} не-@code{nil},
+функция отображает документацию для основного и вспомогательного режимов
+указанного буфера, а не текущего буфера.
 @end deffn
 
 @node Derived Modes
+@node Дочерние режимы
 @subsection Defining Derived Modes
 @cindex derived mode
+@cindex дочерние режимы
 
-  The recommended way to define a new major mode is to derive it from an
-existing one using @code{define-derived-mode}.  If there is no closely
-related mode, you should inherit from either @code{text-mode},
-@code{special-mode}, or @code{prog-mode}.  @xref{Basic Major Modes}.  If
-none of these are suitable, you can inherit from @code{fundamental-mode}
-(@pxref{Major Modes}).
+  Рекомендуемым способом определения основного режима является создание
+дочернего режима для одного из уже существующих с использованием
+@code{define-derived-mode}. В случае если нет подходящего режима, стоит
+наследоваться от @code{text-mode}, @code{special-mode}, или @code{prog-mode}.
+@xref{Basic Major Modes}. Если и не один из этих режимов не подходит
+стоит наследоваться от @code{fundamental-mode} (@pxref{Major Modes}).
 
 @defmac define-derived-mode variant parent name docstring keyword-args@dots{} body@dots{}
-This macro defines @var{variant} as a major mode command, using
-@var{name} as the string form of the mode name.  @var{variant} and
-@var{parent} should be unquoted symbols.
+Макрос определяет @var{variant} как команду основного режима,
+используя @var{name} в качестве имени режима. @var{variant} и @var{parent} должны
+быть символами без кавычки (без цитирования).
 
-The new command @var{variant} is defined to call the function
-@var{parent}, then override certain aspects of that parent mode:
+Новая команда @var{variant} определяется как вызов функции родителя
+@var{parent} с последующем переопределением некоторых частей
+родительского режима:
 
 @itemize @bullet
 @item
-The new mode has its own sparse keymap, named
-@code{@var{variant}-map}.  @code{define-derived-mode}
-makes the parent mode's keymap the parent of the new map, unless
-@code{@var{variant}-map} is already set and already has a parent.
+Новый режим имеет пустую раскладку, которая называется
+@code{@var{variant}-map}. @code{define-derived-mode} задает
+раскладку родительского режима, родителем новой раскладки, если
+только @code{@var{variant}-map} еще не задан и уже имеет родителя.
 
 @item
-The new mode has its own syntax table, kept in the variable
-@code{@var{variant}-syntax-table}, unless you override this using the
-@code{:syntax-table} keyword (see below).  @code{define-derived-mode}
-makes the parent mode's syntax-table the parent of
-@code{@var{variant}-syntax-table}, unless the latter is already set
-and already has a parent different from the standard syntax table.
+Новый режим содержит свою собственную синтаксическую таблицу,
+хранящуюся в переменной @code{@var{variant}-syntax-table}, если
+только она не переопределяется явно с использованием ключевого
+слова @code{:syntax-table} (см. ниже). Команда @code{define-derived-mode}
+устанавливает родителя синтаксической таблицы равным синтаксической
+таблице родительского режима, если только @code{@var{variant}-syntax-table}
+еще не установлена и не содержит родителя отличающегося от стандартного.
 
 @item
-The new mode has its own abbrev table, kept in the variable
-@code{@var{variant}-abbrev-table}, unless you override this using the
-@code{:abbrev-table} keyword (see below).
+Новый режим содержит свою таблицу аббревиатур(abbrev table), хранящуюся
+в @code{@var{variant}-abbrev-table}, если ее не переопределили с использованием
+ключевого слова @code{:abbrev-table} (см. ниже).
 
 @item
-The new mode has its own mode hook, @code{@var{variant}-hook}.  It
-runs this hook, after running the hooks of its ancestor modes, with
-@code{run-mode-hooks}, as the last thing it does.  @xref{Mode Hooks}.
+Новый режим содержит свой перехватчик (mode hook), @code{@var{variant}-hook}.
+Режим запускает этот перехватчик после перехватчиков предков, используя
+@code{run-mode-hooks}, в конце выполнения команды режима. @xref{Mode Hooks}.
 @end itemize
 
-In addition, you can specify how to override other aspects of
-@var{parent} with @var{body}.  The command @var{variant}
-evaluates the forms in @var{body} after setting up all its usual
-overrides, just before running the mode hooks.
+Кроме того можно переопределить другие части родителей @var{parent}
+используя @var{body}. Команда @var{variant} выполняет формы (выражения)
+@var{body} после установки всех обычных переопределений, непосредственно
+перед вызовом перехватчиков (hooks).
 
-If @var{parent} has a non-@code{nil} @code{mode-class} symbol
-property, then @code{define-derived-mode} sets the @code{mode-class}
-property of @var{variant} to the same value.  This ensures, for
-example, that if @var{parent} is a special mode, then @var{variant} is
-also a special mode (@pxref{Major Mode Conventions}).
+Если @var{parent} содержит non-@code{nil} @code{mode-class} свойство
+символа, тогда @code{define-derived-mode} устанавливает @code{mode-class}
+свойство @var{variant} в это же значение. Это позволяет обеспечить, например то,
+что если @var{parent} специальный режим, то и @var{variant} будет специальным
+режимом (@pxref{Major Mode Conventions}).
 
-You can also specify @code{nil} for @var{parent}.  This gives the new
-mode no parent.  Then @code{define-derived-mode} behaves as described
-above, but, of course, omits all actions connected with @var{parent}.
+Можно также задать значение @var{parent} равным @code{nil}. Что приведет
+к создания нового режима без родителя. Тогда @code{define-derived-mode}
+все равно будет действовать как описано выше, при этом пропуская действия
+связанные с родителем (@var{parent}).
 
-The argument @var{docstring} specifies the documentation string for the
-new mode.  @code{define-derived-mode} adds some general information
-about the mode's hook, followed by the mode's keymap, at the end of this
-documentation string.  If you omit @var{docstring},
-@code{define-derived-mode} generates a documentation string.
+Аргумент @var{docstring} определяет строку документации для нового режима.
+@code{define-derived-mode} добавляет общую информацию о перехватчиках и раскладках
+режима, в конец данной строки документации. Если пропустить @var{docstring},
+@code{define-derived-mode} сгенерирует строку документации.
 
-The @var{keyword-args} are pairs of keywords and values.  The values
-are evaluated.  The following keywords are currently supported:
+@var{keyword-args} это пары ключ значение. Значения вычисляются.
+Поддерживаются следующие ключевые слова:
 
 @table @code
 @item :syntax-table
-You can use this to explicitly specify a syntax table for the new
-mode.  If you specify a @code{nil} value, the new mode uses the same
-syntax table as @var{parent}, or the standard syntax table if
-@var{parent} is @code{nil}.  (Note that this does @emph{not} follow
-the convention used for non-keyword arguments that a @code{nil} value
-is equivalent with not specifying the argument.)
+Аргумент позволяет явно задать синтаксическую таблицу для нового режима.
+Если значение @code{nil}, новый режим будет использовать ту же таблицу
+синтаксиса что и @var{parent} или стандартную таблицу синтаксиса если
+@var{parent} тоже @code{nil}. (Заметьте что это @emph{не} соответствует
+соглашению для не ключевых слов, для которых значение @code{nil} равносильно
+отсутствию аргумента).
 
 @item :abbrev-table
-You can use this to explicitly specify an abbrev table for the new
-mode.  If you specify a @code{nil} value, the new mode uses the same
-abbrev table as @var{parent}, or @code{fundamental-mode-abbrev-table}
-if @var{parent} is @code{nil}.  (Again, a @code{nil} value is
-@emph{not} equivalent to not specifying this keyword.)
+Аргумент позволяет явно задать таблицу аббревиатур для нового режима.
+Если задать значение @code{nil}, новый режим будет использовать
+туже таблицу что и режим родитель(@var{parent}) или
+@code{fundamental-mode-abbrev-table}
+если @var{parent} тоже @code{nil}. (Снова значение @code{nil} @emph{не}
+соответствует отсутствию аргумента).
 
 @item :group
 If this is specified, the value should be the customization group for
