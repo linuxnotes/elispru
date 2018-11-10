@@ -855,13 +855,13 @@ Expansion}) с удаленными номерами версии и расши�
 соответствует отсутствию аргумента).
 
 @item :group
-If this is specified, the value should be the customization group for
-this mode.  (Not all major modes have one.)  The command
-@code{customize-mode} uses this.  @code{define-derived-mode} does
-@emph{not} automatically define the specified customization group.
+Если значение задано, то оно должно быть группой настройки(customization group).
+Не у всех режимов такая группа есть. Команда @code{customize-mode} использует
+данную переменную. @code{define-derived-mode} @emph{не} задает
+по умолчанию данную переменную.
 @end table
 
-Here is a hypothetical example:
+Предположительный пример:
 
 @example
 (defvar hypertext-mode-map
@@ -875,314 +875,333 @@ Here is a hypothetical example:
   (setq-local case-fold-search nil))
 @end example
 
-Do not write an @code{interactive} spec in the definition;
-@code{define-derived-mode} does that automatically.
+Не стоит писать @code{interactive} в определении, @code{define-derived-mode}
+добавит его автоматически.
 @end defmac
 
 @defun derived-mode-p &rest modes
-This function returns non-@code{nil} if the current major mode is
-derived from any of the major modes given by the symbols @var{modes}.
+Функция возвращает не-@code{nil} если текущий основной режим
+является дочерним к режиму заданному символами @var{modes}.
 @end defun
 
 @node Basic Major Modes
+@node Базовые основные режимы
 @subsection Basic Major Modes
 
-  Apart from Fundamental mode, there are three major modes that other
-major modes commonly derive from: Text mode, Prog mode, and Special
-mode.  While Text mode is useful in its own right (e.g., for editing
-files ending in @file{.txt}), Prog mode and Special mode exist mainly to
-let other modes derive from them.
+Кроме Fundamental, есть три основных режима которые другие основные
+режимы используют как родительские: Text, Prog и Special режимы.
+В отличие от Text режима, который сам является режимом для файлов
+с расширением @file{.txt}, Prog и Special предназначены главным
+образом для того, чтобы другие режимы могли наследоваться от них.
 
 @vindex prog-mode-hook
+  Там где это возможно, новые основные режимы должны быть дочерними напрямую
+или нет для этих трех режимов. Одной из причин для этого является возможность
+настройки пользователем одного и того же перехватчика режима, 
   As far as possible, new major modes should be derived, either directly
 or indirectly, from one of these three modes.  One reason is that this
-allows users to customize a single mode hook
-(e.g., @code{prog-mode-hook}) for an entire family of relevant modes
-(e.g., all programming language modes).
+allows users to customize a single mode hook (например, @code{prog-mode-hook})
+для всего семейства соответствующего режиму (например, для всех режимов работы с языками программирования).
 
 @deffn Command text-mode
-Text mode is a major mode for editing human languages.  It defines the
-@samp{"} and @samp{\} characters as having punctuation syntax
-(@pxref{Syntax Class Table}), and binds @kbd{M-@key{TAB}} to
-@code{ispell-complete-word} (@pxref{Spelling,,, emacs, The GNU Emacs
-Manual}).
+Режим Text, является основным режимом для редактирования текстов естественных языков
+(human languages). Он определяет символы @samp{"} и @samp{\} как символы
+пунктуации (@pxref{Syntax Class Table}) и задана привязка @kbd{M-@key{TAB}} для
+@code{ispell-complete-word} автодополнения (@pxref{Spelling,,, emacs, The GNU Emacs
+Manual})
 
-An example of a major mode derived from Text mode is HTML mode.
+HTML режим является примером режима дочернего к Text.
 @xref{HTML Mode,,SGML and HTML Modes, emacs, The GNU Emacs Manual}.
 @end deffn
 
 @deffn Command prog-mode
-Prog mode is a basic major mode for buffers containing programming
-language source code.  Most of the programming language major modes
-built into Emacs are derived from it.
+Режим Prog является базовым для режимов редактирования исходных кодов
+на различных языках программирования. Большинство режимов Emacs являются
+наследниками данного режима.
 
-Prog mode binds @code{parse-sexp-ignore-comments} to @code{t}
-(@pxref{Motion via Parsing}) and @code{bidi-paragraph-direction} to
-@code{left-to-right} (@pxref{Bidirectional Display}).
+Режим Prog делает устанавливает @code{parse-sexp-ignore-comments} в @code{t}
+(@pxref{Motion via Parsing})
+и @code{bidi-paragraph-direction} в @code{left-to-right}
+(@pxref{Bidirectional Display}).
 @end deffn
 
 @deffn Command special-mode
-Special mode is a basic major mode for buffers containing text that is
-produced specially by Emacs, rather than directly from a file.  Major
-modes derived from Special mode are given a @code{mode-class} property
-of @code{special} (@pxref{Major Mode Conventions}).
+Режим Special является основным режимом для буферов текст в которым
+специальным образом генерируется самим Emacs-ом, а не берется из файла
+(например dired)
+Основные являющиеся дочерними к Special имеют свойство @code{mode-class}
+равное @code{special} (@pxref{Major Mode Conventions}).
 
-Special mode sets the buffer to read-only.  Its keymap defines several
-common bindings, including @kbd{q} for @code{quit-window} and @kbd{g}
-for @code{revert-buffer} (@pxref{Reverting}).
+Режим Special устанавливает буфер в режим только чтение (read-only).
+Таблица привязки клавиш (keymap) определяет несколько общих привязок,
+таких как @kbd{q} - @code{quit-window} и @kbd{g} - @code{revert-buffer}.
+(@pxref{Reverting}).
 
-An example of a major mode derived from Special mode is Buffer Menu
-mode, which is used by the @file{*Buffer List*} buffer.  @xref{List
+
+Например Buffer Menu является основном режимом дочерним к Special.
+Данный режим используется буфером @file{*Buffer List*}. @xref{List
 Buffers,,Listing Existing Buffers, emacs, The GNU Emacs Manual}.
 @end deffn
 
-  In addition, modes for buffers of tabulated data can inherit from
-Tabulated List mode, which is in turn derived from Special mode.
+  Режимы с табличными данными могут наследоваться от режима Tabulated List,
+который в свою очередь является дочерним для Special режима.
 @xref{Tabulated List Mode}.
 
 @node Mode Hooks
+@node Перехватчики режима
 @subsection Mode Hooks
 
-  Every major mode command should finish by running the mode-independent
-normal hook @code{change-major-mode-after-body-hook}, its mode hook,
-and the normal hook @code{after-change-major-mode-hook}.
-It does this by calling @code{run-mode-hooks}.  If the major mode is a
-derived mode, that is if it calls another major mode (the parent mode)
-in its body, it should do this inside @code{delay-mode-hooks} so that
-the parent won't run these hooks itself.  Instead, the derived mode's
-call to @code{run-mode-hooks} runs the parent's mode hook too.
+Каждая команда основного режима должна заканчиваться запуском не зависимым от
+режима обычным перехватчиком @code{change-major-mode-after-body-hook}, вызовом
+перехватчиком режима и вызовом обычного перехватчика @code{after-change-major-mode-hook}.
+Что выполняется через вызов @code{run-mode-hooks}. Если основной режим
+является дочерним, тогда команда вызывает родительский основной режим в
+теле команды режима, вызов делается через @code{delay-mode-hooks}, чтобы родитель
+не вызвал свои перехватчики самостоятельно. При это в дочернем режиме при 
+вызове @code{run-mode-hooks} выполняются перехватчики родительских режимов тоже.
+Таким образом выполняются сначала все body режимом, потом перехватчики режимов.
 @xref{Major Mode Conventions}.
 
-  Emacs versions before Emacs 22 did not have @code{delay-mode-hooks}.
-Versions before 24 did not have @code{change-major-mode-after-body-hook}.
-When user-implemented major modes do not use @code{run-mode-hooks} and
-have not been updated to use these newer features, they won't entirely
-follow these conventions: they may run the parent's mode hook too early,
-or fail to run @code{after-change-major-mode-hook}.  If you encounter
-such a major mode, please correct it to follow these conventions.
+  Emacs версий до 22, не имел @code{delay-mode-hooks}.
+Версии до 24 не имеют @code{change-major-mode-after-body-hook}.
+Когда пользовательские основные режимы не используют @code{run-mode-hooks} и
+не были обновлены для использования этих новых возможностей, они не полностью
+соответствуют текущим соглашениям, они могут запустить родительский перехватчик
+слишком рано или не запустить @code{after-change-major-mode-hook}. В случае
+использования или встречи с таким режимом рекомендуется исправить его.
 
-  When you define a major mode using @code{define-derived-mode}, it
-automatically makes sure these conventions are followed.  If you
-define a major mode ``by hand'', not using @code{define-derived-mode},
-use the following functions to handle these conventions automatically.
+При определении основного режима с использованием @code{define-derived-mode},
+указанные соглашения соблюдаются автоматически. Если же режим определяется
+в ручном режима (``by hand``), без использования @code{define-derived-mode},
+стоит использовать следующие функции для автоматического выполнения соглашений.
 
 @defun run-mode-hooks &rest hookvars
-Major modes should run their mode hook using this function.  It is
-similar to @code{run-hooks} (@pxref{Hooks}), but it also runs
-@code{change-major-mode-after-body-hook} and
+Основной режим должен выполнять свои перехватчики используя эту функцию.
+Функция схожа с @code{run-hooks} (@pxref{Hooks}), но она так же запускает
+@code{change-major-mode-after-body-hook} и
 @code{after-change-major-mode-hook}.
 
-When this function is called during the execution of a
-@code{delay-mode-hooks} form, it does not run the hooks immediately.
-Instead, it arranges for the next call to @code{run-mode-hooks} to run
-them.
+Когда функция вызывается в рамкам выполнения формы @code{delay-mode-hooks},
+она не выполняет перехватчики сразу. Напротив, она делает так чтобы они были вызваны
+при следующем вызове @code{run-mode-hooks}.
 @end defun
 
 @defmac delay-mode-hooks body@dots{}
-When one major mode command calls another, it should do so inside of
-@code{delay-mode-hooks}.
+Когда один основной режим вызывает другой, такой вызов должен выполняться
+внутри @code{delay-mode-hooks}.
 
-This macro executes @var{body}, but tells all @code{run-mode-hooks}
-calls during the execution of @var{body} to delay running their hooks.
-The hooks will actually run during the next call to
-@code{run-mode-hooks} after the end of the @code{delay-mode-hooks}
-construct.
+Такой макрос выполняет тело @var{body}, но не выполняет вызовы перехватчиков
+внутри @code{run-mode-hooks}. Такие перехватчики будут выполнены
+при следующем выполнении @code{run-mode-hooks}, после завершения действия
+конструкции @code{delay-mode-hooks}.
 @end defmac
 
 @defvar change-major-mode-after-body-hook
-This is a normal hook run by @code{run-mode-hooks}.  It is run before
-the mode hooks.
+Это обычный перехватчик запускаемый @code{run-mode-hooks}. Он выполняется до
+перехватчика режима.
 @end defvar
 
 @defvar after-change-major-mode-hook
-This is a normal hook run by @code{run-mode-hooks}.  It is run at the
-very end of every properly-written major mode command.
+Обыкновенный перехватчик запускаемый @code{run-mode-hooks}. Перехватчик
+запускается в конце функции режима, если она правильно написана.
 @end defvar
 
 @node Tabulated List Mode
+@node Режим табличных списков
 @subsection Tabulated List mode
 @cindex Tabulated List mode
+@cindex режим табулированного списка
 
-  Tabulated List mode is a major mode for displaying tabulated data,
-i.e., data consisting of @dfn{entries}, each entry occupying one row of
-text with its contents divided into columns.  Tabulated List mode
-provides facilities for pretty-printing rows and columns, and sorting
-the rows according to the values in each column.  It is derived from
-Special mode (@pxref{Basic Major Modes}).
+  Режим табличных списков (Tabulated List) основной режим для
+отображения табличных данных, т.е. данных состоящих из @dfn{entries}
+(@dfn{записей}), каждая запись это одна строка текста разделенная на
+колонки. Табличный режим предоставляет возможности для красивой печати
+строк и колонок, сортировки строк в соответствии со значениями в
+колонках. Данный режим является дочерним для Special режима
+(@pxref{Basic Major Modes}.
 
-  Tabulated List mode is intended to be used as a parent mode by a more
-specialized major mode.  Examples include Process Menu mode
-(@pxref{Process Information}) and Package Menu mode (@pxref{Package
-Menu,,, emacs, The GNU Emacs Manual}).
+Табличный режим предназначен для использования как родительский для
+множества специальных основных режимов. Например режимы Меню Процессов
+(Process Menu), (@pxref{Process Information}) и Меню Пакетов (Package
+Menu) (@pxref{Package Menu,,, emacs, The GNU Emacs Manual}).
 
 @findex tabulated-list-mode
-  Such a derived mode should use @code{define-derived-mode} in the usual
-way, specifying @code{tabulated-list-mode} as the second argument
-(@pxref{Derived Modes}).  The body of the @code{define-derived-mode}
-form should specify the format of the tabulated data, by assigning
-values to the variables documented below; optionally, it can then call
-the function @code{tabulated-list-init-header}, which will populate a
-header with the names of the columns.
+  Дочерний режим должен использовать @code{define-derived-mode} как
+обычно, задав @code{tabulated-list-mode} вторым аргументом
+(@pxref{Derived Modes}).  Тело @code{define-derived-mode} должно
+определять формат табличных данных, путем задания значения переменных
+описанных ниже, функция @code{tabulated-list-init-header} может быть
+вызвана для заполнения заголовка именами колонок.
 
-  The derived mode should also define a @dfn{listing command}.  This,
-not the mode command, is what the user calls (e.g., @kbd{M-x
-list-processes}).  The listing command should create or switch to a
-buffer, turn on the derived mode, specify the tabulated data, and
-finally call @code{tabulated-list-print} to populate the buffer.
+Дочерний режим должен определить @dfn{listing command}. Это не команда
+режима, а команда вызываемая аналогично (e.g., @kbd{M-x
+list-processes}).
+Команда должна создавать или переключать буфер, включать дочерний режим,
+определять табличные данные и в заключение вызывать @code{tabulated-list-print}
+для заполнения буфера.
 
 @defvar tabulated-list-format
-This buffer-local variable specifies the format of the Tabulated List
-data.  Its value should be a vector.  Each element of the vector
-represents a data column, and should be a list @code{(@var{name}
-@var{width} @var{sort})}, where
+Данная локальная для буфера (buffer-local) переменная определяет формат
+данных табличного списка. Значение должно быть вектором. Каждый элемент
+вектора представляет колонку данных, и должен быть списком
+@code{(@var{name} @var{width} @var{sort})}, где 
 
 @itemize
 @item
-@var{name} is the column's name (a string).
+@var{name} имя колонки (строка).
 
 @item
-@var{width} is the width to reserve for the column (an integer).  This
-is meaningless for the last column, which runs to the end of each line.
+@var{width} ширина колонки (число). Данный параметр не используется для
+крайней колонки которая занимает все оставшееся место.
 
 @item
-@var{sort} specifies how to sort entries by the column.  If @code{nil},
-the column cannot be used for sorting.  If @code{t}, the column is
-sorted by comparing string values.  Otherwise, this should be a
-predicate function for @code{sort} (@pxref{Rearrangement}), which
-accepts two arguments with the same form as the elements of
-@code{tabulated-list-entries} (see below).
+@var{sort} задает правило сортировки записей по колонкам. Если
+@code{nil}, колонка не будет использоваться для сортировки. Если
+@code{t}, колонка сортируется как строковая. В другом случае,
+нужно задать функцию предикат @code{sort} (@pxref{Rearrangement}),
+которая принимает 2 аргумента того же вида что и элементы
+@code{tabulated-list-entries} (см. ниже).
 @end itemize
 @end defvar
 
 @defvar tabulated-list-entries
-This buffer-local variable specifies the entries displayed in the
-Tabulated List buffer.  Its value should be either a list, or a
-function.
+Данная локальная для буфера (buffer-local) переменная записи отображаемые
+в Табличном режиме. Значение должно быть списком или функцией.
 
-If the value is a list, each list element corresponds to one entry, and
-should have the form @w{@code{(@var{id} @var{contents})}}, where
+Если значение список, каждый элемент соответствует одной записи,
+и должен иметь форму @w{@code{(@var{id} @var{contents})}}, где 
 
 @itemize
 @item
-@var{id} is either @code{nil}, or a Lisp object that identifies the
-entry.  If the latter, the cursor stays on the same entry when
-re-sorting entries.  Comparison is done with @code{equal}.
+@var{id} либо @code{nil}, либо Lisp объект идентифицирующий запись.
+В случае объекта, курсор будет оставаться на той же записи при
+пересортировке. Сравнение выполняется с использованием @code{equal}.
 
 @item
-@var{contents} is a vector with the same number of elements as
-@code{tabulated-list-format}.  Each vector element is either a string,
-which is inserted into the buffer as-is, or a list @code{(@var{label}
-. @var{properties})}, which means to insert a text button by calling
-@code{insert-text-button} with @var{label} and @var{properties} as
-arguments (@pxref{Making Buttons}).
+@var{contents} это вектор с тем же количеством элементов, что и
+@code{tabulated-list-format}. Каждый элемент вектора либо строка,
+которая вставляется в буфер как есть, либо список @code{(@var{label}.
+@var{properties})}, который предполагает вставку текстовой кнопки
+вызовом @code{insert-text-button} с @var{label} и @var{properties}
+в качестве аргументов (@pxref{Making Buttons}).
 
-There should be no newlines in any of these strings.
+Переводов строк не в одной из строк быть не должно.
 @end itemize
 
-Otherwise, the value should be a function which returns a list of the
-above form when called with no arguments.
+Если значение функция, то она должна возвращать список описанной выше
+формы при вызове без аргументов.
 @end defvar
 
 @defvar tabulated-list-revert-hook
-This normal hook is run prior to reverting a Tabulated List buffer.  A
-derived mode can add a function to this hook to recompute
+Обыкновенный перехватчик выполняемые как правило для перезагрузки
+буфера с табличным списком. Дочерний режим может добавить функцию
+в этот перехватчик для пересчета
 @code{tabulated-list-entries}.
 @end defvar
 
 @defvar tabulated-list-printer
-The value of this variable is the function called to insert an entry at
-point, including its terminating newline.  The function should accept
-two arguments, @var{id} and @var{contents}, having the same meanings as
-in @code{tabulated-list-entries}.  The default value is a function which
-inserts an entry in a straightforward way; a mode which uses Tabulated
-List mode in a more complex way can specify another function.
+Значение данное переменной должно быть функцией вызываемой для вставки
+записи в точке, включая символ перевода строки. Функция должна
+принимать два аргумента @var{id} и @var{contents} (id и содержимое),
+такие же как для @code{tabulated-list-entries}. Значение по умолчанию
+функция вставляющая запись как есть, режимы использующие табличный
+список более сложным образом могут задавать другую функцию.
 @end defvar
 
 @defvar tabulated-list-sort-key
-The value of this variable specifies the current sort key for the
-Tabulated List buffer.  If it is @code{nil}, no sorting is done.
-Otherwise, it should have the form @code{(@var{name} . @var{flip})},
-where @var{name} is a string matching one of the column names in
-@code{tabulated-list-format}, and @var{flip}, if non-@code{nil}, means
-to invert the sort order.
+Значение этой переменной определяет значение текущего ключа для сортировки
+в буфере. Если значение @code{nil}, сортировка не выполняется.
+Значение должно быть в форме @code{(@var{name} . @var{flip})}, где
+@var{name} строка соответствующая имени одной из колонок в
+@code{tabulated-list-format}, и @var{flip} если не-@code{nil},
+задает сортировку в обратном порядке.
 @end defvar
 
 @defun tabulated-list-init-header
-This function computes and sets @code{header-line-format} for the
-Tabulated List buffer (@pxref{Header Lines}), and assigns a keymap to
-the header line to allow sorting entries by clicking on column headers.
+Функция вычисляет и устанавливает @code{header-line-format} для
+буфера с табличным списком (@pxref{Header Lines}), и присваивает
+обработчики кнопок для строки заголовков, чтобы было возможном
+сортировать записи по клику на заголовке колонки.
 
-Modes derived from Tabulated List mode should call this after setting
-the above variables (in particular, only after setting
-@code{tabulated-list-format}).
+Режимы дочерние к режиму Табличных списков, должны вызывать
+данную функцию после установки вышеописанных переменных,
+(в особенности после установки @code{tabulated-list-format}).
 @end defun
 
 @defun tabulated-list-print &optional remember-pos update
-This function populates the current buffer with entries.  It should be
-called by the listing command.  It erases the buffer, sorts the entries
-specified by @code{tabulated-list-entries} according to
-@code{tabulated-list-sort-key}, then calls the function specified by
-@code{tabulated-list-printer} to insert each entry.
+Функция заполняет текущий буфер записями. Она должна вызываться
+командой листинга (listing-command). Функция очищает буфер, сортирует
+записи заданные @code{tabulated-list-entries} в соответствии с
+@code{tabulated-list-sort-key}, а затем вызывает функцию определенную
+@code{tabulated-list-printer} для вставки каждой записи.
 
-If the optional argument @var{remember-pos} is non-@code{nil}, this
-function looks for the @var{id} element on the current line, if any, and
-tries to move to that entry after all the entries are (re)inserted.
+Если необязательный аргумент @var{remember-pos} не-@code{nil}, функция
+смотрит на @var{id} текущей записи, и пытается спозиционироваться
+на ту же запись после того как все записи будут (пере)вставлены ((re)inserted).
 
-If the optional argument @var{update} is non-@code{nil}, this function
-will only erase or add entries that have changed since the last print.
-This is several times faster if most entries haven't changed since the
-last time this function was called.  The only difference in outcome is
-that tags placed via @code{tabulated-list-put-tag} will not be removed
-from entries that haven't changed (normally all tags are removed).
+Если необязательный аргумент @var{update} не-@code{nil}, функция
+будет удалять и вставлять только записи, которые изменились со
+времени предыдущей печати. Такое поведение может быть в несколько
+раз быстрее если большинство записей не изменились с предыдущего вызова
+функции. Единственная разница в результатах, заключается в том, что
+теги выставленные через @code{tabulated-list-put-tag}, не будут удалены
+для записей которые не изменились (обычно все теги удаляются).
 @end defun
 
 @node Generic Modes
+@node Общие режимы
 @subsection Generic Modes
 @cindex generic mode
+@cindex Общие режимы
 
-  @dfn{Generic modes} are simple major modes with basic support for
-comment syntax and Font Lock mode.  To define a generic mode, use the
-macro @code{define-generic-mode}.  See the file @file{generic-x.el}
-for some examples of the use of @code{define-generic-mode}.
+  @dfn{Generic modes} Общие режимы это простые основные режимы с базовой
+поддержкой синтаксиса комментариев и подсветкой синтаксиса (Font Lock mode).
+См. @file{generic-x.el} чтобы изучить примеры использования @code{define-generic-mode}.
 
 @defmac define-generic-mode mode comment-list keyword-list font-lock-list auto-mode-list function-list &optional docstring
-This macro defines a generic mode command named @var{mode} (a symbol,
-not quoted).  The optional argument @var{docstring} is the
-documentation for the mode command.  If you do not supply it,
-@code{define-generic-mode} generates one by default.
+Макрос определяет команду общего режима с именем @var{mode}
+(символ без кавычки (not quoted)).
+Не обязательный аргумент @var{docstring} документация для команды режима.
+Если опущено, то @code{define-generic-mode} сгенерирует значение по умолчанию.
 
-The argument @var{comment-list} is a list in which each element is
-either a character, a string of one or two characters, or a cons cell.
-A character or a string is set up in the mode's syntax table as a
-comment starter.  If the entry is a cons cell, the @sc{car} is set
-up as a comment starter and the @sc{cdr} as a comment ender.
-(Use @code{nil} for the latter if you want comments to end at the end
-of the line.)  Note that the syntax table mechanism has limitations
-about what comment starters and enders are actually possible.
+Аргумент @var{comment-list} список в котором каждый элемент это
+символ, строка из одного или двух символов, или cons ячейка.
+Символ или строка установлены в таблице синтаксиса режима как
+начало комментария. Если запись является cons ячейкой, то @sc{car}
+является началом комментария, а @sc{cdr} завершением комментария.
+(Стоит использовать @code{nil} в качестве @sc{cdr} если нужно чтобы комментарии
+заканчивались в конце строки.)
+Стоит учитывать, что синтаксическая таблица
+имеет накладывает ограничения на то что может быть началом
+и концом комментария.
+
 @xref{Syntax Tables}.
+@xref{Синтаксическая таблица}.
 
-The argument @var{keyword-list} is a list of keywords to highlight
-with @code{font-lock-keyword-face}.  Each keyword should be a string.
-Meanwhile, @var{font-lock-list} is a list of additional expressions to
-highlight.  Each element of this list should have the same form as an
-element of @code{font-lock-keywords}.  @xref{Search-based
-Fontification}.
+Аргумент @var{keyword-list} это список ключевых слов которые должны
+выделяться шрифтом @code{font-lock-keyword-face}. Каждое ключевое
+слово должно быть строкой.  Кроме того, @var{font-lock-list}
+это список дополнительных выражений для выделения. Каждый элемент
+этого списка должен иметь ту же форму что и элементы @code{font-lock-keywords}.
+@xref{Search-based Fontification}.
 
-The argument @var{auto-mode-list} is a list of regular expressions to
-add to the variable @code{auto-mode-alist}.  They are added by the execution
-of the @code{define-generic-mode} form, not by expanding the macro call.
+Аргумент @var{auto-mode-list} это список регулярных выражений для добавления
+в переменную @code{auto-mode-alist}. Они добавляются при выполнении
+формы @code{define-generic-mode}, а не при раскрытии макроса.
 
-Finally, @var{function-list} is a list of functions for the mode
-command to call for additional setup.  It calls these functions just
-before it runs the mode hook variable @code{@var{mode}-hook}.
+Переменная @var{function-list} является списком функций которые
+выполняются при выполнении команды режима для задания дополнительных
+настроек. Данные функции выполняет непосредственно перед вызовом
+перехватчиков из переменной @code{@var{mode}-hook}.
 @end defmac
 
 @node Example Major Modes
+@node Пример основных режимов
 @subsection Major Mode Examples
 
-  Text mode is perhaps the simplest mode besides Fundamental mode.
-Here are excerpts from  @file{text-mode.el} that illustrate many of
-the conventions listed above:
+  Текстовый (Text) режим вероятно самый простой режим после Fundamental
+режима. Приведем отрывок из @file{text-mode.el} иллюстрирующий многие
+из вышеописанных соглашений.
 
 @smallexample
 @group
@@ -1209,7 +1228,7 @@ Many other modes, such as `mail-mode', `outline-mode' and
 @end group
 @end smallexample
 
-  Here is how the actual mode command is defined now:
+  Далее выполняется определение команды режима:
 
 @smallexample
 @group
@@ -1230,18 +1249,19 @@ Turning on Text mode runs the normal hook `text-mode-hook'."
 @end smallexample
 
 @noindent
-(The last line is redundant nowadays, since @code{indent-relative} is
-the default value, and we'll delete it in a future version.)
+(Крайняя строка в настоящее время избыточна, так как @code{indent-relative}
+это значение по умолчанию, и стоит удалить ее в будущих версиях.)
 
 @cindex @file{lisp-mode.el}
-  The three Lisp modes (Lisp mode, Emacs Lisp mode, and Lisp Interaction
-mode) have more features than Text mode and the code is correspondingly
-more complicated.  Here are excerpts from @file{lisp-mode.el} that
-illustrate how these modes are written.
+  Следующие 3 Lisp режима (Lisp режим, Emacs Lisp режим и Lisp Interaction режим)
+имеют больше особенностей чем Text режим и код данных режимов
+более сложный. Далее приводится выдержка из @file{lisp-mode.el}, которая
+иллюстрирует как данные режимы написаны.
 
-  Here is how the Lisp mode syntax and abbrev tables are defined:
-
+  Так определяются таблица синтаксиса и аббревиатур: 
+  
 @cindex syntax table example
+@cindex пример синтаксической таблицы
 @smallexample
 @group
 ;; @r{Create mode-specific table variables.}
@@ -1259,8 +1279,8 @@ illustrate how these modes are written.
 @end group
 @end smallexample
 
-  The three modes for Lisp share much of their code.  For instance,
-each calls the following function to set various variables:
+  Три режима для Lisp разделяются большую часть кода. Например,
+все вызывают следующую функцию для установки переменных:
 
 @smallexample
 @group
@@ -1273,8 +1293,8 @@ each calls the following function to set various variables:
 @end smallexample
 
 @noindent
-Amongst other things, this function sets up the @code{comment-start}
-variable to handle Lisp comments:
+Среди прочего, функция устанавливает переменную @code{comment-start}
+для обработки Lisp комментариев:
 
 @smallexample
 @group
@@ -1284,10 +1304,11 @@ variable to handle Lisp comments:
 @end group
 @end smallexample
 
-  Each of the different Lisp modes has a slightly different keymap.  For
-example, Lisp mode binds @kbd{C-c C-z} to @code{run-lisp}, but the other
-Lisp modes do not.  However, all Lisp modes have some commands in
-common.  The following code sets up the common commands:
+  Каждый из различных Lisp режимов имеет немного отличающуюся
+привязку клавиш (keymap, раскладку). Например в Lisp режиме по
+@kbd{C-c C-z} выполняется @code{run-lisp}, а в других Lisp
+режимах нет. Однако, все Lisp режимы имеют часть общих команд.
+Общие команды устанавливаются следующим кодом:
 
 @smallexample
 @group
@@ -1301,7 +1322,7 @@ common.  The following code sets up the common commands:
 @end smallexample
 
 @noindent
-And here is the code to set up the keymap for Lisp mode:
+Далее приводится код для установки раскладки Lisp режима:
 
 @smallexample
 @group
@@ -1319,7 +1340,7 @@ All commands in `lisp-mode-shared-map' are inherited by this map.")
 @end smallexample
 
 @noindent
-Finally, here is the major mode command for Lisp mode:
+Далее приводится команда основного режима, для  Lisp режима:
 
 @smallexample
 @group
@@ -1347,8 +1368,10 @@ if that value is non-nil."
 @end smallexample
 
 @node Minor Modes
+@node Дополнительные режимы
 @section Minor Modes
 @cindex minor mode
+@cindex дополнительные режимы
 
   A @dfn{minor mode} provides optional features that users may enable or
 disable independently of the choice of major mode.  Minor modes can be
