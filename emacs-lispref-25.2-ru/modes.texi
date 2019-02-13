@@ -2189,21 +2189,22 @@ C-x n n (narrow-to-region) и редактируется только часть
 @end defvar
 
 @defvar global-mode-string
-This variable holds a mode line construct that, by default, appears in
-the mode line just after the @code{which-func-mode} minor mode if set,
-else after @code{mode-line-modes}.  The command @code{display-time} sets
-@code{global-mode-string} to refer to the variable
-@code{display-time-string}, which holds a string containing the time and
-load information.
+Переменная хранит контрукт строки режима, который ко умолчанию, появляется
+в строке режима сразу за @code{which-func-mode} второстепенного режима,
+если он задан, иначе за @code{mode-line-modes}. Команда @code{display-time}
+устанавливает ссылку @code{global-mode-string} на переменную
+@code{display-time-string}, которая хранит строку времени и
+информацию о загрузке. (прим. средняя информации по загрузке системы,
+за какой-то промежуток времени, по умолчанию видимо 1 минута).
 
-The @samp{%M} construct substitutes the value of
-@code{global-mode-string}, but that is obsolete, since the variable is
-included in the mode line from @code{mode-line-format}.
+Конструкт @samp{%M} выполняет подстановку значения @code{global-mode-string},
+(но это считается устаревшим), так как переменная включена в
+строку режима в @code{mode-line-format}.
 @end defvar
 
-Here is a simplified version of the default value of
-@code{mode-line-format}.  The real default value also
-specifies addition of text properties.
+Ниже упрощенный пример значения по умолчанию
+@code{mode-line-format}. Реальное определение
+определяет дополнительные текстовые свойства.
 
 @example
 @group
@@ -2228,290 +2229,305 @@ specifies addition of text properties.
 @node %-Constructs
 @subsection @code{%}-Constructs in the Mode Line
 
-  Strings used as mode line constructs can use certain
-@code{%}-constructs to substitute various kinds of data.  The
-following is a list of the defined @code{%}-constructs, and what they
-mean.
+  Строки используемые в строке режима могут использовать
+@code{%}-конструкты для подстановки разных данных.
+Ниже содержится описание списка @code{%}-конструктов, и
+их значений.
 
-  In any construct except @samp{%%}, you can add a decimal integer
-after the @samp{%} to specify a minimum field width.  If the width is
-less, the field is padded to that width.  Purely numeric constructs
-(@samp{c}, @samp{i}, @samp{I}, and @samp{l}) are padded by inserting
-spaces to the left, and others are padded by inserting spaces to the
-right.
+  В любом конструкте за исключением @samp{%%}, можно добавить натуральное
+числе после @samp{%}, для задания минимальной ширины поля. Чисто числовые
+конструкты (@samp{c}, @samp{i}, @samp{I}, and @samp{l}) расширяются
+пробелами слева, другие расширяются пробелами справа.
 
 @table @code
 @item %b
-The current buffer name, obtained with the @code{buffer-name} function.
+Имя текущего буфера, полученное функцией @code{buffer-name}.
 @xref{Buffer Names}.
 
 @item %c
-The current column number of point.
+Текущий номер колонки.
 
 @item %e
-When Emacs is nearly out of memory for Lisp objects, a brief message
-saying so.  Otherwise, this is empty.
+Когда у Emacs приближается переполнение памяти Lisp объектов,
+показывается краткое сообщение. В других случая, контрукт пустой.
 
 @item %f
-The visited file name, obtained with the @code{buffer-file-name}
-function.  @xref{Buffer File Name}.
+Имя файла, полученное функцией @code{buffer-file-name}.
+@xref{Buffer File Name}.
 
 @item %F
-The title (only on a window system) or the name of the selected frame.
+Заголовок (только для системы окон) или имя выбранного фрейма.
 @xref{Basic Parameters}.
 
 @item %i
-The size of the accessible part of the current buffer; basically
+Размер доступной части текущего буфера; вычисляемой
 @code{(- (point-max) (point-min))}.
 
 @item %I
-Like @samp{%i}, but the size is printed in a more readable way by using
-@samp{k} for 10^3, @samp{M} for 10^6, @samp{G} for 10^9, etc., to
-abbreviate.
+Так же как @samp{%i}, но размер печатается в более читаемой форме,
+используя  @samp{k} для 10^3,
+@samp{M} для 10^6, @samp{G} для 10^9, и т.д., для сокращения.
 
 @item %l
-The current line number of point, counting within the accessible portion
-of the buffer.
+Текущий номер строки, вычисляемой для доступной части буфера.
 
 @item %n
-@samp{Narrow} when narrowing is in effect; nothing otherwise (see
-@code{narrow-to-region} in @ref{Narrowing}).
+@samp{Narrow} Когда включено сужение; иначе пусто (см.
+@code{narrow-to-region} в @ref{Narrowing}).
 
 @item %p
-The percentage of the buffer text above the @strong{top} of window, or
-@samp{Top}, @samp{Bottom} or @samp{All}.  Note that the default mode
-line construct truncates this to three characters.
+Процент буфера находящийся сверху @strong{top} окна, или
+@samp{Top}, @samp{Bottom} или @samp{All}. Конструкция для
+строки режима по умолчанию, обрезает значение до 3-х символов.
 
 @item %P
-The percentage of the buffer text that is above the @strong{bottom} of
-the window (which includes the text visible in the window, as well as
-the text above the top), plus @samp{Top} if the top of the buffer is
-visible on screen; or @samp{Bottom} or @samp{All}.
+Процент текста буфера который выше @strong{bottom} окна
+(включает текст видимый в окне, как и текст выше top), плюс @samp{Top}
+если верх буфера виден на экране; или @samp{Bottom}  @samp{All}.
 
 @item %s
-The status of the subprocess belonging to the current buffer, obtained with
-@code{process-status}.  @xref{Process Information}.
+Статус подпроцесса принадлежащего текущему буферу,
+полученный функцией @code{process-status}.
+@xref{Process Information}.
 
 @item %z
-The mnemonics of keyboard, terminal, and buffer coding systems.
+Мнемоническое обозначение кодировки раскладки, терминала или
+буфера.
 
 @item %Z
-Like @samp{%z}, but including the end-of-line format.
+Как @samp{%z}, но включает форматирования конца строки end-of-line.
 
 @item %*
-@samp{%} if the buffer is read only (see @code{buffer-read-only}); @*
-@samp{*} if the buffer is modified (see @code{buffer-modified-p}); @*
-@samp{-} otherwise.  @xref{Buffer Modification}.
+@samp{%} Если буфер только для чтения (см @code{buffer-read-only}); @*
+@samp{*} Если буфер изменен (см. @code{buffer-modified-p}); @*
+@samp{-} В других случаях.  @xref{Buffer Modification}.
 
 @item %+
-@samp{*} if the buffer is modified (see @code{buffer-modified-p}); @*
-@samp{%} if the buffer is read only (see @code{buffer-read-only}); @*
-@samp{-} otherwise.  This differs from @samp{%*} only for a modified
-read-only buffer.  @xref{Buffer Modification}.
+@samp{*} Если буфер изменен (см. @code{buffer-modified-p}); @*
+@samp{%} Если буфер только для чтения (см. @code{buffer-read-only}); @*
+@samp{-} В других случаях.  Тут отличие от @samp{%*} только
+для измененных буферов и только на чтение.  @xref{Buffer Modification}.
 
 @item %&
-@samp{*} if the buffer is modified, and @samp{-} otherwise.
+@samp{*} Если буфер изменен, и @samp{-} если не изменен.
 
 @item %[
-An indication of the depth of recursive editing levels (not counting
-minibuffer levels): one @samp{[} for each editing level.
+Индикатор глубины рекурсивного редактирования (не считаются уровни
+минибуфера): одна @samp{[} для каждого уровня.
 @xref{Recursive Editing}.
 
 @item %]
-One @samp{]} for each recursive editing level (not counting minibuffer
-levels).
+Одна @samp{]} для каждого уровня рекурсивного редактирования
+(не считаются уровни минибуфера).
 
 @item %-
-Dashes sufficient to fill the remainder of the mode line.
+Черточка для заполнения оставшейся части строки режима.
+(Dashes sufficient to fill the remainder of the mode line.)
+(Прим. Видимо просто заполнение.)
 
 @item %%
-The character @samp{%}---this is how to include a literal @samp{%} in a
-string in which @code{%}-constructs are allowed.
+Позволяет включить символ @samp{%} в строку в которой
+поддерживаются @code{%}-конструкты.
+(То есть экранирование @samp{%}).
 @end table
 
-The following two @code{%}-constructs are still supported, but they are
-obsolete, since you can get the same results with the variables
-@code{mode-name} and @code{global-mode-string}.
+Следующие 2 @code{%}-конструкта еще поддерживаются, но они уже
+устарели, так как тот же результат можно получить:
+через @code{mode-name} and @code{global-mode-string}.
 
 @table @code
 @item %m
-The value of @code{mode-name}.
+Значение @code{mode-name}.
 
 @item %M
-The value of @code{global-mode-string}.
+Значение @code{global-mode-string}.
 @end table
 
+@node Свойства в режиме
 @node Properties in Mode
 @subsection Properties in the Mode Line
 @cindex text properties in the mode line
+@cindex текстовые свойства в строке режима
 
-  Certain text properties are meaningful in the
-mode line.  The @code{face} property affects the appearance of text; the
-@code{help-echo} property associates help strings with the text, and
-@code{keymap} can make the text mouse-sensitive.
+Некоторые свойства текста влияют на строку режима.
+Свойство @code{face} влияет на внешний вид текста;
+@code{help-echo} ассоциирует подсказку с текстом, а
+@code{keymap} делает текст кликабельным (мышкой).
 
-  There are four ways to specify text properties for text in the mode
-line:
+
+Существует 4 способа задать текстовые свойства в строке режима:
 
 @enumerate
 @item
-Put a string with a text property directly into the mode line data
-structure.
+Поместить строку с текстовыми свойствами непосредственно в структуры
+данных строки режима.
 
 @item
-Put a text property on a mode line %-construct such as @samp{%12b}; then
-the expansion of the %-construct will have that same text property.
+Поместить текстовые свойства на %-конструкт, такой как @samp{%12b};
+в результате чего текст полученный для конструкта будет содержать
+те же свойства.
 
 @item
-Use a @code{(:propertize @var{elt} @var{props}@dots{})} construct to
-give @var{elt} a text property specified by @var{props}.
+Использовать @code{(:propertize @var{elt} @var{props}@dots{})} конструкт
+чтобы задать @var{elt} текстовое свойство заданное @var{props}.
 
 @item
-Use a list containing @code{:eval @var{form}} in the mode line data
-structure, and make @var{form} evaluate to a string that has a text
-property.
+Использовать список @code{:eval @var{form}} в структуре данных
+строки режима, и выполнить интерпретацию @var{form}
+в строку с текстовыми свойствами.
+(make @var{form} evaluate)
 @end enumerate
 
-  You can use the @code{keymap} property to specify a keymap.  This
-keymap only takes real effect for mouse clicks; binding character keys
-and function keys to it has no effect, since it is impossible to move
-point into the mode line.
+  Можно использовать @code{keymap} для задания раскладки. Раскладка
+будет действовать только для нажатия мышкой; привязка
+других клавиш будет игнорироваться, потому что перемещение
+по строке режима не возможно.
 
-  When the mode line refers to a variable which does not have a
-non-@code{nil} @code{risky-local-variable} property, any text
-properties given or specified within that variable's values are
-ignored.  This is because such properties could otherwise specify
-functions to be called, and those functions could come from file
-local variables.
+  Если строка режима ссылается на переменную, которая не содержит
+не-@code{nil} @code{risky-local-variable} свойства,
+любой текст определенный с такой переменной игнорируется.
+Так делается потому что такие свойства могут определять вызов
+функций, и такие функции могут быть получены из
+локальных переменных файлов.
+(судя по всему имеется ввиду, что свойства игнорируются, потому что
+зависят от переменных локальных для файла)
 
 @node Header Lines
+@node Строки заголовка
 @subsection Window Header Lines
 @cindex header line (of a window)
 @cindex window header line
 
-  A window can have a @dfn{header line} at the top, just as it can have
-a mode line at the bottom.  The header line feature works just like the
-mode line feature, except that it's controlled by
-@code{header-line-format}:
+  Окно может иметь @dfn{header line} (строку заголовка) сверху,
+так же как строку режима снизу. Строка заголовка
+определяется и функционирует так же как строка режима, за
+исключением того, что определяется переменной @code{header-line-format}:
 
 @defvar header-line-format
-This variable, local in every buffer, specifies how to display the
-header line, for windows displaying the buffer.  The format of the value
-is the same as for @code{mode-line-format} (@pxref{Mode Line Data}).
-It is normally @code{nil}, so that ordinary buffers have no header line.
+Переменная, локальная для любого буфера, определяет то как будет
+отображаться строка заголовка. Формат переменной такой же как 
+for @code{mode-line-format} (@pxref{Mode Line Data}).
+Как правило это значение @code{nil}, то есть буферы не
+содержат строки заголовка.
 @end defvar
 
 @defun window-header-line-height &optional window
-This function returns the height in pixels of @var{window}'s header
-line.  @var{window} must be a live window, and defaults to the
-selected window.
+Функция возвращает высоту в пикселах строки заголовка @var{window}
+(окна). @var{window} (окно) должно быть существующим окном,
+значением по умолчанию является выбранной окно.
 @end defun
 
-  A window that is just one line tall never displays a header line.  A
-window that is two lines tall cannot display both a mode line and a
-header line at once; if it has a mode line, then it does not display a
-header line.
+  Окно высотой в одну строку не отображает строку заголовка.
+Окно высотой в 2 строки не может отобразить строку заголовка и строку
+режима одновременно, если у окна есть строка режима, то строка
+заголовка отображаться не будет.
 
+@node Эмулирование строки режима
 @node Emulating Mode Line
 @subsection Emulating Mode Line Formatting
 
-  You can use the function @code{format-mode-line} to compute the text
-that would appear in a mode line or header line based on a certain
-mode line construct.
+  Можно использовать функцию @code{format-mode-line} для вычисления
+текста который появится в строке режима или строке заголовка для
+заданной конструкции строки режима.
 
 @defun format-mode-line format &optional face window buffer
-This function formats a line of text according to @var{format} as if it
-were generating the mode line for @var{window}, but it also returns the
-text as a string.  The argument @var{window} defaults to the selected
-window.  If @var{buffer} is non-@code{nil}, all the information used is
-taken from @var{buffer}; by default, it comes from @var{window}'s
-buffer.
+Функция выполняет форматирование текстовой строки @var{format}
+как если бы это была строка режима окна @var{window},
+и возвращает текст как результат. Значение по умолчанию
+для @var{window} текущее окно. Если @var{buffer} не @code{nil},
+информация берется из @var{buffer}; @var{buffer} по умолчанию
+буфер из @var{window}. 
 
-The value string normally has text properties that correspond to the
-faces, keymaps, etc., that the mode line would have.  Any character for
-which no @code{face} property is specified by @var{format} gets a
-default value determined by @var{face}.  If @var{face} is @code{t}, that
-stands for either @code{mode-line} if @var{window} is selected,
-otherwise @code{mode-line-inactive}.  If @var{face} is @code{nil} or
-omitted, that stands for the default face.  If @var{face} is an integer,
-the value returned by this function will have no text properties.
+Строковое значение содержит свойства текста такие соответствующие
+шрифтам, раскладкам и т.д. такие какие бы были у текста строки режима.
+Любой символ для которого @code{face} не задается через @var{format}
+получит шрифт по умолчанию из аргумента @var{face}. Если @code{t},
+используется шрифт как для строки режима активного окна (@code{mode-line})
+если @var{window}
+окно активное, иначе как для не активного (@code{mode-line-inactive}).
+Если @var{face} @code{nil}, то используется шрифт по умолчанию.
+Если @var{face} число, значение возвращаемое функцией не содержит
+свойств текста.
 
-You can also specify other valid faces as the value of @var{face}.
-If specified, that face provides the @code{face} property for characters
-whose face is not specified by @var{format}.
+Если задать шрифт в аргументе @var{face}, он будет использоваться
+по умолчанию для символов чей шрифт не определяется в @var{format}.
 
-Note that using @code{mode-line}, @code{mode-line-inactive}, or
-@code{header-line} as @var{face} will actually redisplay the mode line
-or the header line, respectively, using the current definitions of the
-corresponding face, in addition to returning the formatted string.
-(Other faces do not cause redisplay.)
+Стоит отметить, что использование @code{mode-line},
+@code{mode-line-inactive}, или @code{header-line} в качестве @var{face}
+шрифта, приведет к перерисовки строки режима или строки заголовка
+соответственно, а не только возвращению форматированной строки.
+(Другие шрифты такого влияния не оказывают).
 
-For example, @code{(format-mode-line header-line-format)} returns the
-text that would appear in the selected window's header line (@code{""}
-if it has no header line).  @code{(format-mode-line header-line-format
-'header-line)} returns the same text, with each character
-carrying the face that it will have in the header line itself, and also
-redraws the header line.
+Например, @code{(format-mode-line header-line-format)} вернет
+текст соответствующий строке заголовка (@code{""} если заголовка нет)
+@code{(format-mode-line header-line-format
+'header-line)} вернет тот же текст, и кроме того перерисует строку
+заголовка.
 @end defun
 
 @node Imenu
 @section Imenu
 
 @cindex Imenu
-  @dfn{Imenu} is a feature that lets users select a definition or
-section in the buffer, from a menu which lists all of them, to go
-directly to that location in the buffer.  Imenu works by constructing
-a buffer index which lists the names and buffer positions of the
-definitions, or other named portions of the buffer; then the user can
-choose one of them and move point to it.  Major modes can add a menu
-bar item to use Imenu using @code{imenu-add-to-menubar}.
+  @dfn{Imenu} позволяет пользователю выполнять выделение определений
+или секций буфера, из меню содержащего список всех элементов, с
+непосредственным переходом к элементу. Imenu работает путем
+создания индекса который представляет собой список имен
+и соответствующих им позиций в буфере; после чего
+пользователь может выбрав имя переместится на соответствующую
+позицию. Основные режима могут добавить элемент в меню (основное)
+для использования Imenu командой @code{imenu-add-to-menubar}.
 
 @deffn Command imenu-add-to-menubar name
-This function defines a local menu bar item named @var{name}
-to run Imenu.
+Функция определяет элемент меню с именем @var{name}, для
+запуска Imenu.
 @end deffn
 
-  The user-level commands for using Imenu are described in the Emacs
-Manual (@pxref{Imenu,, Imenu, emacs, the Emacs Manual}).  This section
-explains how to customize Imenu's method of finding definitions or
-buffer portions for a particular major mode.
+  Пользовательские команды для использования Imenu описаны в руководстве
+Emacs (@pxref{Imenu,, Imenu, emacs, the Emacs Manual}). Данная секция
+описывает как настроить методы Imenu для поиска определений или
+позиций для определенного основного режима.
 
-  The usual and simplest way is to set the variable
-@code{imenu-generic-expression}:
+  Простейший и наиболее часто используемым является
+задание переменной @code{imenu-generic-expression}:
 
 @defvar imenu-generic-expression
-This variable, if non-@code{nil}, is a list that specifies regular
-expressions for finding definitions for Imenu.  Simple elements of
-@code{imenu-generic-expression} look like this:
+Если переменная не-@code{nil}, должна быть списком регулярных
+выражений для поиска определений для Imenu. Простой элемент
+@code{imenu-generic-expression} может выглядеть так:
 
 @example
 (@var{menu-title} @var{regexp} @var{index})
 @end example
 
-Here, if @var{menu-title} is non-@code{nil}, it says that the matches
-for this element should go in a submenu of the buffer index;
-@var{menu-title} itself specifies the name for the submenu.  If
-@var{menu-title} is @code{nil}, the matches for this element go directly
-in the top level of the buffer index.
+Тут, если @var{menu-title} не-@code{nil}, означает, что найденный
+элемент попадет в подменю индекса буфера (или просто подменю);
+@var{menu-title} определяет имя подменю. Если
+@var{menu-title} @code{nil}, найденные элементы попадают непосредственно
+в меню верхнего уровня.
 
-The second item in the list, @var{regexp}, is a regular expression
-(@pxref{Regular Expressions}); anything in the buffer that it matches
-is considered a definition, something to mention in the buffer index.
-The third item, @var{index}, is a non-negative integer that indicates
-which subexpression in @var{regexp} matches the definition's name.
+@var{regexp} регулярное выражение (@pxref{Regular Expressions});
+все что в буфере удовлетворяет является определением, попадающем
+в индекс.
 
-An element can also look like this:
+Третий элемент, @var{index}, это положительно целое, определяющее
+какое подвыражение @var{regexp} является именем определения.
+(Видимо имеется в виду что, в regexp есть группы, и это номер
+группы).
+
+Элемент может выглядеть и так:
 
 @example
 (@var{menu-title} @var{regexp} @var{index} @var{function} @var{arguments}@dots{})
 @end example
 
-Each match for this element creates an index item, and when the index
-item is selected by the user, it calls @var{function} with arguments
-consisting of the item name, the buffer position, and @var{arguments}.
+Каждое совпадение для такого элемента создает элемент индекса,
+но при выборе такого элемента пользователем вызывается функция
+@var{function} с аргументами именем элемента, позицией в буфере, и
+@var{arguments}.
 
-For Emacs Lisp mode, @code{imenu-generic-expression} could look like
-this:
+Для режима Emacs Lisp, @code{imenu-generic-expression}, должна
+выглядеть следующим образом:
 
 @c should probably use imenu-syntax-alist and \\sw rather than [-A-Za-z0-9+]
 @example
@@ -2531,301 +2547,329 @@ this:
 @end group
 @end example
 
-Setting this variable makes it buffer-local in the current buffer.
+Установка данной переменной делает ее локальной для текущего буфера.
 @end defvar
 
 @defvar imenu-case-fold-search
-This variable controls whether matching against the regular
-expressions in the value of @code{imenu-generic-expression} is
-case-sensitive: @code{t}, the default, means matching should ignore
-case.
+Переменная @code{imenu-generic-expression} если @code{t}
+то поиск выполняет с учетом регистра, по умолчанию
+без учета.
 
-Setting this variable makes it buffer-local in the current buffer.
+Установка переменной делает ее локальной для текущего буфера.
 @end defvar
 
 @defvar imenu-syntax-alist
-This variable is an alist of syntax table modifiers to use while
-processing @code{imenu-generic-expression}, to override the syntax table
-of the current buffer.  Each element should have this form:
+Переменная содержит ассоциативный список (alist) модификаторов
+синтаксической таблицы при обработке @code{imenu-generic-expression},
+для перезаписи синтаксической таблицы буфера.
+Каждый элемент должен иметь форму:
 
 @example
 (@var{characters} . @var{syntax-description})
 @end example
 
-The @sc{car}, @var{characters}, can be either a character or a string.
-The element says to give that character or characters the syntax
-specified by @var{syntax-description}, which is passed to
-@code{modify-syntax-entry} (@pxref{Syntax Table Functions}).
+@sc{car}, @var{characters} может быть символом (character) или строкой.
+Элемент предписывает взять символ или строки заданные
+@var{syntax-description},
+которые передаются @code{modify-syntax-entry}
+(@pxref{Syntax Table Functions}).
 
-This feature is typically used to give word syntax to characters which
-normally have symbol syntax, and thus to simplify
-@code{imenu-generic-expression} and speed up matching.
-For example, Fortran mode uses it this way:
+Данная возможность используется для того, чтобы
+сделать обычными некоторые слова которые обычно являются
+символами, и упростить @code{imenu-generic-expression},
+чтобы увеличить скорость.
+
+Например, Fortran использует это так:
 
 @example
 (setq imenu-syntax-alist '(("_$" . "w")))
 @end example
 
-The @code{imenu-generic-expression} regular expressions can then use
-@samp{\\sw+} instead of @samp{\\(\\sw\\|\\s_\\)+}.  Note that this
-technique may be inconvenient when the mode needs to limit the initial
-character of a name to a smaller set of characters than are allowed in
-the rest of a name.
+В регулярном выражении @code{imenu-generic-expression} можно после
+этого использовать @samp{\\sw+} вместо @samp{\\(\\sw\\|\\s_\\)+}.
+Данная техника не удобна когда в режиме нужно ограничить
+начальную букву имени, до небольшого множества символов
+которые разрешены в отличие от остальной части имени.
 
-Setting this variable makes it buffer-local in the current buffer.
+Установка данной переменной делает ее локально для буфера.
 @end defvar
 
-  Another way to customize Imenu for a major mode is to set the
-variables @code{imenu-prev-index-position-function} and
+  Другой способ настройки Imenu для основного режима установить
+переменные @code{imenu-prev-index-position-function} и
 @code{imenu-extract-index-name-function}:
 
 @defvar imenu-prev-index-position-function
-If this variable is non-@code{nil}, its value should be a function that
-finds the next definition to put in the buffer index, scanning
-backward in the buffer from point.  It should return @code{nil} if it
-doesn't find another definition before point.  Otherwise it should
-leave point at the place it finds a definition and return any
-non-@code{nil} value.
+Если переменная не-@code{nil}, то значением должна быть функция,
+которая ищет следующее определение для помещения в индекс буфера,
+выполняя сканирование буфера в обратном порядке начиная с текущей
+точки. Функция должна возвращать @code{nil} если не одного
+определения найдено не было. Иначе она должна оставить точку в месте
+где найдено определение и вернуть любое не-@code{nil} значение.
 
-Setting this variable makes it buffer-local in the current buffer.
+Установка переменной делает ее локально для текущего буфера.
 @end defvar
 
 @defvar imenu-extract-index-name-function
-If this variable is non-@code{nil}, its value should be a function to
-return the name for a definition, assuming point is in that definition
-as the @code{imenu-prev-index-position-function} function would leave
-it.
+Если значение переменной не-@code{nil}, значение должна быть
+функция возвращающая имя определения, предполагая что точка (point, курсор)
+находится на определении и была оставлена
+функцией @code{imenu-prev-index-position-function}.
 
-Setting this variable makes it buffer-local in the current buffer.
+Установка данной переменной делает ее локально для буфера.
 @end defvar
 
-  The last way to customize Imenu for a major mode is to set the
-variable @code{imenu-create-index-function}:
+  Еще один способ настройки Imenu задать
+@code{imenu-create-index-function}:
 
 @defvar imenu-create-index-function
-This variable specifies the function to use for creating a buffer
-index.  The function should take no arguments, and return an index
-alist for the current buffer.  It is called within
-@code{save-excursion}, so where it leaves point makes no difference.
+Переменная определяет функцию используемую для создания
+индекса буфера. Функция не должна иметь аргументов, и возвращать
+ассоциативный список, который будет индексом для текущего
+буфера. Функция вызывается внутри, @code{save-excursion}, поэтому
+изменение точки не важно.
 
-The index alist can have three types of elements.  Simple elements
-look like this:
+Ассоциативный список индекса может иметь три типа аргументов:
+Простые элементы выглядят как:
 
 @example
 (@var{index-name} . @var{index-position})
 @end example
 
-Selecting a simple element has the effect of moving to position
-@var{index-position} in the buffer.  Special elements look like this:
+Выбор простого элемента приводит в позиционированию
+на @var{index-position} в буфере. 
+Специальные элементы выглядят как:
 
 @example
 (@var{index-name} @var{index-position} @var{function} @var{arguments}@dots{})
 @end example
 
-Selecting a special element performs:
+Выбор специального элемента выполняется как:
 
 @example
 (funcall @var{function}
          @var{index-name} @var{index-position} @var{arguments}@dots{})
 @end example
 
-A nested sub-alist element looks like this:
+Вложенные под-индексы выглядят:
 
 @example
 (@var{menu-title} . @var{sub-alist})
 @end example
 
-It creates the submenu @var{menu-title} specified by @var{sub-alist}.
+В результате создается подменю  @var{menu-title} с  @var{sub-alist}.
 
-The default value of @code{imenu-create-index-function} is
-@code{imenu-default-create-index-function}.  This function calls the
-value of @code{imenu-prev-index-position-function} and the value of
-@code{imenu-extract-index-name-function} to produce the index alist.
-However, if either of these two variables is @code{nil}, the default
-function uses @code{imenu-generic-expression} instead.
+Значением по умолчанию для @code{imenu-create-index-function} является
+@code{imenu-default-create-index-function}.  Функция вызывает
+ @code{imenu-prev-index-position-function} и 
+@code{imenu-extract-index-name-function} для создания индекса.
+Но, если хотя бы одна из этих переменных @code{nil}, используется
+@code{imenu-generic-expression}.
 
-Setting this variable makes it buffer-local in the current buffer.
+Установка данной переменной делает ее локально для буфера.
 @end defvar
 
+@node Режим блокировки шрифта
 @node Font Lock Mode
 @section Font Lock Mode
 @cindex Font Lock mode
 
-  @dfn{Font Lock mode} is a buffer-local minor mode that automatically
-attaches @code{face} properties to certain parts of the buffer based on
-their syntactic role.  How it parses the buffer depends on the major
-mode; most major modes define syntactic criteria for which faces to use
-in which contexts.  This section explains how to customize Font Lock for
-a particular major mode.
+Прим. Font Lock режим используется для подсветки текста.
+В режимах для языков программирования он подсвечивает переменные,
+комментарии, строки константы и т.д.
+В оригинале используется термин fontification, в переводи
+это будет переводится как подсветка.
 
-  Font Lock mode finds text to highlight in two ways: through
-syntactic parsing based on the syntax table, and through searching
-(usually for regular expressions).  Syntactic fontification happens
-first; it finds comments and string constants and highlights them.
-Search-based fontification happens second.
+  @dfn{Font Lock mode} локальный для буфера дополнительный режим
+который автоматически устанавливает свойство @code{face} для
+некоторых частей буфера в зависимости от их синтаксической роли.
+При сами части зависят от основного режима. Большинство
+основных режимов задает синтаксис, для этого. Данная
+секция описывает как настроить Font Lock для
+основного режима.
+
+  Font Lock находит текст для выделения двумя способами:
+через разбор синтаксиса на основе таблицы синтаксиса, и
+через поиск (обычно по регулярным выражениям).
+
+Сначала выполняется подсветка по синтаксису (так
+можно подсветить комментарии, строковые константы);
+затем выполняется подсветка с использование поиска.
 
 @menu
-* Font Lock Basics::            Overview of customizing Font Lock.
-* Search-based Fontification::  Fontification based on regexps.
-* Customizing Keywords::        Customizing search-based fontification.
-* Other Font Lock Variables::   Additional customization facilities.
-* Levels of Font Lock::         Each mode can define alternative levels
-                                  so that the user can select more or less.
-* Precalculated Fontification::  How Lisp programs that produce the buffer
-                                  contents can also specify how to fontify it.
-* Faces for Font Lock::         Special faces specifically for Font Lock.
-* Syntactic Font Lock::         Fontification based on syntax tables.
-* Multiline Font Lock::         How to coerce Font Lock into properly
-                                  highlighting multiline constructs.
+* Font Lock Basics::            Обзор настройки Font Lock.
+* Search-based Fontification::  Подсветка по регулярным выражениям.
+* Customizing Keywords::        Настройки подсветки по поиску.
+* Other Font Lock Variables::   Дополнительные возможности настройки.
+* Levels of Font Lock::         Каждый режим может задать дополнительные
+                                уровни, а пользователь может выбрать
+                                больше или меньше.
+* Precalculated Fontification::  Как Lisp программы генерирующие содержимое буфера
+                                 могут определить подсветку для них.
+* Faces for Font Lock::         Шрифты специально для Font Lock.
+* Syntactic Font Lock::         Подсветка основанная на таблицах синтаксиса.
+* Multiline Font Lock::         Как включить подсветку Font Lock для многострочных
+                                конструкций.
 @end menu
 
 @node Font Lock Basics
 @subsection Font Lock Basics
 
-  The Font Lock functionality is based on several basic functions.
-Each of these calls the function specified by the corresponding
-variable.  This indirection allows major and minor modes to modify the
-way fontification works in the buffers of that mode, and even use the
-Font Lock mechanisms for features that have nothing to do with
-fontification.  (This is why the description below says ``should''
-when it describes what the functions do: the mode can customize the
-values of the corresponding variables to do something entirely
-different.)  The variables mentioned below are described in @ref{Other
+Основы подсветки.
+
+  Функционал Font Lock основан на нескольких базовых функциях.
+Каждая из них вызывает функцию определенную соответствующей
+переменной. Такая непрямолинейность позволяет основным и дополнительным
+режимам изменять работу способа подсветки в буфере с соответствующим
+режимом, или даже использовать механизмы Font Lock там где
+подсветка не нужна. (Поэтому ниже в описании функций
+говорится что они ``должны'' делать, так как режим может их
+изменить на что-то другое).
+Перечисленные ниже переменные описаны в @ref{Other
 Font Lock Variables}.
 
 @ftable @code
 @item font-lock-fontify-buffer
-This function should fontify the current buffer's accessible portion,
-by calling the function specified by
+Данная функция должна сделать подсветку доступной части буфера
+путем вызова функции определенной
 @code{font-lock-fontify-buffer-function}.
 
 @item font-lock-unfontify-buffer
-Used when turning Font Lock off to remove the fontification.  Calls
-the function specified by @code{font-lock-unfontify-buffer-function}.
+Если Font Lock включен то функция выключает подсветку (Font Lock).
+Вызывается функция  @code{font-lock-unfontify-buffer-function}.
 
 @item font-lock-fontify-region beg end &optional loudly
-Should fontify the region between @var{beg} and @var{end}.  If
-@var{loudly} is non-@code{nil}, should display status messages while
-fontifying.  Calls the function specified by
+Функция должна сделать подсветку для региона между
+@var{beg} и @var{end}. Если @var{loudly} не-@code{nil},
+должно отображаться сообщения статуса пока выполняется
+подсветка. Вызывается функция определенная
 @code{font-lock-fontify-region-function}.
 
 @item font-lock-unfontify-region beg end
-Should remove fontification from the region between @var{beg} and
-@var{end}.  Calls the function specified by
+Функция должна удалить подсветку региона между @var{beg} и
+@var{end} Вызывается функция заданная переменной
 @code{font-lock-unfontify-region-function}.
 
 @item font-lock-flush &optional beg end
-This function should mark the fontification of the region between
-@var{beg} and @var{end} as outdated.  If not specified or @code{nil},
-@var{beg} and @var{end} default to the beginning and end of the
-buffer's accessible portion.  Calls the function specified by
-@code{font-lock-flush-function}.
+Функция должна пометить подсветку региона между
+@var{beg} и @var{end} как устаревшую. Если
+@var{beg} и @var{end} не заданы или @code{nil},
+то помечается вся доступная область буфера. Вызывается
+функция заданная переменной @code{font-lock-flush-function}.
 
 @item font-lock-ensure &optional beg end
-This function should make sure the region between @var{beg} and
-@var{end} has been fontified.  The optional arguments @var{beg} and
-@var{end} default to the beginning and the end of the buffer's
-accessible portion.  Calls the function specified by
+Функция должна удостоверится что регион @var{beg}, @var{end}
+подсвечен. Если @var{beg}, @var{end} не заданы
+или @code{nil}, то рассматривается вся доступная область буфера.
+Вызывается функция определенная переменой
 @code{font-lock-ensure-function}.
 @end ftable
 
-  There are several variables that control how Font Lock mode highlights
-text.  But major modes should not set any of these variables directly.
-Instead, they should set @code{font-lock-defaults} as a buffer-local
-variable.  The value assigned to this variable is used, if and when Font
-Lock mode is enabled, to set all the other variables.
+  Несколько переменных влияют на то как Font Lock выполняет подсветку.
+Но основные режимы не должны устанавливать никакие из этих
+переменных напрямую, вместо этого они должны установить
+@code{font-lock-defaults} как локальную для буфера переменную.
+Значение этой переменой используется для установки всех
+других переменных Font Lock режима.
 
 @defvar font-lock-defaults
-This variable is set by modes to specify how to fontify text in that
-mode.  It automatically becomes buffer-local when set.  If its value
-is @code{nil}, Font Lock mode does no highlighting, and you can use
-the @samp{Faces} menu (under @samp{Edit} and then @samp{Text
-Properties} in the menu bar) to assign faces explicitly to text in the
-buffer.
+Переменная устанавливается режимами для настройки подсветки
+текста в этих режимах. Переменная автоматически становится локальной
+для буфера при задании значения. Если значение @code{nil}, то
+Font Lock ничего не подсвечивает, и можно использовать
+меню @samp{Faces} (Шрифты) (@samp{Edit}->@samp{Text
+Properties}) (Редактировать->Свойства текста) для явного задания
+шрифта текста в буфере.
 
-If non-@code{nil}, the value should look like this:
+Если не-@code{nil}, значение должно выглядеть как:
 
 @example
 (@var{keywords} [@var{keywords-only} [@var{case-fold}
  [@var{syntax-alist} @var{other-vars}@dots{}]]])
 @end example
 
-The first element, @var{keywords}, indirectly specifies the value of
-@code{font-lock-keywords} which directs search-based fontification.
-It can be a symbol, a variable or a function whose value is the list
-to use for @code{font-lock-keywords}.  It can also be a list of
-several such symbols, one for each possible level of fontification.
-The first symbol specifies the @samp{mode default} level of
-fontification, the next symbol level 1 fontification, the next level 2,
-and so on.  The @samp{mode default} level is normally the same as level
-1.  It is used when @code{font-lock-maximum-decoration} has a @code{nil}
-value.  @xref{Levels of Font Lock}.
+Первый элемент, @var{keywords}, неявно задает значение
+@code{font-lock-keywords} которые направляют подсветку по поиску.
+Это может быть символ (symbol), переменная или функция, значение
+которое список используемый в @code{font-lock-keywords}.
+Так же она может списком из нескольких таких символов, под 1 на каждый
+уровень подсветки. Первый символ определяет уровень @samp{mode default}
+подсветки, следующий 1 уровень, следующий 2 и т.д. 
+@samp{mode default} как правило такой же как и уровень 1.
+Он используется когда @code{font-lock-maximum-decoration}
+имеет значение @code{nil}. @xref{Levels of Font Lock}.
 
-The second element, @var{keywords-only}, specifies the value of the
-variable @code{font-lock-keywords-only}.  If this is omitted or
-@code{nil}, syntactic fontification (of strings and comments) is also
-performed.  If this is non-@code{nil}, syntactic fontification is not
-performed.  @xref{Syntactic Font Lock}.
+Второй элемент @var{keywords-only}, определяет значение переменной
+@code{font-lock-keywords-only}. Если он опущен или @code{nil}
+подсветка на основе синтаксиса (строки и комментарии) выполняется.
+Если не-@code{nil}, то не выполняется. @xref{Syntactic Font Lock}.
 
-The third element, @var{case-fold}, specifies the value of
-@code{font-lock-keywords-case-fold-search}.  If it is non-@code{nil},
-Font Lock mode ignores case during search-based fontification.
+Третий элемент @var{case-fold}, определяет значение
+@code{font-lock-keywords-case-fold-search}, если он
+не-@code{nil}, Font Lock режим игнорирует регистр при
+подсветки основанной на поиске.
 
-If the fourth element, @var{syntax-alist}, is non-@code{nil}, it should
-be a list of cons cells of the form @code{(@var{char-or-string}
-. @var{string})}.  These are used to set up a syntax table for syntactic
-fontification; the resulting syntax table is stored in
-@code{font-lock-syntax-table}.  If @var{syntax-alist} is omitted or
-@code{nil}, syntactic fontification uses the syntax table returned by
-the @code{syntax-table} function.  @xref{Syntax Table Functions}.
+Если четвертый элемент, @var{syntax-alist}, не-@code{nil},
+он должен быть списком cons ячеек в форме
+@code{(@var{char-or-string} . @var{string})}. Они используются
+для установки синтаксической таблицы, для подсветки основанной
+на синтаксисе; результирующая таблица синтаксиса загружается
+в @code{font-lock-syntax-table}. Если @var{syntax-alist} пропущен
+или @code{nil}, подсветка основанная на синтаксисе использует
+синтаксическую таблицу возвращаемую функцией @code{syntax-table}.
+@xref{Syntax Table Functions}.
 
-All the remaining elements (if any) are collectively called
-@var{other-vars}.  Each of these elements should have the form
-@code{(@var{variable} . @var{value})}---which means, make
-@var{variable} buffer-local and then set it to @var{value}.  You can
-use these @var{other-vars} to set other variables that affect
-fontification, aside from those you can control with the first five
-elements.  @xref{Other Font Lock Variables}.
+Все остальные элементы (если есть) имеют общее название
+@var{other-vars}. Каждый из этих элементов должен иметь
+форму @code{(@var{variable} . @var{value})} -- которая означает,
+что нужно сделать переменную @var{variable} локальной для буфера
+и установить в значение @var{value}. Можно использовать
+@var{other-vars} для установки других переменных влияющих
+на подсветку, кроме рассмотренных выше 5 переменных.
+Each of these elements should have the form
+@xref{Other Font Lock Variables}.
 @end defvar
 
-  If your mode fontifies text explicitly by adding
-@code{font-lock-face} properties, it can specify @code{(nil t)} for
-@code{font-lock-defaults} to turn off all automatic fontification.
-However, this is not required; it is possible to fontify some things
-using @code{font-lock-face} properties and set up automatic
-fontification for other parts of the text.
+  Если подсветка в режиме делается путем добавления
+@code{font-lock-face} свойств, нужно установить @code{font-lock-defaults}
+в @code{(nil t)} для выключения автоматической подсветки.
+Но, это не обязательно; возможна совмещать подсветку некоторых вещей
+с использованием свойств @code{font-lock-face} с автоматической
+подсветки других частей текста.
 
 @node Search-based Fontification
 @subsection Search-based Fontification
 
-  The variable which directly controls search-based fontification is
-@code{font-lock-keywords}, which is typically specified via the
-@var{keywords} element in @code{font-lock-defaults}.
+Подсветка основанная на поиске.
+
+  Переменная @code{font-lock-keywords} напрямую управляет подсветкой
+основанной на поиске, которая как правило определяется через
+@var{keywords} элемент в @code{font-lock-defaults}.
 
 @defvar font-lock-keywords
-The value of this variable is a list of the keywords to highlight.  Lisp
-programs should not set this variable directly.  Normally, the value is
-automatically set by Font Lock mode, using the @var{keywords} element in
-@code{font-lock-defaults}.  The value can also be altered using the
-functions @code{font-lock-add-keywords} and
+Значение этой переменной это список ключевых слов для подсветки. Lisp
+программы не должны устанавливать эту переменную напрямую. Как правило,
+значение автоматически устанавливается режимом Font Lock, используя
+@var{keywords} элемент в @code{font-lock-defaults}. Значение может
+быть изменено с использованием функций @code{font-lock-add-keywords} и
 @code{font-lock-remove-keywords} (@pxref{Customizing Keywords}).
 @end defvar
 
-  Each element of @code{font-lock-keywords} specifies how to find
-certain cases of text, and how to highlight those cases.  Font Lock mode
-processes the elements of @code{font-lock-keywords} one by one, and for
-each element, it finds and handles all matches.  Ordinarily, once
-part of the text has been fontified already, this cannot be overridden
-by a subsequent match in the same text; but you can specify different
-behavior using the @var{override} element of a @var{subexp-highlighter}.
+  Каждый элемент @code{font-lock-keywords} определяет как найти
+определенный текстовые конструкции, и как подсветить эти конструкции.
+Font Lock обрабатывает элементы @code{font-lock-keywords} по одному, и для
+каждого находятся и обрабатываются все совпадения. Как правило, если
+какая-то часть была подсвечена, ее подсветка не перезаписывается,
+последующими совпадениями (то есть каждый элемент текста относится к 1
+элементу поиска); но можно определить и другое поведение
+с использованием @var{override} элемента a @var{subexp-highlighter}.
 
-  Each element of @code{font-lock-keywords} should have one of these
-forms:
+Каждый элемент @code{font-lock-keywords} должен представляться одной
+из следующих форм:
 
 @table @code
 @item @var{regexp}
-Highlight all matches for @var{regexp} using
-@code{font-lock-keyword-face}.  For example,
+Подсвечиваются все совпадение @var{regexp} шрифтом
+@code{font-lock-keyword-face}.  Например,
 
 @example
 ;; @r{Highlight occurrences of the word @samp{foo}}
@@ -2833,25 +2877,28 @@ Highlight all matches for @var{regexp} using
 "\\<foo\\>"
 @end example
 
-Be careful when composing these regular expressions; a poorly written
-pattern can dramatically slow things down!  The function
-@code{regexp-opt} (@pxref{Regexp Functions}) is useful for calculating
-optimal regular expressions to match several keywords.
+Стоит аккуратно строить такие регулярные выражения; плохо
+написанные шаблоны могут можно сильно замедлить работу
+редактора. Функция @code{regexp-opt} (@pxref{Regexp Functions})
+полезна для полезна для построения регулярного выражения
+совпадающего с несколькими ключевыми словами.
 
 @item @var{function}
-Find text by calling @var{function}, and highlight the matches
-it finds using @code{font-lock-keyword-face}.
+Находит текст путем вызова @var{function}, и подсвечивает
+найденные совпадения шрифтом @code{font-lock-keyword-face}.
 
-When @var{function} is called, it receives one argument, the limit of
-the search; it should begin searching at point, and not search beyond the
-limit.  It should return non-@code{nil} if it succeeds, and set the
-match data to describe the match that was found.  Returning @code{nil}
-indicates failure of the search.
+Когда @var{function}, она получает 1 аргумент, ограничение
+на поиск; она должна начать поиск в текущей точке, не и
+искать дальше ограничения. Функция должна вернуть
+не-@code{nil}, если поиск успешен, и установить результат
+совпадения (не ясно каким именно образом ???, вероятно в результате)
+для описания найденных совпадений. Возвращение @code{nil}
+является сигналом того, что поиск ничего не дал. 
 
-Fontification will call @var{function} repeatedly with the same limit,
-and with point where the previous invocation left it, until
-@var{function} fails.  On failure, @var{function} need not reset point
-in any particular way.
+При выполнении подсветки @var{function} будет вызываться повторно
+с одни и тем же ограничением в точках где закончился предыдущий вызов,
+пока поиск дает результаты. В случае
+неудачи @var{function} не нужно вновь переставлять точку (point, курсор).
 
 @item (@var{matcher} . @var{subexp})
 In this kind of element, @var{matcher} is either a regular
