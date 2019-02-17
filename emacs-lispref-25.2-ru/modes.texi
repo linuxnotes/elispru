@@ -3214,94 +3214,97 @@ Lock режима. Значение по умолчанию
 @end defvar
 
 @defvar font-lock-unfontify-region-function
-Function to use for unfontifying a region.  It should take two
-arguments, the beginning and end of the region.  The default value is
+Функция используется для снятия подсветки с региона. Должна получать 2
+параметр начало и конец регион. Значение по умолчанию
 @code{font-lock-default-unfontify-region}.
 @end defvar
 
 @defvar font-lock-flush-function
-Function to use for declaring that a region's fontification is out of
-date.  It takes two arguments, the beginning and end of the region.
-The default value of this variable is
-@code{font-lock-after-change-function}.
+Функция используется для того, чтобы пометить, что подсветка регион
+устарела. Должна получать 2 параметр начала и конец региона. Значение
+по умолчанию @code{font-lock-after-change-function}.
 @end defvar
 
 @defvar font-lock-ensure-function
-Function to use for making sure a region of the current buffer has
-been fontified.  It is called with two arguments, the beginning and
-end of the region.  The default value of this variable is a function
-that calls @code{font-lock-default-fontify-buffer} if the buffer is
-not fontified; the effect is to make sure the entire accessible
-portion of the buffer is fontified.
+Функция гарантирует что подсветка региона буфера выполнена.
+Должна получать 2 параметра начало и конце региона. Значение
+по умолчанию вызывает @code{font-lock-default-fontify-buffer}
+если подсветки в буфере нет; в результате выполняется
+подсветка доступной части буфера.
 @end defvar
 
 @defun jit-lock-register function &optional contextual
-This function tells Font Lock mode to run the Lisp function
-@var{function} any time it has to fontify or refontify part of the
-current buffer.  It calls @var{function} before calling the default
-fontification functions, and gives it two arguments, @var{start} and
-@var{end}, which specify the region to be fontified or refontified.
+Функция предписывает Font Lock режиму запускать 
+@var{function} всегда когда делается или обновляется подсветка.
+@var{function} вызывается до вызова основной функции подсветки,
+и получает 2 аргумента @var{start} и @var{end} региона, для
+которого выполняется подсветка.
 
-The optional argument @var{contextual}, if non-@code{nil}, forces Font
-Lock mode to always refontify a syntactically relevant part of the
-buffer, and not just the modified lines.  This argument can usually be
-omitted.
+Не обязательный аргумент @var{contextual}, если не-@code{nil},
+предписывает Font Lock режиму всегда обновлять подсветку (основываясь
+на синтаксисе) соответствующей части буфера, а не только измененных
+строк. Аргумент как правило опускается.
 @end defun
 
 @defun jit-lock-unregister function
-If @var{function} was previously registered as a fontification
-function using @code{jit-lock-register}, this function unregisters it.
+Если @var{function} была добавлена с использованием @code{jit-lock-register},
+то эта функция выполняет обратное действие и убирает выполнение @var{function}.
 @end defun
 
 @node Levels of Font Lock
 @subsection Levels of Font Lock
 
-  Some major modes offer three different levels of fontification.  You
-can define multiple levels by using a list of symbols for @var{keywords}
-in @code{font-lock-defaults}.  Each symbol specifies one level of
-fontification; it is up to the user to choose one of these levels,
-normally by setting @code{font-lock-maximum-decoration} (@pxref{Font
-Lock,,, emacs, the GNU Emacs Manual}).  The chosen level's symbol value
-is used to initialize @code{font-lock-keywords}.
+  Уровни Font Lock режима.
 
-  Here are the conventions for how to define the levels of
-fontification:
+  Некоторые основные режимы поддерживают три уровня подсветки. Уровни
+можно определять используя список символов в @var{keywords} в
+@code{font-lock-defaults}. Каждый уровень определяет один уровень
+подсветки; пользователь может выбрать один из уровней задавая
+@code{font-lock-maximum-decoration} (@pxref{Font Lock,,, emacs, the
+GNU Emacs Manual}). Выбранный символ используется для инициализации
+@code{font-lock-keywords}.
+
+  Ниже описаны соглашения по определению уровней подсветки:
 
 @itemize @bullet
 @item
-Level 1: highlight function declarations, file directives (such as include or
-import directives), strings and comments.  The idea is speed, so only
-the most important and top-level components are fontified.
+Уровень 1: (level 1) подсветка определений функций, файловых директив
+(include, import и другие), строки и комментарии.  Данный уровень
+должен быт максимально быстрым, поэтому подсвечиваются только наиболее
+важные компоненты.
 
 @item
-Level 2: in addition to level 1, highlight all language keywords,
-including type names that act like keywords, as well as named constant
-values.  The idea is that all keywords (either syntactic or semantic)
-should be fontified appropriately.
+Уровень 2: (level 2) в дополнение к уровню 1, подсвечиваются все
+ключевые слова языка программирования и значения именованных
+констант. Цель данного режима подсветить ключевые слова
+(синтаксические или семантические).
 
 @item
-Level 3: in addition to level 2, highlight the symbols being defined in
-function and variable declarations, and all builtin function names,
-wherever they appear.
+Уровень 3: (level 3) в дополнение к уровню 2, подсвечивает символы
+которые определены в определениях функций и переменных, и имена всех
+встроенных функций.
 @end itemize
 
 @node Precalculated Fontification
 @subsection Precalculated Fontification
 
-  Some major modes such as @code{list-buffers} and @code{occur}
-construct the buffer text programmatically.  The easiest way for them
-to support Font Lock mode is to specify the faces of text when they
-insert the text in the buffer.
+  Предварительно посчитанная подсветка.
 
-  The way to do this is to specify the faces in the text with the
-special text property @code{font-lock-face} (@pxref{Special
-Properties}).  When Font Lock mode is enabled, this property controls
-the display, just like the @code{face} property.  When Font Lock mode
-is disabled, @code{font-lock-face} has no effect on the display.
+  Некоторые основные режимы, такие как @code{list-buffers} и
+@code{occur} создают текст буфера программно. И в них проще
+поддерживать Font Lock режим, если определять шрифты текста в момент
+вставки текста в буфер.
 
-  It is ok for a mode to use @code{font-lock-face} for some text and
-also use the normal Font Lock machinery.  But if the mode does not use
-the normal Font Lock machinery, it should not set the variable
+  Это можно сделать путем определения шрифтов в тексте используя
+свойство текста  @code{font-lock-face} (@pxref{Special
+Properties}). Когда режим Font Lock активен, данное свойство
+задает подсветку(отображение), как свойство @code{face}, если же
+режим Font Lock отключен свойство @code{font-lock-face} никак
+не влияет на отображение.
+
+  В режиме можно использовать @code{font-lock-face} для части текста
+совмещая с использованием обычных механизмов Font Lock режима. Но если
+режим не использует обычные механизмы, он не должен задавать
 @code{font-lock-defaults}.
 
 @node Faces for Font Lock
@@ -3309,190 +3312,206 @@ the normal Font Lock machinery, it should not set the variable
 @cindex faces for font lock
 @cindex font lock faces
 
-  Font Lock mode can highlight using any face, but Emacs defines several
-faces specifically for Font Lock to use to highlight text.  These
-@dfn{Font Lock faces} are listed below.  They can also be used by major
-modes for syntactic highlighting outside of Font Lock mode (@pxref{Major
-Mode Conventions}).
+  Шрифты для Font Lock режима.
 
-  Each of these symbols is both a face name, and a variable whose
-default value is the symbol itself.  Thus, the default value of
-@code{font-lock-comment-face} is @code{font-lock-comment-face}.
+  Font Lock режим может выполнять подсветку используя любые шрифты, но
+в Emacs определено несколько шрифтов специально для Font Lock. Эти
+шрифты @dfn{Font Lock faces} рассматриваются ниже. Данные шрифты могут
+использоваться основными режимами для синтаксической подсветки
+(выделения) вне Font Lock режима (@pxref{Major Mode Conventions}).
 
-  The faces are listed with descriptions of their typical usage, and in
-order of greater to lesser prominence.  If a mode's syntactic
-categories do not fit well with the usage descriptions, the faces can be
-assigned using the ordering as a guide.
+ Каждый из рассматриваемых символов является именем шрифта и именем
+переменной значением по умолчанию которой является сам символ.  Таким
+образом, значением по умолчанию @code{font-lock-comment-face} является
+@code{font-lock-comment-face}.
+
+  Шрифты перечислены с описанием их назначения, и упорядочены в
+порядке их заметности (prominence) от большего к меньшему. Если
+синтаксические категории в режиме не соответствуют описанным
+назначениям, можно использовать описанный порядок в качестве
+руководства при назначении шрифтов.
 
 @table @code
 @item font-lock-warning-face
 @vindex font-lock-warning-face
-for a construct that is peculiar, or that greatly changes the meaning of
-other text, like @samp{;;;###autoload} in Emacs Lisp and @samp{#error}
-in C.
+используется для необычных конструкций, или таких которые сильно
+изменяют значение другого текста, такие как @samp{;;;###autoload} в
+Emacs Lisp и @samp{#error} в C.
 
 @item font-lock-function-name-face
 @vindex font-lock-function-name-face
-for the name of a function being defined or declared.
+для определений и объявлений функций.
 
 @item font-lock-variable-name-face
 @vindex font-lock-variable-name-face
-for the name of a variable being defined or declared.
+для определений и объявлений переменных.
 
 @item font-lock-keyword-face
 @vindex font-lock-keyword-face
-for a keyword with special syntactic significance, like @samp{for} and
-@samp{if} in C.
+для ключевых слов имеющих синтаксическое значение, например @samp{for} и
+@samp{if} в C.
 
 @item font-lock-comment-face
 @vindex font-lock-comment-face
-for comments.
+для комментариев.
 
 @item font-lock-comment-delimiter-face
 @vindex font-lock-comment-delimiter-face
-for comments delimiters, like @samp{/*} and @samp{*/} in C@.  On most
-terminals, this inherits from @code{font-lock-comment-face}.
+для разделителей комментариев, например @samp{/*} и @samp{*/} в C@. Как правило
+наследуется от @code{font-lock-comment-face}.
 
 @item font-lock-type-face
 @vindex font-lock-type-face
-for the names of user-defined data types.
+для имен пользовательских типов.
 
 @item font-lock-constant-face
 @vindex font-lock-constant-face
-for the names of constants, like @samp{NULL} in C.
+для имен констант, например @samp{NULL} в C.
 
 @item font-lock-builtin-face
 @vindex font-lock-builtin-face
-for the names of built-in functions.
+для имен встроенных функций.
 
 @item font-lock-preprocessor-face
 @vindex font-lock-preprocessor-face
-for preprocessor commands.  This inherits, by default, from
+для команд препроцессора. Как правило, наследуется от
 @code{font-lock-builtin-face}.
 
 @item font-lock-string-face
 @vindex font-lock-string-face
-for string constants.
+для строковых констант.
 
 @item font-lock-doc-face
 @vindex font-lock-doc-face
-for documentation strings in the code.  This inherits, by default, from
+для строк документации в коде. Как правило наследуется от
 @code{font-lock-string-face}.
 
 @item font-lock-negation-char-face
 @vindex font-lock-negation-char-face
-for easily-overlooked negation characters.
+для легко пропускаемых (видимо имеется ввиду не заметных)
+символов отрицания.
 @end table
 
 @node Syntactic Font Lock
 @subsection Syntactic Font Lock
 @cindex syntactic font lock
 
-Syntactic fontification uses a syntax table (@pxref{Syntax Tables}) to
-find and highlight syntactically relevant text.  If enabled, it runs
-prior to search-based fontification.  The variable
-@code{font-lock-syntactic-face-function}, documented below, determines
-which syntactic constructs to highlight.  There are several variables
-that affect syntactic fontification; you should set them by means of
+ Подсветка основанная на синтаксисе (далее синтаксическая подсветка).
+
+ Подсветка по синтаксису использует таблицу синтаксиса (@pxref{Syntax
+Tables}) для нахождения и подсветки синтаксически значимого
+текста. Если такая подсветка активна, она выполняется после подсветки
+поиском. Переменная @code{font-lock-syntactic-face-function} описанная
+ниже, определяет синтаксические конструкции для
+подсветки. Предусмотрено несколько переменных для управления
+синтаксической подсветкой. Устанавливать их нужно с использованием
 @code{font-lock-defaults} (@pxref{Font Lock Basics}).
 
-  Whenever Font Lock mode performs syntactic fontification on a stretch
-of text, it first calls the function specified by
-@code{syntax-propertize-function}.  Major modes can use this to apply
-@code{syntax-table} text properties to override the buffer's syntax
-table in special cases.  @xref{Syntax Properties}.
+
+  Когда, Font Lock выполняет синтаксическую подсветку части текста,
+первым делом вызывается функция задаваемая @code{syntax-propertize-function}.
+Основные режимы могут использовать ее для применения 
+@code{syntax-table}, чтобы переписать таблицу синтаксиса буфера,
+если необходимо.  @xref{Syntax Properties}.
 
 @defvar font-lock-keywords-only
-If the value of this variable is non-@code{nil}, Font Lock does not do
-syntactic fontification, only search-based fontification based on
-@code{font-lock-keywords}.  It is normally set by Font Lock mode based
-on the @var{keywords-only} element in @code{font-lock-defaults}.
+Если значение переменной не-@code{nil}, Font Lock не выполняет
+синтаксическую подсветку, только подсветку основанную на поиске по
+@code{font-lock-keywords}. Обычно значение переменной устанавливается
+Font Lock режимом по элементу @var{keywords-only} из
+@code{font-lock-defaults}.
 @end defvar
 
 @defvar font-lock-syntax-table
-This variable holds the syntax table to use for fontification of
-comments and strings.  It is normally set by Font Lock mode based on the
-@var{syntax-alist} element in @code{font-lock-defaults}.  If this value
-is @code{nil}, syntactic fontification uses the buffer's syntax table
-(the value returned by the function @code{syntax-table}; @pxref{Syntax
+Переменная хранит таблицу синтаксиса, используемую для подсветки
+комментариев и строк. Обычно значение переменной устанавливается на
+основе элемента @var{syntax-alist} из @code{font-lock-defaults}. Если
+значение @code{nil}, синтаксическая подсветка использует синтаксическую
+таблицу буфера (значение возвращается функцией @code{syntax-table}; @pxref{Syntax
 Table Functions}).
 @end defvar
 
 @defvar font-lock-syntactic-face-function
-If this variable is non-@code{nil}, it should be a function to determine
-which face to use for a given syntactic element (a string or a comment).
-The value is normally set through an @var{other-vars} element in
+Если значение не-@code{nil}, то оно должно быть функцией которая
+определяет какой шрифт нужно использовать для данного элемента (может быть строка
+или комментарий). Обычно значение устанавливается через  @var{other-vars} из
 @code{font-lock-defaults}.
 
-The function is called with one argument, the parse state at point
-returned by @code{parse-partial-sexp}, and should return a face.  The
-default value returns @code{font-lock-comment-face} for comments and
-@code{font-lock-string-face} for strings (@pxref{Faces for Font Lock}).
+Функция вызывается с 1 аргументов, состоянием разбора в точке,
+возвращаемого @code{parse-partial-sexp}, и должна возвращать шрифт.
+По умолчанию используются @code{font-lock-comment-face} fдля
+комментариев @code{font-lock-string-face} для строк (@pxref{Faces for
+Font Lock}).
 @end defvar
 
 @node Multiline Font Lock
 @subsection Multiline Font Lock Constructs
 @cindex multiline font lock
 
-  Normally, elements of @code{font-lock-keywords} should not match
-across multiple lines; that doesn't work reliably, because Font Lock
-usually scans just part of the buffer, and it can miss a multi-line
-construct that crosses the line boundary where the scan starts.  (The
-scan normally starts at the beginning of a line.)
+  Подсветка много-строчных конструкций.
+  
+  Как правило, элементы @code{font-lock-keywords}, не должны выдавать
+совпадений с переводом строки; они работают не корректно, потому
+что Font Lock обычно обрабатывает только часть буфера, и может пропустить
+много-строчную конструкцию которая находится на пересечении границ
+сканирования.  (Как правило сканирование начинается с начала строки).
 
-  Making elements that match multiline constructs work properly has
-two aspects: correct @emph{identification} and correct
-@emph{rehighlighting}.  The first means that Font Lock finds all
-multiline constructs.  The second means that Font Lock will correctly
-rehighlight all the relevant text when a multiline construct is
-changed---for example, if some of the text that was previously part of
-a multiline construct ceases to be part of it.  The two aspects are
-closely related, and often getting one of them to work will appear to
-make the other also work.  However, for reliable results you must
-attend explicitly to both aspects.
+  Создание элементов, которые совпадают с много-строчными конструкция
+и работают корректно требует: 1. правильных @emph{identification} (определения)
+и 2. правильного @emph{rehighlighting} (обновления подсветки).
+Первое требует, чтобы Font Lock находил все много-строчные конструкции.
+Второе требует, чтобы Font Lock верно обновлял подсветку всего текста
+имеющего отношение к конструкции, при изменении таких конструкций ---
+например, если часть текста, которая была частью много-строчной конструкции
+перестал быть ее частью. Эти два аспекта сильно связаны, и как правило
+реализация одного из них, приводит к работе второго. Но, нужно проверить
+оба.
 
-  There are three ways to ensure correct identification of multiline
-constructs:
+  Есть 3 способа, удостоверится в корректной идентификации много-строчных
+конструкций:
 
 @itemize
 @item
-Add a function to @code{font-lock-extend-region-functions} that does
-the @emph{identification} and extends the scan so that the scanned
-text never starts or ends in the middle of a multiline construct.
+Добавить функцию в  @code{font-lock-extend-region-functions} которая
+выполнит @emph{identification} (идентификацию) и расширит область сканирования
+так, чтобы сканируемый текст, никогда не начинался или закачивался внутри
+много-строчной конструкции.
 @item
-Use the @code{font-lock-fontify-region-function} hook similarly to
-extend the scan so that the scanned text never starts or ends in the
-middle of a multiline construct.
+Использовать перехватчик @code{font-lock-fontify-region-function}
+для расширения области сканирования, аналогично предыдущему пункту.
 @item
-Somehow identify the multiline construct right when it gets inserted
-into the buffer (or at any point after that but before font-lock
-tries to highlight it), and mark it with a @code{font-lock-multiline}
-which will instruct font-lock not to start or end the scan in the
-middle of the construct.
+Каким-то образом выполнять идентификацию много строчной конструкции
+при добавлении в буфер (до того как font-lock попробует выполнить его
+подсветку), и помечать ее @code{font-lock-multiline}, который будет
+указывать font-lock, что не нужно начинать или останавливать сканирование
+внутри этой конструкции.
 @end itemize
 
-  There are three ways to do rehighlighting of multiline constructs:
+  Есть 3 способа, обновить подсветку много-строчных конструкций:
 
 @itemize
 @item
-Place a @code{font-lock-multiline} property on the construct.  This
-will rehighlight the whole construct if any part of it is changed.  In
-some cases you can do this automatically by setting the
-@code{font-lock-multiline} variable, which see.
+Поместить @code{font-lock-multiline} свойство на конструкцию. Что
+приведет к обновлению подсветки всей конструкции если любая ее часть
+изменится. В некоторых случаях это можно сделать автоматически,
+установкой переменной @code{font-lock-multiline},  (which see ??)
 @item
-Make sure @code{jit-lock-contextually} is set and rely on it doing its
-job.  This will only rehighlight the part of the construct that
-follows the actual change, and will do it after a short delay.
-This only works if the highlighting of the various parts of your
-multiline construct never depends on text in subsequent lines.
-Since @code{jit-lock-contextually} is activated by default, this can
-be an attractive solution.
+Проверить, что @code{jit-lock-contextually} установлена и доверить
+ей такую работу. Она будет выполнять обновление части конструкции
+которая связана с произведенными изменениями, и выполняется с
+небольшой задержкой. Такой способ работает, только если
+подсветка разных частей много-строчной конструкции не зависит
+от следующих строк. Так как @code{jit-lock-contextually} активно
+по умолчанию, данное решение может быть удобным.
 @item
-Place a @code{jit-lock-defer-multiline} property on the construct.
-This works only if @code{jit-lock-contextually} is used, and with the
-same delay before rehighlighting, but like @code{font-lock-multiline},
-it also handles the case where highlighting depends on
-subsequent lines.
+Поместить @code{jit-lock-defer-multiline} свойство на конструкцию.
+Данный способ работает только если используется @code{jit-lock-contextually}
+и с некоторой задержкой перед обновлением подсветки, но как и
+@code{font-lock-multiline} он работает в ситуации когда подсветка зависит от
+следующих строк.
+
+(Под следующими строками возможно подразумеваются внутренние строки
+конструкции).
 @end itemize
 
 @menu
