@@ -4,82 +4,100 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Lisp Data Types
-@chapter Lisp Data Types
+@chapter Типы данных в Lisp
 @cindex object
 @cindex Lisp object
 @cindex type
 @cindex data type
 
-  A Lisp @dfn{object} is a piece of data used and manipulated by Lisp
-programs.  For our purposes, a @dfn{type} or @dfn{data type} is a set of
-possible objects.
+  Lisp @dfn{объект} (@dfn{object}) это данные которые
+используются и изменяются Lisp программами. Мы будем
+рассматривать @dfn{type} или @dfn{data type} как
+множество возможных объектов. (То есть тип определят
+набор значение которые может принимать объект данного типа).
 
-  Every object belongs to at least one type.  Objects of the same type
-have similar structures and may usually be used in the same contexts.
-Types can overlap, and objects can belong to two or more types.
-Consequently, we can ask whether an object belongs to a particular type,
-but not for @emph{the} type of an object.
+  Каждый объект принадлежит хотя бы к 1 типу. Объекты одного
+типа похожи по структуре и как правило могут использоваться в схожих
+контекстах. Типы могут пересекаться, и объекты могут
+относится к двум и более типам. В результате чего можно
+проверить относится ли объект к определенному типу, но
+не узнать (какой именно) тип объекта. (Прим. имеется
+ввиду, что нельзя узнать один тип объекта).
 
 @cindex primitive type
-  A few fundamental object types are built into Emacs.  These, from
-which all other types are constructed, are called @dfn{primitive types}.
-Each object belongs to one and only one primitive type.  These types
-include @dfn{integer}, @dfn{float}, @dfn{cons}, @dfn{symbol},
-@dfn{string}, @dfn{vector}, @dfn{hash-table}, @dfn{subr}, and
-@dfn{byte-code function}, plus several special types, such as
-@dfn{buffer}, that are related to editing.  (@xref{Editing Types}.)
 
-  Each primitive type has a corresponding Lisp function that checks
-whether an object is a member of that type.
+  Ряд фундаментальных (базовых) типов уже встроены в Emacs. Такие типа,
+на основе которых строятся все другие типы, называются @dfn{примитивными типами}
+(@dfn{primitive types}). Каждый объект относится только к 1 примитивному типу.
+Это типы: @dfn{integer}, @dfn{float}, @dfn{cons}, @dfn{symbol},
+@dfn{string}, @dfn{vector}, @dfn{hash-table}, @dfn{subr}, и
+@dfn{byte-code function}, и еще несколько специальных типа,
+таких как @dfn{buffer}, которые используются при редактировании.
+(целые, числа с плавающей точкой, cons-ячейки, ...., буфер)
+(@xref{Editing Types}.)
 
-  Lisp is unlike many other languages in that its objects are
-@dfn{self-typing}: the primitive type of each object is implicit in
-the object itself.  For example, if an object is a vector, nothing can
-treat it as a number; Lisp knows it is a vector, not a number.
+  Для каждого из примитивных типов есть Lisp функция, которая проверяет
+относится ли заданный объект к этому типу.
 
-  In most languages, the programmer must declare the data type of each
-variable, and the type is known by the compiler but not represented in
-the data.  Such type declarations do not exist in Emacs Lisp.  A Lisp
-variable can have any type of value, and it remembers whatever value
-you store in it, type and all.  (Actually, a small number of Emacs
-Lisp variables can only take on values of a certain type.
+  Lisp в отличие от многих других языков в которых объекты
+являются само-определяющимися @dfn{self-typing}: примитивный тип
+каждого объекта неявно является частью объекта. Например, если
+объект вектор, то он нигде не может трактоваться как число;
+Lisp всегда знает, что это вектор, а не число.
+
+  Как правило программист должен определить тип данных для каждой переменной,
+таким образом компилятор будет знать тип переменной, но в данных
+тип представлен не будет. В Emacs Lisp нет такого задания типов. Lisp
+переменная может содержать значение любого тип, и в ней хранится
+информация о ток, какого типа переменная в ней хранится. (На практике,
+некоторые Emacs Lisp переменные могут хранить значение только определенных
+типов (прим. видимо которые соответствуют переменным из C)).
 @xref{Variables with Restricted Values}.)
 
-  This chapter describes the purpose, printed representation, and read
-syntax of each of the standard types in GNU Emacs Lisp.  Details on how
-to use these types can be found in later chapters.
+  В данной главе описывается назначение, печатная форма, и синтаксис
+чтения для каждого из стандартных типов в GNU Emacs Lisp. Детали
+использования будут рассмотрены в следующих главах.
+
+(Прим. Read syntax в оригинале будем переводить как синтаксис чтения,
+ подразумевая, что это запись которая может быть считана
+ Lisp и выполнена или преобразована в объекты данных
+ Может быть лучше использовать форма чтения).
 
 @menu
-* Printed Representation::      How Lisp objects are represented as text.
-* Comments::                    Comments and their formatting conventions.
-* Programming Types::           Types found in all Lisp systems.
-* Editing Types::               Types specific to Emacs.
-* Circular Objects::            Read syntax for circular structure.
-* Type Predicates::             Tests related to types.
-* Equality Predicates::         Tests of equality between any two objects.
+* Printed Representation::      Как Lisp объекты представлены в текстовом виде.
+* Comments::                    Комментарии и соглашения по их форматированию.
+* Programming Types::           Типы присутствующие во всех Lisp.
+* Editing Types::               Типы являющиеся уникальными в Emacs.
+* Circular Objects::            Запись циклических структур.
+* Type Predicates::             Проверки типов.
+* Equality Predicates::         Сравнение произвольных объектов.
 @end menu
 
 @node Printed Representation
-@section Printed Representation and Read Syntax
+@section Печатная форма и синтаксис чтения.
 @cindex printed representation
 @cindex read syntax
 
-  The @dfn{printed representation} of an object is the format of the
-output generated by the Lisp printer (the function @code{prin1}) for
-that object.  Every data type has a unique printed representation.
-The @dfn{read syntax} of an object is the format of the input accepted
-by the Lisp reader (the function @code{read}) for that object.  This
-is not necessarily unique; many kinds of object have more than one
-syntax.  @xref{Read and Print}.
+  Печатная форма.
+
+  @dfn{Печатная форма} (@dfn{printed representation}) объект
+это формат вывода которые генерируется печатающей Lisp машиной (функция @code{prin1})
+для заданного объекта. Каждый тип данных имеет уникальную печатную
+форму. @dfn{Синтаксис чтения} (@dfn{read syntax}) объекта это формат
+ввода, которые может быть принят Lisp считывателем (парсером) (функция
+@code{read}) для объекта. Синтаксис чтения не уникальный, объекты
+могут иметь несколько синтаксисов чтения (форм чтения).
 
 @cindex hash notation
-  In most cases, an object's printed representation is also a read
-syntax for the object.  However, some types have no read syntax, since
-it does not make sense to enter objects of these types as constants in
-a Lisp program.  These objects are printed in @dfn{hash notation},
-which consists of the characters @samp{#<}, a descriptive string
-(typically the type name followed by the name of the object), and a
-closing @samp{>}.  For example:
+хешированая нотация
+
+  Часто печатная форма, является так же формой для чтения этого
+объекта. Но, некоторые типы не имеют формы чтения, поэтому было
+бы не разумно выводить такие объекты на печать как константы
+в Lisp программе. Такие объекты печатаются в @dfn{хеш нотации}
+@dfn{hash notation}, которая состоит из @samp{#<}, строки описания
+объекта (как правило имя объекта и имя типа), и закрывающей @samp{>}.
+Например:
 
 @example
 (current-buffer)
@@ -87,84 +105,86 @@ closing @samp{>}.  For example:
 @end example
 
 @noindent
-Hash notation cannot be read at all, so the Lisp reader signals the
-error @code{invalid-read-syntax} whenever it encounters @samp{#<}.
+Хеш нотация не может быть считана, поэтому Lisp парсер сообщает
+об ошибке @code{invalid-read-syntax}, когда встречает @samp{#<}.
 @kindex invalid-read-syntax
 
-  In other languages, an expression is text; it has no other form.  In
-Lisp, an expression is primarily a Lisp object and only secondarily the
-text that is the object's read syntax.  Often there is no need to
-emphasize this distinction, but you must keep it in the back of your
-mind, or you will occasionally be very confused.
+  В других языках, выражение это текст, у него нет другой формы.
+В Lisp, выражение в первую очередь Lisp объект и во вторую очередь
+это текст, который является записью для считывания (синтаксис чтения).
+Как правило, можно не делать различие между объектом и его синтаксисом (для парсера),
+но все же стоит об этом знать, так как изредка встречаются
+случаи, которые иначе покажутся не понятными.
 
-  When you evaluate an expression interactively, the Lisp interpreter
-first reads the textual representation of it, producing a Lisp object,
-and then evaluates that object (@pxref{Evaluation}).  However,
-evaluation and reading are separate activities.  Reading returns the
-Lisp object represented by the text that is read; the object may or may
-not be evaluated later.  @xref{Input Functions}, for a description of
-@code{read}, the basic function for reading objects.
+  Когда выражение вычисляется интерактивно, Lisp интерпретатор,
+сначала считывает текстовое представление, строит Lisp объекта,
+и после чего вычисляет этот объект (@pxref{Evaluation}). Но,
+вычисление и чтение это разные действия. Чтение возвращает Lisp объект,
+представленный считанным текстом, этот объект может быть позднее вычислен,
+а может и нет. @xref{Input Functions}, для описания @code{read},
+является базовой функцией чтения объектов.
+(? @code{read}, является базовой функцией для чтения объектов)
 
 @node Comments
-@section Comments
+@section Комментарии
 @cindex comments
 @cindex @samp{;} in comment
 
-  A @dfn{comment} is text that is written in a program only for the sake
-of humans that read the program, and that has no effect on the meaning
-of the program.  In Lisp, a semicolon (@samp{;}) starts a comment if it
-is not within a string or character constant.  The comment continues to
-the end of line.  The Lisp reader discards comments; they do not become
-part of the Lisp objects which represent the program within the Lisp
-system.
+  Комментарии.
+  @dfn{комментарий} (@dfn{comment}) это текст в программе, написанный
+для людей которые будут читать программу, и не влияющий на саму программу.
+В Lisp, точка с запятой (@samp{;}) начинает комментарий, если это не часть
+строкой константы. Комментарий занимает всю оставшуюся после @samp{;} строку.
+Считыватель Lisp, удаляет комментарии, они не становятся частью Lisp объекта,
+представляющего программу.
 
-  The @samp{#@@@var{count}} construct, which skips the next @var{count}
-characters, is useful for program-generated comments containing binary
-data.  The Emacs Lisp byte compiler uses this in its output files
-(@pxref{Byte Compilation}).  It isn't meant for source files, however.
+  @samp{#@@@var{count}} конструкт, который пропускает следующие
+@var{count} символов, используется для программно сгенерированных
+комментариев содержащих бинарные данные. Байт компилятор Emacs Lisp
+использует его в файлах результата (@pxref{Byte Compilation}).
+Но, данная конструкция не применима для исходников.
 
-  @xref{Comment Tips}, for conventions for formatting comments.
+  @xref{Comment Tips}, соглашения по форматированию комментариев.
 
 @node Programming Types
-@section Programming Types
+@section Типы
 @cindex programming types
 
-  There are two general categories of types in Emacs Lisp: those having
-to do with Lisp programming, and those having to do with editing.  The
-former exist in many Lisp implementations, in one form or another.  The
-latter are unique to Emacs Lisp.
+  В Emacs Lisp есть 2 основных категории типов: имеющие отношение
+к программированию на Lisp и имеющие отношение к редактированию.
+Первые присутствуют во многих реализациях Lisp в той или иной форме.
+Вторые являются уникальными для Emacs Lisp.
 
 @menu
-* Integer Type::        Numbers without fractional parts.
-* Floating-Point Type:: Numbers with fractional parts and with a large range.
-* Character Type::      The representation of letters, numbers and
-                        control characters.
-* Symbol Type::         A multi-use object that refers to a function,
-                        variable, or property list, and has a unique identity.
-* Sequence Type::       Both lists and arrays are classified as sequences.
-* Cons Cell Type::      Cons cells, and lists (which are made from cons cells).
-* Array Type::          Arrays include strings and vectors.
-* String Type::         An (efficient) array of characters.
-* Vector Type::         One-dimensional arrays.
-* Char-Table Type::     One-dimensional sparse arrays indexed by characters.
-* Bool-Vector Type::    One-dimensional arrays of @code{t} or @code{nil}.
-* Hash Table Type::     Super-fast lookup tables.
-* Function Type::       A piece of executable code you can call from elsewhere.
-* Macro Type::          A method of expanding an expression into another
-                          expression, more fundamental but less pretty.
-* Primitive Function Type::     A function written in C, callable from Lisp.
-* Byte-Code Type::      A function written in Lisp, then compiled.
-* Autoload Type::       A type used for automatically loading seldom-used
-                        functions.
-* Finalizer Type::      Runs code when no longer reachable.
+* Integer Type::        Числа без дробной части.
+* Floating-Point Type:: Числа с дробной частью и большим диапазоном.
+* Character Type::      Представление символов, цифр и управляющих символов.
+* Symbol Type::         Многофункциональный объект, который ссылается на функцию,
+                        переменную, список свойств и имеет уникальный идентификатор.
+* Sequence Type::       Списки и массивы рассматриваются как последовательности.
+* Cons Cell Type::      Cons ячейки, и списки (которые составлены из cons ячеек).
+* Array Type::          Массивы включая строки и векторы.
+* String Type::         Строки как эффективные массивы символов.
+* Vector Type::         Одномерные векторы.
+* Char-Table Type::     Одномерные разреженные массивы проиндексированные символами.
+* Bool-Vector Type::    Одномерные массивы из @code{t} или @code{nil}.
+* Hash Table Type::     Сверхбыстрые таблицы поиска.
+* Function Type::       Кусочек кода, которые можно вызвать откуда угодно.
+* Macro Type::          Метод расширения выражения в другое выражение, более
+                        фундаментальное, но менее красивое (удобное).
+* Primitive Function Type::  C функции вызываемые из Lisp.
+* Byte-Code Type::      Функции написанные на Lisp, и скомпилированные.
+* Autoload Type::       Тип используемый для автозагрузки редко используемых функций.
+* Finalizer Type::      Запуск кода для объектов которые больше недоступны.
+                        (При выполнении очистки).
 
 @end menu
 
 @node Integer Type
-@subsection Integer Type
+@subsection Целочисленный тип
 
-  The range of values for an integer depends on the machine.  The
-minimum range is @minus{}536,870,912 to 536,870,911 (30 bits; i.e.,
+  Интервал значений для целочисленного типа зависит от машины.
+Минимальный диапазон @minus{}536,870,912 до 536,870,911 (30 битов; т.е,
 @ifnottex
 @minus{}2**29
 @end ifnottex
@@ -178,80 +198,85 @@ to
 @tex
 @math{2^{29}-1})
 @end tex
-but many machines provide a wider range.
-Emacs Lisp arithmetic functions do not check for integer overflow.  Thus
-@code{(1+ 536870911)} is @minus{}536,870,912 if Emacs integers are 30 bits.
+но многие машины предоставляют более большой диапазон.
+Арифметические функции в Emacs Lisp  не проверяют целочисленное
+переполнение. Поэтому @code{(1+ 536870911)} равно
+@minus{}536,870,912 если целые числа в Emacs 30 битные.
 
-  The read syntax for integers is a sequence of (base ten) digits with an
-optional sign at the beginning and an optional period at the end.  The
-printed representation produced by the Lisp interpreter never has a
-leading @samp{+} or a final @samp{.}.
+  Синтаксис чтения для целых чисел это последовательность (по умолчанию десятичных)
+цифр с необязательным знаком в начале и необязательным периодом в конце.
+При печати чисел Lisp интерпретатором начальный @samp{+} и конечная @samp{.}
+не печатаются.
 
 @example
 @group
--1               ; @r{The integer @minus{}1.}
-1                ; @r{The integer 1.}
-1.               ; @r{Also the integer 1.}
-+1               ; @r{Also the integer 1.}
+-1               ; @r{Число @minus{}1.}
+1                ; @r{Число 1.}
+1.               ; @r{Так же 1.}
++1               ; @r{Так же 1.}
 @end group
 @end example
 
 @noindent
-As a special exception, if a sequence of digits specifies an integer
-too large or too small to be a valid integer object, the Lisp reader
-reads it as a floating-point number (@pxref{Floating-Point Type}).
-For instance, if Emacs integers are 30 bits, @code{536870912} is read
-as the floating-point number @code{536870912.0}.
+Особое исключение, если последовательность цифр задает число
+слишком большой или слишком маленькое для целочисленного
+объекта, считыватель Lisp (Lisp reader) считывает его как
+число с плавающей точкой (@pxref{Floating-Point Type}).
+Например, если в Emacs целочисленный тип 30 битный, @code{536870912}
+считывается как число с плавающей точкой @code{536870912.0}.
 
-  @xref{Numbers}, for more information.
+  См. @xref{Numbers}, для более детальной информации.
 
 @node Floating-Point Type
-@subsection Floating-Point Type
+@c @subsection Floating-Point Type
+@subsection Числа с плавающей точкой
 
-  Floating-point numbers are the computer equivalent of scientific
-notation; you can think of a floating-point number as a fraction
-together with a power of ten.  The precise number of significant
-figures and the range of possible exponents is machine-specific; Emacs
-uses the C data type @code{double} to store the value, and internally
-this records a power of 2 rather than a power of 10.
+  Числа с плавающей точкой являются аналогом научной записи
+чисел доступной компьютеру, можно рассматривать такие числа
+как дробь вместе с десятичной экспонентой. Точность числа и
+диапазон экспонент машинно-зависимы; Emacs использует C тип
+@code{double} для хранения значения, и во внутреннем представлении
+используется степень 2, а не 10.
 
-  The printed representation for floating-point numbers requires either
-a decimal point (with at least one digit following), an exponent, or
-both.  For example, @samp{1500.0}, @samp{+15e2}, @samp{15.0e+2},
-@samp{+1500000e-3}, and @samp{.15e4} are five ways of writing a floating-point
-number whose value is 1500.  They are all equivalent.
+  Печатная форма чисел с плавающей точкой записывается
+с десятичной точкой требует хотя бы 1 цифру после запятой, так же
+возможно запись с экспонентой. Например  @samp{1500.0}, @samp{+15e2},
+@samp{15.0e+2}, @samp{+1500000e-3}, и @samp{.15e4}, 5 способов
+записи 1500 (число целое, но используется как с плавающей точкой).
+Все записи эквивалентны.
 
-  @xref{Numbers}, for more information.
+  См. @xref{Numbers}, для более детальной информации.
 
 @node Character Type
-@subsection Character Type
+@c @subsection Character Type
+@subsection Символьный тип
 @cindex @acronym{ASCII} character codes
 
-  A @dfn{character} in Emacs Lisp is nothing more than an integer.  In
-other words, characters are represented by their character codes.  For
-example, the character @kbd{A} is represented as the @w{integer 65}.
+  @dfn{Символ} (@dfn{character}) в Emacs Lisp это целое число.
+Другими словами символы представлены своими кодами. Например,
+символ @kbd{A}, представляется как @w{integer 65}.
 
-  Individual characters are used occasionally in programs, but it is
-more common to work with @emph{strings}, which are sequences composed
-of characters.  @xref{String Type}.
+  Отдельные символы редко используются в программах, т.к. как
+правило в программе выполняются действия со @emph{строками}(@emph{strings}),
+которые являются последовательностями символов. @xref{String Type}.
 
-  Characters in strings and buffers are currently limited to the range
-of 0 to 4194303---twenty two bits (@pxref{Character Codes}).  Codes 0
-through 127 are @acronym{ASCII} codes; the rest are
-non-@acronym{ASCII} (@pxref{Non-ASCII Characters}).  Characters that
-represent keyboard input have a much wider range, to encode modifier
-keys such as Control, Meta and Shift.
+  В строках и буферах могут использоваться символы из диапазона
+0 .. 4194303  (32 бита) (@pxref{Character Codes}). Коды от 0 до 127
+являются @acronym{ASCII} кодами, остальные не-@acronym{ASCII} (@pxref{Non-ASCII Characters}).
+Символы ввода с клавиатуры имеют более широкий
+диапазон, для кодирования кодов клавиш модификаторов таких
+как Control, Meta и Shift.
 
-  There are special functions for producing a human-readable textual
-description of a character for the sake of messages.  @xref{Describing
+  Существует специальные функции для получения читаемого (human-readable)
+представления символа нужная в сообщениях. @xref{Describing
 Characters}.
 
 @menu
-* Basic Char Syntax::      Syntax for regular characters.
-* General Escape Syntax::  How to specify characters by their codes.
-* Ctl-Char Syntax::        Syntax for control characters.
-* Meta-Char Syntax::       Syntax for meta-characters.
-* Other Char Bits::        Syntax for hyper-, super-, and alt-characters.
+* Basic Char Syntax::      Синтаксис обычных символов.
+* General Escape Syntax::  Как задать символ по коду.
+* Ctl-Char Syntax::        Синтаксис управляющих символов.
+* Meta-Char Syntax::       Синтаксис мета-символов(meta-characters).
+* Other Char Bits::        Синтаксис hyper-, super-, и alt-characters.
 @end menu
 
 @node Basic Char Syntax
@@ -262,29 +287,29 @@ Characters}.
 @cindex @samp{?} in character constant
 @cindex question mark in character constant
 
-  Since characters are really integers, the printed representation of
-a character is a decimal number.  This is also a possible read syntax
-for a character, but writing characters that way in Lisp programs is
-not clear programming.  You should @emph{always} use the special read
-syntax formats that Emacs Lisp provides for characters.  These syntax
-formats start with a question mark.
+  Так как символы это числа, печатная форма символа это число.
+Так же это является синтаксисом для чтения, но записывать символы в
+таком виде при программировании на Lisp не удобно. Стоит использовать
+специальный синтаксис записи для символов предоставляемый Emacs Lisp.
+Такой синтаксис начинается с вопроса.
 
-  The usual read syntax for alphanumeric characters is a question mark
-followed by the character; thus, @samp{?A} for the character
-@kbd{A}, @samp{?B} for the character @kbd{B}, and @samp{?a} for the
-character @kbd{a}.
+  Обычный синтаксис чтения для буквенно-числовых символов состоит
+из знака вопроса и самого символа,  @samp{?A} соответствует @kbd{A},
+@samp{?B} соответствует @kbd{B}, @samp{?a} соответствует @kbd{a}.
 
-  For example:
+  Например:
 
 @example
 ?Q @result{} 81     ?q @result{} 113
 @end example
 
-  You can use the same syntax for punctuation characters, but it is
-often a good idea to add a @samp{\} so that the Emacs commands for
-editing Lisp code don't get confused.  For example, @samp{?\(} is the
-way to write the open-paren character.  If the character is @samp{\},
-you @emph{must} use a second @samp{\} to quote it: @samp{?\\}.
+  Можно использовать этот же синтаксис и для знаков пунктуации
+(не буквы и ну цифры), но как правило стоит добавлять @samp{\},
+чтобы команды Emacs для редактирования Lisp кода могли
+их однозначно обработать (избежать неоднозначности).
+Например, так @samp{?\(} можно записать открывающую скобку.
+Чтобы ввести символ @samp{\}, @emph{нужно} использовать
+вторую @samp{\} для экранирования, получится так: @samp{?\\}.
 
 @cindex whitespace
 @cindex bell character
@@ -305,12 +330,13 @@ you @emph{must} use a second @samp{\} to quote it: @samp{?\\}.
 @cindex @samp{\e}
 @cindex space (ASCII character)
 @cindex @samp{\s}
-  You can express the characters control-g, backspace, tab, newline,
-vertical tab, formfeed, space, return, del, and escape as @samp{?\a},
+  Так можно записать Ctrl-g, backspace, tab, newline,
+vertical tab, formfeed, space, return, del, и escape:
+@samp{?\a},
 @samp{?\b}, @samp{?\t}, @samp{?\n}, @samp{?\v}, @samp{?\f},
-@samp{?\s}, @samp{?\r}, @samp{?\d}, and @samp{?\e}, respectively.
-(@samp{?\s} followed by a dash has a different meaning---it applies
-the Super modifier to the following character.)  Thus,
+@samp{?\s}, @samp{?\r}, @samp{?\d}, and @samp{?\e}.
+(@samp{?\s} со следующим символом тире (dash) меняет значение --- он
+становится Super модификатором для следующего символа.)  Таким образом,
 
 @example
 ?\a @result{} 7                 ; @r{control-g, @kbd{C-g}}
@@ -327,243 +353,256 @@ the Super modifier to the following character.)  Thus,
 @end example
 
 @cindex escape sequence
-  These sequences which start with backslash are also known as
-@dfn{escape sequences}, because backslash plays the role of an
+  Последовательность которая начинается с обратного слеша (backslash)
+называется @dfn{escape sequences}, так как обратный слеш
+играет роль символа экранирования (это никак не связано с символом @key{ESC}).
+@samp{\s} означает использовать строковую константу
+because backslash plays the role of an
 escape character; this has nothing to do with the
-character @key{ESC}.  @samp{\s} is meant for use in character
-constants; in string constants, just write the space.
+character @key{ESC}.  @samp{\s} предназначен
+для использования в константах; в строковой константе (в строке) это просто
+пробел.
 
-  A backslash is allowed, and harmless, preceding any character without
-a special escape meaning; thus, @samp{?\+} is equivalent to @samp{?+}.
-There is no reason to add a backslash before most characters.  However,
-you should add a backslash before any of the characters
-@samp{()\|;'`"#.,} to avoid confusing the Emacs commands for editing
-Lisp code.  You can also add a backslash before whitespace characters such as
-space, tab, newline and formfeed.  However, it is cleaner to use one of
-the easily readable escape sequences, such as @samp{\t} or @samp{\s},
-instead of an actual whitespace character such as a tab or a space.
-(If you do write backslash followed by a space, you should write
-an extra space after the character constant to separate it from the
-following text.)
+  Обратный слеш разрешено и безопасно использовать перед
+символами без специального значения, таким образом @samp{?\+}
+эквивалентно @samp{?+}. Перед большинством символов добавлять
+обратный слеш нет необходимости. Но его нужно добавлять перед
+символами @samp{()\|;'`"#.,}, чтобы избежать неоднозначности
+Emacs команд по редактированию Lisp кода. Так стоит добавлять
+обратный слеш перед символами пустоты (пробельными), такими как
+пробел, tab, символ новой строки (newline) и formfeed. Но еще
+лучше использовать читаемые записи для этих символов такие как
+@samp{\t} и @samp{\s}, вместо реального использования пробелов.
+(Если вы ввели обратный слеш и пробел, нужно написать еще 1 пробел
+после константы, чтобы отделить ее от остального текста.)
 
 @node General Escape Syntax
 @subsubsection General Escape Syntax
 
-  In addition to the specific escape sequences for special important
-control characters, Emacs provides several types of escape syntax that
-you can use to specify non-@acronym{ASCII} text characters.
+  Escape последовательности могут использоваться не только для
+важных управляющих символов, но так же для задания не-@acronym{ASCII}
+символов.
 
 @cindex @samp{\} in character constant
 @cindex backslash in character constants
 @cindex unicode character escape
-  Firstly, you can specify characters by their Unicode values.
-@code{?\u@var{nnnn}} represents a character with Unicode code point
-@samp{U+@var{nnnn}}, where @var{nnnn} is (by convention) a hexadecimal
-number with exactly four digits.  The backslash indicates that the
-subsequent characters form an escape sequence, and the @samp{u}
-specifies a Unicode escape sequence.
+  Например, можно задать символ по его Unicode коду.
 
-  There is a slightly different syntax for specifying Unicode
-characters with code points higher than @code{U+@var{ffff}}:
-@code{?\U00@var{nnnnnn}} represents the character with code point
-@samp{U+@var{nnnnnn}}, where @var{nnnnnn} is a six-digit hexadecimal
-number.  The Unicode Standard only defines code points up to
-@samp{U+@var{10ffff}}, so if you specify a code point higher than
-that, Emacs signals an error.
+@code{?\u@var{nnnn}} представит символ Unicode c кодом
+@samp{U+@var{nnnn}}, где @var{nnnn}  (по соглашению) шестнадцатеричное
+число с 4 цифрами. Обратный слеш указывает на то, что
+последующие символы являются escape последовательностью, а @samp{u}
+задает, что это Unicode escape последовательность.
 
-  Secondly, you can specify characters by their hexadecimal character
-codes.  A hexadecimal escape sequence consists of a backslash,
-@samp{x}, and the hexadecimal character code.  Thus, @samp{?\x41} is
-the character @kbd{A}, @samp{?\x1} is the character @kbd{C-a}, and
-@code{?\xe0} is the character @kbd{à} (@kbd{a} with grave accent).
-You can use any number of hex digits, so you can represent any
-character code in this way.
+  Немного другой синтаксис для определения Unicode
+символов с кодом больше чем @code{U+@var{ffff}}:
+@code{?\U00@var{nnnnnn}} представляет символ с кодом
+@samp{U+@var{nnnnnn}}, где @var{nnnnnn} шесть шестнадцатеричных
+цифр. Стандарт Unicode определяет коды только до @samp{U+@var{10ffff}},
+поэтому если указать код больше этого Emacs сообщит об ошибке.
+
+  Кроме того можно задать символ по его шестнадцатеричному коду.
+Шестнадцатеричная escape последовательность состоит
+из обратного слеша, @samp{x} и шестнадцатеричного кода символа.
+Таким образом, @samp{?\x41} соответствует символу
+@kbd{A}, @samp{?\x1} символу @kbd{C-a}, а @code{?\xe0} символу @kbd{à}
+(а с ударением). Можно использовать любое количество шестнадцатеричных
+цифр, что позволяет задать любой символ таким образом.
 
 @cindex octal character code
-  Thirdly, you can specify characters by their character code in
-octal.  An octal escape sequence consists of a backslash followed by
-up to three octal digits; thus, @samp{?\101} for the character
-@kbd{A}, @samp{?\001} for the character @kbd{C-a}, and @code{?\002}
-for the character @kbd{C-b}.  Only characters up to octal code 777 can
-be specified this way.
+  Так же можно задать символ по его коду в восьмеричной системе.
+Восьмеричная escape последовательность состоит из обратного слеша,
+после чего должны быть 3 восьмеричных цифры, т.е. @samp{?\101}
+для @kbd{A}, @samp{?\001} для  @kbd{C-a}, и @code{?\002}
+для @kbd{C-b}. Таким образом могут быть заданы символы только до
+777 в восьмеричной системе счисления.
 
-  These escape sequences may also be used in strings.  @xref{Non-ASCII
+  Escape последовательность может быть использована в строках. @xref{Non-ASCII
 in Strings}.
 
 @node Ctl-Char Syntax
 @subsubsection Control-Character Syntax
 
 @cindex control characters
-  Control characters can be represented using yet another read syntax.
-This consists of a question mark followed by a backslash, caret, and the
-corresponding non-control character, in either upper or lower case.  For
-example, both @samp{?\^I} and @samp{?\^i} are valid read syntax for the
-character @kbd{C-i}, the character whose value is 9.
+  Управляющие символы могут быть представлены используя другой синтаксис чтения.
+Он состоит из знака вопроса, обратного слеша, знака каретки, и
+соответствующего не управляющего символа, в верхнем или нижнем
+регистре. Например: @samp{?\^I} и @samp{?\^i} корректный синтаксис
+чтения для @kbd{C-i}, символа со значением 9.
 
-  Instead of the @samp{^}, you can use @samp{C-}; thus, @samp{?\C-i} is
-equivalent to @samp{?\^I} and to @samp{?\^i}:
+  Вместо @samp{^}, можно использовать @samp{C-}; т.е. @samp{?\C-i}
+эквивалентно @samp{?\^I} и @samp{?\^i}.
 
 @example
 ?\^I @result{} 9     ?\C-I @result{} 9
 @end example
 
-  In strings and buffers, the only control characters allowed are those
-that exist in @acronym{ASCII}; but for keyboard input purposes, you can turn
-any character into a control character with @samp{C-}.  The character
-codes for these non-@acronym{ASCII} control characters include the
+  В строках и буферах, разрешены только управляемые символы @acronym{ASCII},
+но в качестве клавиатурных сочетаний, можно превратить любой
+символ в управляющий с помощью @samp{C-}. Коды для не-@acronym{ASCII}
+управляющих символов включат
 @tex
 @math{2^{26}}
 @end tex
 @ifnottex
 2**26
 @end ifnottex
-bit as well as the code for the corresponding non-control character.
-Ordinary text terminals have no way of generating non-@acronym{ASCII}
-control characters, but you can generate them straightforwardly using
-X and other window systems.
+бит, так же как код для соответствующих не управляющих символов.
+Обычно текстовые терминалы не имеют возможности генерации
+не-@acronym{ASCII} управляющих символов, но их можно
+сгенерировать явно с использованием X или другой оконной системы.
 
-  For historical reasons, Emacs treats the @key{DEL} character as
-the control equivalent of @kbd{?}:
+  Так исторически сложилось, что Emacs рассматривает символ
+@key{DEL}, как управляющий эквивалент для @kbd{?}:
 
 @example
 ?\^? @result{} 127     ?\C-? @result{} 127
 @end example
 
 @noindent
-As a result, it is currently not possible to represent the character
-@kbd{Control-?}, which is a meaningful input character under X, using
-@samp{\C-}.  It is not easy to change this, as various Lisp files refer
-to @key{DEL} in this way.
+В результате не возможно представить символ @kbd{Control-?},
+который является значимым в X, с использованием @samp{\C-}.
+И простого решения для этого нет, так как многие Lisp файлы
+используют @key{DEL} в таком виде.
 
-  For representing control characters to be found in files or strings,
-we recommend the @samp{^} syntax; for control characters in keyboard
-input, we prefer the @samp{C-} syntax.  Which one you use does not
-affect the meaning of the program, but may guide the understanding of
-people who read it.
+  Для представления управляющих символов в файлах и строках,
+рекомендуется использовать @samp{^} синтаксис, для управляющих
+символов клавиатурного ввода, более предпочтительным является
+@samp{C-} синтаксис. Использование того или другого не влияет
+на работу программы, но может облегчить понимание людям
+читающим программу.
 
 @node Meta-Char Syntax
 @subsubsection Meta-Character Syntax
 
 @cindex meta characters
-  A @dfn{meta character} is a character typed with the @key{META}
-modifier key.  The integer that represents such a character has the
+  @dfn{meta символ} (@dfn{meta character}) символ введенный с использованием  мета
+  @key{META} клавиши модификации (как правило зажатая ALt, или нажать и отпустить Esc).
+Числа представляющие такой символ являются
 @tex
 @math{2^{27}}
 @end tex
 @ifnottex
 2**27
 @end ifnottex
-bit set.  We use high bits for this and other modifiers to make
-possible a wide range of basic character codes.
+битным множеством. Большое количество bit
+используется для этого и других модификаторов
+чтобы иметь возможность хранения большого
+количества базовых кодов.
 
-  In a string, the
+  В строке
 @tex
 @math{2^{7}}
 @end tex
 @ifnottex
 2**7
 @end ifnottex
-bit attached to an @acronym{ASCII} character indicates a meta
-character; thus, the meta characters that can fit in a string have
-codes in the range from 128 to 255, and are the meta versions of the
-ordinary @acronym{ASCII} characters.  @xref{Strings of Events}, for
-details about @key{META}-handling in strings.
+бит, относятся с @acronym{ASCII} символом означающего
+мета символв, то есть мета символы которые могут  подходить
+содержат коды от 128 до 255, и являются мета версиями обычных
+@acronym{ASCII} символов. См. @xref{Strings of Events} для
+более подробного понимания обработки @key{META} в строках.
 
-  The read syntax for meta characters uses @samp{\M-}.  For example,
-@samp{?\M-A} stands for @kbd{M-A}.  You can use @samp{\M-} together with
-octal character codes (see below), with @samp{\C-}, or with any other
-syntax for a character.  Thus, you can write @kbd{M-A} as @samp{?\M-A},
-or as @samp{?\M-\101}.  Likewise, you can write @kbd{C-M-b} as
-@samp{?\M-\C-b}, @samp{?\C-\M-b}, or @samp{?\M-\002}.
+  Синтаксис чтения для мата символов использует @samp{\M-}.
+Например,  @samp{?\M-A}, соответствует @kbd{M-A}. Можно использовать
+@samp{\M-}  вместе с восьмеричными кодами (см. ниже), с @samp{\C-},
+или любой другой записью для символов. Таким образом, можно
+записать @kbd{M-A} как @samp{?\M-A}, или как @samp{?\M-\101}.
+Так же можно написать: @kbd{C-M-b} как
+@samp{?\M-\C-b}, @samp{?\C-\M-b}, или @samp{?\M-\002}
 
 @node Other Char Bits
-@subsubsection Other Character Modifier Bits
+@subsubsection Другие биты модификации символов
 
+
+  Регистра символов определяется его кодом, например в @acronym{ASCII}
+символы @samp{a} и @samp{A} различные. Но в @acronym{ASCII} нет
+способа отличить регистр управляющих символов. Emacs использует
   The case of a graphic character is indicated by its character code;
-for example, @acronym{ASCII} distinguishes between the characters @samp{a}
-and @samp{A}.  But @acronym{ASCII} has no way to represent whether a control
-character is upper case or lower case.  Emacs uses the
 @tex
 @math{2^{25}}
 @end tex
 @ifnottex
 2**25
 @end ifnottex
-bit to indicate that the shift key was used in typing a control
-character.  This distinction is possible only when you use X terminals
-or other special terminals; ordinary text terminals do not report the
-distinction.  The Lisp syntax for the shift bit is @samp{\S-}; thus,
-@samp{?\C-\S-o} or @samp{?\C-\S-O} represents the shifted-control-o
-character.
+бит для индикации того, была ли нажата клавиша shift при
+вводе управляющего символа. Распознавание возможно
+только для X терминалов и других специализированных терминалов;
+обычно текстовые терминалы не показывают разницу.
+Lisp синтаксис для shift бита @samp{\S-}, то есть
+@samp{?\C-\S-o} или @samp{?\C-\S-O} представляют
+shifted-control-o символ.
 
 @cindex hyper characters
 @cindex super characters
 @cindex alt characters
-  The X Window System defines three other
-@anchor{modifier bits}modifier bits that can be set
-in a character: @dfn{hyper}, @dfn{super} and @dfn{alt}.  The syntaxes
-for these bits are @samp{\H-}, @samp{\s-} and @samp{\A-}.  (Case is
-significant in these prefixes.)  Thus, @samp{?\H-\M-\A-x} represents
-@kbd{Alt-Hyper-Meta-x}.  (Note that @samp{\s} with no following @samp{-}
-represents the space character.)
+  Оконная система X определяет три другие
+@anchor{modifier bits} бита модификации которые могут быть
+установлены в символе @dfn{hyper}, @dfn{super} и @dfn{alt}.
+Синтаксис для этих битов @samp{\H-}, @samp{\s-} и @samp{\A-}.
+(Регистр в этих префиксах важен.) То есть, @samp{?\H-\M-\A-x}
+представляет @kbd{Alt-Hyper-Meta-x}. (Отметим, что @samp{\s}
+без @samp{-} это пробел).
 @tex
-Numerically, the bit values are @math{2^{22}} for alt, @math{2^{23}}
-for super and @math{2^{24}} for hyper.
+В числовых значениях, биты соответствуют @math{2^{22}} для alt, @math{2^{23}}
+для super и @math{2^{24}} для hyper.
 @end tex
 @ifnottex
-Numerically, the
-bit values are 2**22 for alt, 2**23 for super and 2**24 for hyper.
+В числовом виде,
+значения битов 2**22 для alt, 2**23 для super и 2**24 для hyper.
 @end ifnottex
 
 @node Symbol Type
 @subsection Symbol Type
 
-  A @dfn{symbol} in GNU Emacs Lisp is an object with a name.  The
-symbol name serves as the printed representation of the symbol.  In
-ordinary Lisp use, with one single obarray (@pxref{Creating Symbols}),
-a symbol's name is unique---no two symbols have the same name.
+  @dfn{Символ} (@dfn{symbol}) в GNU Emacs Lisp это объект с именем.
+(К сожалению получается что для символов строк (буквы и т.д) и для
+объектов символов, хранят значение, функцию и список свойств
+используется одно слово символ. Различать их придется по контексту, в
+оригинале им соответствуют: character - символ как знак, symbol -
+именованный объект данных).  Имя symbol служит его печатным
+представлением. Как правило в Lisp (с одним obarray (массив объектов))
+(@pxref{Creating Symbols}) имя символа уникально, никакие два символа
+не имеют одного имени.
 
-  A symbol can serve as a variable, as a function name, or to hold a
-property list.  Or it may serve only to be distinct from all other Lisp
-objects, so that its presence in a data structure may be recognized
-reliably.  In a given context, usually only one of these uses is
-intended.  But you can use one symbol in all of these ways,
-independently.
+ Символ может быть переменной, функцией, или хранить список свойств.
+Как правило символ используется в качестве одной из этих
+возможностей, но так же их можно использоваться всеми тремя способами.
+То есть в одном символе может хранится и переменная и функция и список
+значений, но это может запутать.
 
-  A symbol whose name starts with a colon (@samp{:}) is called a
-@dfn{keyword symbol}.  These symbols automatically act as constants,
-and are normally used only by comparing an unknown symbol with a few
-specific alternatives.  @xref{Constant Variables}.
+  Символ чье имя начинается с (@samp{:}), называется @dfn{ключевым
+словом} @dfn{keyword symbol}. Такие символы работают как константы, и
+используются для сравнения какого-то другого символа с собой.
+@xref{Constant Variables}.
 
 @cindex @samp{\} in symbols
 @cindex backslash in symbols
-  A symbol name can contain any characters whatever.  Most symbol names
-are written with letters, digits, and the punctuation characters
-@samp{-+=*/}.  Such names require no special punctuation; the characters
-of the name suffice as long as the name does not look like a number.
-(If it does, write a @samp{\} at the beginning of the name to force
-interpretation as a symbol.)  The characters @samp{_~!@@$%^&:<>@{@}?} are
-less often used but also require no special punctuation.  Any other
-characters may be included in a symbol's name by escaping them with a
-backslash.  In contrast to its use in strings, however, a backslash in
-the name of a symbol simply quotes the single character that follows the
-backslash.  For example, in a string, @samp{\t} represents a tab
-character; in the name of a symbol, however, @samp{\t} merely quotes the
-letter @samp{t}.  To have a symbol with a tab character in its name, you
-must actually use a tab (preceded with a backslash).  But it's rare to
-do such a thing.
+  Имя символа может содержать любые символы. Большинство
+имен символов записываются буквами, цифрами и знаками @samp{-+=*/}.
+Такие имена не требуют особой пунктуации; главное чтобы они не
+выглядели как числа. (Иначе стоит использовать @samp{\} в начале
+имени, чтобы считыватель понял что это символ). Символы (знаки) @samp{_~!@@$%^&:<>@{@}?}
+реже используются, но так же не требуют особой пунктуации. Любые
+другие символы могут быть включены в имя с использование экранирования
+символом обратного слеша. Например в строке @samp{\t} соответствует
+символу tab; но в имени символа @samp{\t} просто экранированная
+буква @samp{t}. Чтобы определить символ  с tab в имени, нужно
+использовать tab с обратным слешем перед
+(Видимо как-то так @samp{asdf-\  -otherpart-of-name}).
+Но так обычно делать не стоит.
 
 @cindex CL note---case of letters
 @quotation
-@b{Common Lisp note:} In Common Lisp, lower case letters are always
-folded to upper case, unless they are explicitly escaped.  In Emacs
-Lisp, upper case and lower case letters are distinct.
+@b{Common Lisp note:} В Common Lisp, буквы в нижнем регистре всегда
+приводятся к верхнему регистру, если они не явно экранированы. В Emacs
+Lisp, буквы в верхнем и нижнем регистре различаются.
 @end quotation
 
-  Here are several examples of symbol names.  Note that the @samp{+} in
-the fourth example is escaped to prevent it from being read as a number.
-This is not necessary in the sixth example because the rest of the name
-makes it invalid as a number.
+  Ниже есть несколько примеров имен символов. Отметим, что @samp{+}
+в четвертом примере экранировано, чтобы не быть считанным как число.
+В шестом примере это не требуется, так как оставшаяся часть имени
+не соответствует числу.
 
 @example
 @group
@@ -596,45 +635,51 @@ FOO                 ; @r{A symbol named @samp{FOO}, different from @samp{foo}.}
 @ifnotinfo
 @cindex @samp{#:} read syntax
 @end ifnotinfo
-  As an exception to the rule that a symbol's name serves as its
-printed representation, @samp{##} is the printed representation for an
-interned symbol whose name is an empty string.  Furthermore,
-@samp{#:@var{foo}} is the printed representation for an uninterned
-symbol whose name is @var{foo}.  (Normally, the Lisp reader interns
-all symbols; @pxref{Creating Symbols}.)
+
+  Для правила что имя символа выступает в качестве печатного представления
+есть исключение, @samp{##} является печатной формой для интернированных
+символов (interned symbol), имя которых пустая строка. Кроме того,
+@samp{#:@var{foo}} печатное представление (uninterned symbol) неинтернированного
+символа имя которого @var{foo}. (Обычно, Lisp считыватель
+интернирует все символы; @pxref{Creating Symbols}.)
+(Что такое интернированный символ будет описано далее).
 
 @node Sequence Type
 @subsection Sequence Types
 
-  A @dfn{sequence} is a Lisp object that represents an ordered set of
-elements.  There are two kinds of sequence in Emacs Lisp: @dfn{lists}
-and @dfn{arrays}.
+  Последовательность является Lisp объектом который представляет упорядоченное
+множество элементов. В Emacs Lisp есть 2 вида последовательностей
+@dfn{списки} и @dfn{массивы}  (@dfn{lists} и @dfn{arrays}).
 
-  Lists are the most commonly-used sequences.  A list can hold
-elements of any type, and its length can be easily changed by adding
-or removing elements.  See the next subsection for more about lists.
+  Списки наиболее часто используемые последовательности. Списки
+могут хранить элементы любого типа, и их длина может быть легко
+изменена путем добавления и удаления элементов. См. следующую
+подсекцию для более подробной информации о списках.
 
-  Arrays are fixed-length sequences.  They are further subdivided into
-strings, vectors, char-tables and bool-vectors.  Vectors can hold
-elements of any type, whereas string elements must be characters, and
-bool-vector elements must be @code{t} or @code{nil}.  Char-tables are
-like vectors except that they are indexed by any valid character code.
-The characters in a string can have text properties like characters in
-a buffer (@pxref{Text Properties}), but vectors do not support text
-properties, even when their elements happen to be characters.
+  Массивы последовательности фиксированной длины. Массивы дополнительно
+подразделяются на строки, векторы, таблицы-символов(знаков, char-tables) и
+двоичные вектора (bool-vector). Вектора могут хранить элементы любого типа, тогда
+как элементы строк должны быть символами(знаками), и элементы двоичных
+векторов должны быть @code{t} или @code{nil}. Таблицы символов аналогичны
+векторам, но индексами в них являются корректные коды символов.
+Символы в строке могут иметь текстовые свойства как символы(знаки)
+в буфере (@pxref{Text Properties}), но вектора не поддерживают
+текстовых свойств, даже когда их элементы символы(знаки).
 
-  Lists, strings and the other array types also share important
-similarities.  For example, all have a length @var{l}, and all have
-elements which can be indexed from zero to @var{l} minus one.  Several
-functions, called sequence functions, accept any kind of sequence.
-For example, the function @code{length} reports the length of any kind
-of sequence.  @xref{Sequences Arrays Vectors}.
+  Списки, строки и другие типы массивов имеют много общего.
+Например, все имеют длину @var{l}, и все имеют элементы,
+которые могут быть доступны по индексу от 0 до @var{l} - 1.
+Некоторые функции, называемые функциями последовательностей, принимают
+любые виды последовательностей. Например, функция @code{length}
+сообщает длину последовательности любого типа.
+@xref{Sequences Arrays Vectors}.
 
-  It is generally impossible to read the same sequence twice, since
-sequences are always created anew upon reading.  If you read the read
-syntax for a sequence twice, you get two sequences with equal contents.
-There is one exception: the empty list @code{()} always stands for the
-same object, @code{nil}.
+  В общем не возможно считать одну и туже последовательность дважды,
+так как последовательности создаются заново при чтении. Если считать
+синтаксис чтения для последовательности дважды, будет получено
+две последовательности с одинаковым содержимым.
+Единственное исключение: пустой список @code{()} это всегда один и тот
+же объект, @code{nil}.
 
 @node Cons Cell Type
 @subsection Cons Cell and List Types
@@ -642,70 +687,69 @@ same object, @code{nil}.
 @cindex decrement field of register
 @cindex pointers
 
-  A @dfn{cons cell} is an object that consists of two slots, called
-the @sc{car} slot and the @sc{cdr} slot.  Each slot can @dfn{hold} any
-Lisp object.  We also say that the @sc{car} of this cons cell is
-whatever object its @sc{car} slot currently holds, and likewise for
-the @sc{cdr}.
+  @dfn{cons ячейка} (@dfn{cons cell}) это объект состоящий из 2-x слотов,
+называемых @sc{car} слот и @sc{cdr} слот. Каждый слот может хранить
+любой Lisp объект. В дальнейшем будем говорить, что @sc{car}
+cons ячейки то, что хранится в  @sc{car} слота, и аналогично @sc{cdr}.
 
 @cindex list structure
-  A @dfn{list} is a series of cons cells, linked together so that the
-@sc{cdr} slot of each cons cell holds either the next cons cell or the
-empty list.  The empty list is actually the symbol @code{nil}.
-@xref{Lists}, for details.  Because most cons cells are used as part
-of lists, we refer to any structure made out of cons cells as a
-@dfn{list structure}.
+  структура списка.
+  @dfn{Список} (@dfn{list}) это ряд cons ячеек, связанных вместе,
+так что @sc{cdr} слот каждой ячейки хранит следующую cons ячейку или
+пустой список. Пустой список и символ @code{nil} это одно и тоже.
+См. @xref{Lists}, для более детальной информации. Так как большинство
+cons ячеек используется для создания списков, любая структура
+состоящая из cons ячеек будет называться @dfn{list структурой}
+(@dfn{list structure}).
 
 @cindex linked list
 @quotation
-A note to C programmers: a Lisp list thus works as a @dfn{linked list}
-built up of cons cells.  Because pointers in Lisp are implicit, we do
-not distinguish between a cons cell slot holding a value versus
-pointing to the value.
+Примечание для C программистов: Lisp список который работает
+@dfn{связанный list} состоит из cons ячеек. Так как указатели
+в Lisp не явные, нет возможности отличить ячейку со значением
+от ячейки хранящей ссылку на значение.
 @end quotation
 
 @cindex atoms
-  Because cons cells are so central to Lisp, we also have a word for
-an object which is not a cons cell.  These objects are called
-@dfn{atoms}.
+  Так как cons ячейки являются центральным понятием в Lisp, есть
+специальный термин для объектов не являющихся cons ячейками. Такие
+объекты называются @dfn{атомы} (@dfn{atoms}).
 
 @cindex parenthesis
 @cindex @samp{(@dots{})} in lists
-  The read syntax and printed representation for lists are identical, and
-consist of a left parenthesis, an arbitrary number of elements, and a
-right parenthesis.  Here are examples of lists:
+  Синтаксис чтения и печатная форма для списков идентичны, и состоят
+из левой круглой скобки, произвольного количества элементов, и
+правой круглой скобки. Ниже примеры списков:
 
 @example
-(A 2 "A")            ; @r{A list of three elements.}
-()                   ; @r{A list of no elements (the empty list).}
-nil                  ; @r{A list of no elements (the empty list).}
-("A ()")             ; @r{A list of one element: the string @code{"A ()"}.}
-(A ())               ; @r{A list of two elements: @code{A} and the empty list.}
-(A nil)              ; @r{Equivalent to the previous.}
-((A B C))            ; @r{A list of one element}
-                     ;   @r{(which is a list of three elements).}
+(A 2 "A")            ; @r{A список из 3-х элементов.}
+()                   ; @r{A список без элементов (пустой)).}
+nil                  ; @r{A список без элементов (пустой)). }
+("A ()")             ; @r{A список с одним элементом: строкой @code{"A ()"}.}
+(A ())               ; @r{A список из 2-х элементов: @code{A} пустой список.}
+(A nil)              ; @r{Эквивалентно предыдущему.}
+((A B C))            ; @r{A Список из одного элемента}
+                     ;   @r{(который является списком из 3-х элементов).}
 @end example
 
-   Upon reading, each object inside the parentheses becomes an element
-of the list.  That is, a cons cell is made for each element.  The
-@sc{car} slot of the cons cell holds the element, and its @sc{cdr}
-slot refers to the next cons cell of the list, which holds the next
-element in the list.  The @sc{cdr} slot of the last cons cell is set to
-hold @code{nil}.
+   Вместо чтения, каждый объект в скобках становится элементом
+списка. То есть, cons ячейка создается для каждого элемента. @sc{car}
+ячейка слота cons ячейки хранит элемент, и @sc{cdr} хранит ссылку
+на следующую cons ячейку списка, которая хранит следующий
+элемент списка. @sc{cdr} слот крайней ячейки списка устанавливается
+в @code{nil}.
 
-  The names @sc{car} and @sc{cdr} derive from the history of Lisp.  The
-original Lisp implementation ran on an @w{IBM 704} computer which
-divided words into two parts, the address and the
-decrement; @sc{car} was an instruction to extract the contents of
-the address part of a register, and @sc{cdr} an instruction to extract
-the contents of the decrement.  By contrast, cons cells are named
-for the function @code{cons} that creates them, which in turn was named
-for its purpose, the construction of cells.
+  Имена @sc{car} и @sc{cdr} определены исторически (происходят из истории Lisp).
+Оригинальная Lisp реализация работала на @w{IBM 704} компьютере
+который разделял слово на 2 части, адреса и декремент,
+@sc{car} был инструкцией для получения адреса и @sc{cdr} был
+инструкцией для получения декремента. А @code{cons} функция создающая
+их.
 
 @menu
-* Box Diagrams::                Drawing pictures of lists.
-* Dotted Pair Notation::        A general syntax for cons cells.
-* Association List Type::       A specially constructed list.
+* Box Diagrams::                Изображения показывающие устройство списков.
+* Dotted Pair Notation::        Синтаксис cons ячеек.
+* Association List Type::       Специальный ассоциативный список.
 @end menu
 
 @node Box Diagrams
@@ -713,12 +757,12 @@ for its purpose, the construction of cells.
 @cindex box diagrams, for lists
 @cindex diagrams, boxed, for lists
 
-  A list can be illustrated by a diagram in which the cons cells are
-shown as pairs of boxes, like dominoes.  (The Lisp reader cannot read
-such an illustration; unlike the textual notation, which can be
-understood by both humans and computers, the box illustrations can be
-understood only by humans.)  This picture represents the three-element
-list @code{(rose violet buttercup)}:
+  Список может быть представлен на схеме где cons ячейки
+показываются как пара соединенных ящиков, как костяшки домино.
+(Lisp не может считывать такие представления, это должно быть очевидно.
+Хотя можно написать программу и научить его.)
+Изображение ниже представляет список состоящий из 3-х элементов
+@code{(rose violet buttercup)}:
 
 @example
 @group
@@ -731,20 +775,20 @@ list @code{(rose violet buttercup)}:
 @end group
 @end example
 
-  In this diagram, each box represents a slot that can hold or refer to
-any Lisp object.  Each pair of boxes represents a cons cell.  Each arrow
-represents a reference to a Lisp object, either an atom or another cons
-cell.
+  На этой диаграмме, каждый ящик представляет слот, который хранит значение
+или ссылку на любой Lisp объект. Каждая пара ящиков представляет cons ячейку.
+Каждая стрелочка представляет ссылку на Lisp объект, либо атом или
+другую cons ячейку.
 
-  In this example, the first box, which holds the @sc{car} of the first
-cons cell, refers to or holds @code{rose} (a symbol).  The second
-box, holding the @sc{cdr} of the first cons cell, refers to the next
-pair of boxes, the second cons cell.  The @sc{car} of the second cons
-cell is @code{violet}, and its @sc{cdr} is the third cons cell.  The
-@sc{cdr} of the third (and last) cons cell is @code{nil}.
+  В данном примере, первый ящик @sc{car} первой cons ячейки
+ссылается или хранит @code{rose} (символ). Второй ящик, хранит @sc{cdr}
+первой cons ячейки ссылается на следующую пару ящиков, которая
+представляет вторую cons ячейку. @sc{car} второй cons ячейки
+@code{violet}, и @sc{cdr} второй cons ячейки это третья cons ячейка.
+@sc{cdr} третьей cons ячейки (крайняя) @code{nil}.
 
-  Here is another diagram of the same list, @code{(rose violet
-buttercup)}, sketched in a different manner:
+ Ниже другое представление того же списка, @code{(rose violet
+buttercup)}, нарисованная по другому:
 
 @smallexample
 @group
@@ -758,12 +802,11 @@ buttercup)}, sketched in a different manner:
 
 @cindex @code{nil} as a list
 @cindex empty list
-  A list with no elements in it is the @dfn{empty list}; it is identical
-to the symbol @code{nil}.  In other words, @code{nil} is both a symbol
-and a list.
+  Список без элементов @dfn{пустой список}  (@dfn{empty list}) идентичен
+символ @code{nil}. Другими словами, @code{nil} является и символом и списком.
 
-  Here is the list @code{(A ())}, or equivalently @code{(A nil)},
-depicted with boxes and arrows:
+  Ниже список @code{(A ())}, или эквивалентная запись @code{(A nil)},
+изображен в виде коробок:
 
 @example
 @group
@@ -776,9 +819,9 @@ depicted with boxes and arrows:
 @end group
 @end example
 
-  Here is a more complex illustration, showing the three-element list,
-@code{((pine needles) oak maple)}, the first element of which is a
-two-element list:
+  А тут более сложный пример, показывающий трех-элементный список,
+@code{((pine needles) oak maple)}, первый элемент которого является
+двух-элементным списком.
 
 @example
 @group
@@ -798,7 +841,7 @@ two-element list:
 @end group
 @end example
 
-  The same list represented in the second box notation looks like this:
+  Тот же список представленный другим способом коробочной нотации:
 
 @example
 @group
@@ -822,21 +865,20 @@ two-element list:
 @cindex dotted pair notation
 @cindex @samp{.} in lists
 
-  @dfn{Dotted pair notation} is a general syntax for cons cells that
-represents the @sc{car} and @sc{cdr} explicitly.  In this syntax,
-@code{(@var{a} .@: @var{b})} stands for a cons cell whose @sc{car} is
-the object @var{a} and whose @sc{cdr} is the object @var{b}.  Dotted
-pair notation is more general than list syntax because the @sc{cdr}
-does not have to be a list.  However, it is more cumbersome in cases
-where list syntax would work.  In dotted pair notation, the list
-@samp{(1 2 3)} is written as @samp{(1 .  (2 . (3 . nil)))}.  For
-@code{nil}-terminated lists, you can use either notation, but list
-notation is usually clearer and more convenient.  When printing a
-list, the dotted pair notation is only used if the @sc{cdr} of a cons
-cell is not a list.
+  @dfn{Точечная пара}(@dfn{Dotted pair notation}) это стандартная
+запись cons ячейки которая в явном виде указывает @sc{car} и @sc{cdr}
+ячейки.  В этой записи, @code{(@var{a} .@: @var{b})}, @sc{car} это
+@var{a}, а @sc{cdr} это @var{b}. Точеная пара является более общим
+способом записи чем список, потому что @sc{cdr} в паре не обязано быть
+списком. Но, такая запись является более громоздкой (и менее удобной),
+для случаев где работает списочная запись. В записи с точечными парами
+список @samp{(1 2 3)} будет выглядеть как @samp{(1 .  (2 . (3
+. nil)))}.  Для списков заканчивающихся @code{nil}, можно использовать
+обе записи, но списочная запись более удобная.  При печати списка,
+запись в виде точечной пары используется только, если @sc{cdr} cons
+ячейки не список.
 
-  Here's an example using boxes to illustrate dotted pair notation.
-This example shows the pair @code{(rose . violet)}:
+  Ниже пример иллюстрирующий точечную запись @code{(rose . violet)}:
 
 @example
 @group
@@ -849,12 +891,14 @@ This example shows the pair @code{(rose . violet)}:
 @end group
 @end example
 
-  You can combine dotted pair notation with list notation to represent
-conveniently a chain of cons cells with a non-@code{nil} final @sc{cdr}.
-You write a dot after the last element of the list, followed by the
-@sc{cdr} of the final cons cell.  For example, @code{(rose violet
-. buttercup)} is equivalent to @code{(rose . (violet . buttercup))}.
-The object looks like this:
+  Можно объединить точечную запись и списочную запись и сделать
+у крайней ячейки списка не-@code{nil} @sc{cdr} слот. Для этого
+нужно написать через точку Крайний элемент списка. Например:
+@code{(rose violet . buttercup)}, что эквивалентно
+@code{(rose . (violet . buttercup))}.
+
+Такая последовательность может быть представлена
+следующим образом:
 
 @example
 @group
@@ -867,13 +911,12 @@ The object looks like this:
 @end group
 @end example
 
-  The syntax @code{(rose .@: violet .@: buttercup)} is invalid because
-there is nothing that it could mean.  If anything, it would say to put
-@code{buttercup} in the @sc{cdr} of a cons cell whose @sc{cdr} is already
-used for @code{violet}.
+  Запись @code{(rose .@: violet .@: buttercup)} не верная, потому
+что в не говорится поместить @code{buttercup} в @sc{cdr} cons ячейки
+чей @sc{cdr} уже используется для хранения @code{violet}.
 
-  The list @code{(rose violet)} is equivalent to @code{(rose . (violet))},
-and looks like this:
+  Список @code{(rose violet)} эквивалентный @code{(rose . (violet))},
+может быть представлен:
 
 @example
 @group
@@ -886,10 +929,10 @@ and looks like this:
 @end group
 @end example
 
-  Similarly, the three-element list @code{(rose violet buttercup)}
-is equivalent to @code{(rose . (violet . (buttercup)))}.
+  Аналогично трех-элементный список, эквивалентный
+@code{(rose . (violet . (buttercup)))}, может быть изображен
+так:
 @ifnottex
-It looks like this:
 
 @example
 @group
@@ -906,15 +949,16 @@ It looks like this:
 @node Association List Type
 @subsubsection Association List Type
 
-  An @dfn{association list} or @dfn{alist} is a specially-constructed
-list whose elements are cons cells.  In each element, the @sc{car} is
-considered a @dfn{key}, and the @sc{cdr} is considered an
-@dfn{associated value}.  (In some cases, the associated value is stored
-in the @sc{car} of the @sc{cdr}.)  Association lists are often used as
-stacks, since it is easy to add or remove associations at the front of
-the list.
+  @dfn{Ассоциативный список} (@dfn{association list}) или @dfn{alist}
+специальный список элементами которого являются cons ячейки. В каждом
+элемента @sc{car} рассматривается как  @dfn{ключ} (@dfn{key}), а
+@sc{cdr} как @dfn{ассоциированное значение} (@dfn{associated value}).
+(В некоторых случаях, ассоциированное значение записывается в
+@sc{car} слота @sc{cdr}.) Ассоциативный список часто используется
+как стек, так как добавление и удаление ассоциации в начале
+списка просто выполнить.
 
-  For example,
+  Например,
 
 @example
 (setq alist-of-colors
@@ -922,292 +966,319 @@ the list.
 @end example
 
 @noindent
-sets the variable @code{alist-of-colors} to an alist of three elements.  In the
-first element, @code{rose} is the key and @code{red} is the value.
+устанавливает значением переменной @code{alist-of-colors} ассоциативный
+список из трех элементов. В первом элементе @code{rose} это ключ, я
+@code{red} значение.
 
-  @xref{Association Lists}, for a further explanation of alists and for
-functions that work on alists.  @xref{Hash Tables}, for another kind of
-lookup table, which is much faster for handling a large number of keys.
+  См. @xref{Association Lists}, для более детальной информации по alists
+и функциям для работы с ними.  См. @xref{Hash Tables}, для получения
+информации по другому виду таблиц поиска, которые более быстры для
+случаев с большим количеством ключей.
 
 @node Array Type
 @subsection Array Type
 
-  An @dfn{array} is composed of an arbitrary number of slots for
-holding or referring to other Lisp objects, arranged in a contiguous block of
-memory.  Accessing any element of an array takes approximately the same
-amount of time.  In contrast, accessing an element of a list requires
-time proportional to the position of the element in the list.  (Elements
-at the end of a list take longer to access than elements at the
-beginning of a list.)
+  @dfn{Массив} (@dfn{array}) состоит из произвольного количества слотов
+для хранения или хранения ссылок на другие Lisp объекты, расположенных
+в памяти непрерывно. Доступ к любому элементу массива требует примерно
+одного и того же времени. В отличие, от списков, где
+требуемое время пропорционально позиции элемента в списке.
+(Для доступа к элементам в конце списка нужно больше времени,
+чем к элементам в начале.)
 
-  Emacs defines four types of array: strings, vectors, bool-vectors, and
+  Emacs определяет четыре типа массивов: strings, vectors, bool-vectors, и
 char-tables.
 
-  A string is an array of characters and a vector is an array of
-arbitrary objects.  A bool-vector can hold only @code{t} or @code{nil}.
-These kinds of array may have any length up to the largest integer.
-Char-tables are sparse arrays indexed by any valid character code; they
-can hold arbitrary objects.
+  Строка это массив символов(знаков) и вектор это массив
+произвольных объектов. bool-vector (двоичный-вектор) может хранить только
+@code{t} или @code{nil}. Такие массивы могут быть любой размер
+до значения максимального целого. Char-tables (символьные таблицы)
+это разряженные массивы, с доступом по любому корректному коду
+символа; они так же могут хранить произвольные объекты.
 
-  The first element of an array has index zero, the second element has
-index 1, and so on.  This is called @dfn{zero-origin} indexing.  For
-example, an array of four elements has indices 0, 1, 2, @w{and 3}.  The
-largest possible index value is one less than the length of the array.
-Once an array is created, its length is fixed.
+  Первый элемент массива имеет индекс 0, второй 1, и т.д.
+Такая нумерация называется (индексация начинающаяся с 0)@dfn{zero-origin} индексация.
+Например, массив из 4 элементов имеет индексы 0, 1, 2, @w{и 3}.
+Максимальный индекс на 1 меньше длины массива. После того как массив
+создан его размен не меняется.
 
-  All Emacs Lisp arrays are one-dimensional.  (Most other programming
-languages support multidimensional arrays, but they are not essential;
-you can get the same effect with nested one-dimensional arrays.)  Each
-type of array has its own read syntax; see the following sections for
-details.
+  Все Emacs Lisp массивы одна-размерные. (Большинство других
+языков программирования поддерживают много-мерные массивы, но они
+не являются необходимыми; их можно эмулировать используя
+в качестве элементов массивов другие массивы.) Каждый тип массивов
+имеет свой синтаксис считывания; они будут описаны в следующей
+секции.
 
-  The array type is a subset of the sequence type, and contains the
-string type, the vector type, the bool-vector type, and the char-table
-type.
+  Тип массивов является подтипом типа последовательной, и содержат
+строковый тип(string type), векторный тип(the vector type), тип двоичных
+векторов (the bool-vector type), и тип символьных таблиц (the char-table
+type).
 
 @node String Type
 @subsection String Type
 
-  A @dfn{string} is an array of characters.  Strings are used for many
-purposes in Emacs, as can be expected in a text editor; for example, as
-the names of Lisp symbols, as messages for the user, and to represent
-text extracted from buffers.  Strings in Lisp are constants: evaluation
-of a string returns the same string.
+  @dfn{Строка} (@dfn{string}) это массив символов(знаков). Строки
+много где используются, что ожидаемо для текстового редактора; например,
+как имена символов Lisp, сообщения пользователю, и представления
+текста буфера. Строки в Lisp являются константами: вычислению
+строки возвращает саму строку.
 
-  @xref{Strings and Characters}, for functions that operate on strings.
+  См. @xref{Strings and Characters}, для более
+детальной информации по функциям работы со строками.
 
 @menu
-* Syntax for Strings::      How to specify Lisp strings.
-* Non-ASCII in Strings::    International characters in strings.
-* Nonprinting Characters::  Literal unprintable characters in strings.
-* Text Props and Strings::  Strings with text properties.
+* Syntax for Strings::      Задание строк в Lisp.
+* Non-ASCII in Strings::    Международные символы в строках.
+* Nonprinting Characters::  Непечатаемые символы в строках.
+* Text Props and Strings::  Строки с текстовыми свойствами.
 @end menu
 
 @node Syntax for Strings
 @subsubsection Syntax for Strings
+Синтаксис строк.
 
 @cindex @samp{"} in strings
 @cindex double-quote in strings
 @cindex @samp{\} in strings
 @cindex backslash in strings
-  The read syntax for a string is a double-quote, an arbitrary number
-of characters, and another double-quote, @code{"like this"}.  To
-include a double-quote in a string, precede it with a backslash; thus,
-@code{"\""} is a string containing just one double-quote
-character.  Likewise, you can include a backslash by preceding it with
-another backslash, like this: @code{"this \\ is a single embedded
-backslash"}.
+  Строки записываются как двойная кавычка, произвольное
+количество символов(знаков), и другая двойная кавычка,
+@code{"вот так"}(@code{"like this"}). Для
+включения двойной кавычки в строку, нужно перед ней поставить
+обратный слеш; т.е. @code{"\""} это строка состоящая из 1
+двойной кавычки. Аналогично обратный слеш
+можно включить поставив перед ним обратный слеш,
+например @code{"это \\ один обратный слеш в строке"}.
 
 @cindex newline in strings
-  The newline character is not special in the read syntax for strings;
-if you write a new line between the double-quotes, it becomes a
-character in the string.  But an escaped newline---one that is preceded
-by @samp{\}---does not become part of the string; i.e., the Lisp reader
-ignores an escaped newline while reading a string.  An escaped space
-@w{@samp{\ }} is likewise ignored.
+  Перевод строки в строках. Символ перевода строки не является
+специальным; если ввести перевод строки между двойными
+кавычками, он будет являться частью строки. Но экранированный
+перевод строки с обратным слешем, не будет частью строки,
+т.е. считыватель Lisp игнорирует экранированные
+переводы строк при считывании. Экранированный пробел @w{@samp{\ }} так же
+игнорируется.
 
 @example
-"It is useful to include newlines
-in documentation strings,
-but the newline is \
-ignored if escaped."
-     @result{} "It is useful to include newlines
-in documentation strings,
-but the newline is ignored if escaped."
+"Это пример полезного включения перевода
+строки в документации, но
+перевод строки \
+игнорируется если экранировано."
+     @result{} "Это пример полезного включения перевода
+строки в документации, но
+перевод строки игнорируется если экранировано."
 @end example
 
 @node Non-ASCII in Strings
 @subsubsection Non-@acronym{ASCII} Characters in Strings
+  Не-@acronym{ASCII} символы(знаки) в строках.
 
-  There are two text representations for non-@acronym{ASCII}
-characters in Emacs strings: multibyte and unibyte (@pxref{Text
-Representations}).  Roughly speaking, unibyte strings store raw bytes,
-while multibyte strings store human-readable text.  Each character in
-a unibyte string is a byte, i.e., its value is between 0 and 255.  By
-contrast, each character in a multibyte string may have a value
-between 0 to 4194303 (@pxref{Character Type}).  In both cases,
-characters above 127 are non-@acronym{ASCII}.
+  Есть два текстовых представления не-@acronym{ASCII}
+символов в строках Emacs: много байтное и однобайтное
+(@pxref{Text Representations}). Грубо говоря, однобайтовые строки
+хранят просто байты, в то время как мультибайтовые строки
+хранят человеко-читаемый текст. Каждый знак в однобайтовой строки
+это байт, т.е., это значение между 0 и 255. В то время как,
+каждый знак в многобайтовой строке может быть
+значением от 0 до 4194303 (@pxref{Character Type}).
+В обоих случаях символы больше 127 не-@acronym{ASCII}.
 
-  You can include a non-@acronym{ASCII} character in a string constant
-by writing it literally.  If the string constant is read from a
-multibyte source, such as a multibyte buffer or string, or a file that
-would be visited as multibyte, then Emacs reads each
-non-@acronym{ASCII} character as a multibyte character and
-automatically makes the string a multibyte string.  If the string
-constant is read from a unibyte source, then Emacs reads the
-non-@acronym{ASCII} character as unibyte, and makes the string
-unibyte.
+  Можно включить не-@acronym{ASCII} символ в строковую
+константу прямо включив его в строку. Если строковая константа
+считывается из много-байтового исходника, такого как
+много-байтовый буфер или строка, или файл
+который открывается как много-байтовый, тогда Emacs
+считывает каждый не-@acronym{ASCII} символ(знак), как
+много-байтовый символ(знак) и автоматически превращает
+строку в много-байтовую. Если строковая константа
+считывается из одно-байтового исходника, то Emacs считывает
+не-@acronym{ASCII} символы(знаки) как одно-байтовые, и
+считанная строка будет одно-байтовой.
 
-  Instead of writing a character literally into a multibyte string,
-you can write it as its character code using an escape sequence.
-@xref{General Escape Syntax}, for details about escape sequences.
+  Вместо непосредственной записи символа(знака) в строку,
+можно писать код символ используя escape(экранированные)
+последовательности. См. @xref{General Escape Syntax} для
+более детальной информации по escape(экранированным) последовательностям.
 
-  If you use any Unicode-style escape sequence @samp{\uNNNN} or
-@samp{\U00NNNNNN} in a string constant (even for an @acronym{ASCII}
-character), Emacs automatically assumes that it is multibyte.
+  Если использовать Unicode escape последовательности
+@samp{\uNNNN} или @samp{\U00NNNNNN} в строковых константах
+(даже для @acronym{ASCII} символов(знаков)), Emacs будет
+рассматривать строку как много-байтовую.
 
-  You can also use hexadecimal escape sequences (@samp{\x@var{n}}) and
-octal escape sequences (@samp{\@var{n}}) in string constants.
-@strong{But beware:} If a string constant contains hexadecimal or
-octal escape sequences, and these escape sequences all specify unibyte
-characters (i.e., less than 256), and there are no other literal
-non-@acronym{ASCII} characters or Unicode-style escape sequences in
-the string, then Emacs automatically assumes that it is a unibyte
-string.  That is to say, it assumes that all non-@acronym{ASCII}
-characters occurring in the string are 8-bit raw bytes.
+  Так же можно использовать шестнадцатеричные(@samp{\x@var{n}}) и
+восьмеричные (@samp{\@var{n}}) escape последовательности в строковых
+константах. @strong{Но стоит учитывать:} если
+в строке есть шестнадцатеричные и восьмеричные escape последовательности,
+определяющие одно-байтовые знаки (код до 256), и нет Unicode
+и не-@acronym{ASCII} символов(знаков), тогда Emacs будет рассматривать
+строку как одно-байтовую. То есть, все не-@acronym{ASCII} символы
+в строки будут рассматриваться как 8-битные чистые (raw, сырые) байты.
 
-  In hexadecimal and octal escape sequences, the escaped character
-code may contain a variable number of digits, so the first subsequent
-character which is not a valid hexadecimal or octal digit terminates
-the escape sequence.  If the next character in a string could be
-interpreted as a hexadecimal or octal digit, write @w{@samp{\ }}
-(backslash and space) to terminate the escape sequence.  For example,
-@w{@samp{\xe0\ }} represents one character, @samp{a} with grave
-accent.  @w{@samp{\ }} in a string constant is just like
-backslash-newline; it does not contribute any character to the string,
-but it does terminate any preceding hex escape.
+  В шестнадцатеричных или восьмеричных escape последовательностях,
+escape символ(знак) может содержать произвольное количество
+цифр, при этом первый символ который не является корректной
+восьмеричной или шестнадцатеричной цифрой завершает escape последовательность.
+Если символ после escape последовательности может быть интерпретирован
+как шестнадцатеричная или восьмеричная цифра, стоит написать
+@w{@samp{\ }} (обратный слеш и пробел), для завершения escape последовательности.
+Например, @w{@samp{\xe0\ }} это один символ @samp{a}, с ударением.
+@w{@samp{\ }} в строке игнорируется как и если бы это был экранированный
+перевод строки, он нужен только для завершения шестнадцатеричной
+escape последовательности.
 
 @node Nonprinting Characters
 @subsubsection Nonprinting Characters in Strings
 
-  You can use the same backslash escape-sequences in a string constant
-as in character literals (but do not use the question mark that begins a
-character constant).  For example, you can write a string containing the
-nonprinting characters tab and @kbd{C-a}, with commas and spaces between
-them, like this: @code{"\t, \C-a"}.  @xref{Character Type}, for a
-description of the read syntax for characters.
+  Не печатные символы в строках.
 
-  However, not all of the characters you can write with backslash
-escape-sequences are valid in strings.  The only control characters that
-a string can hold are the @acronym{ASCII} control characters.  Strings do not
-distinguish case in @acronym{ASCII} control characters.
+  Можно использовать те же последовательности начинающиеся с обратного
+слеша в строковых константах, что и использовались для определения
+символов(знаков) (но без знака вопроса в начале). Например,
+можно создать строку содержащую не печатаемые символы tab и @kbd{C-a}
+с запятой и пробелом между ними, таким образом: @code{"\t, \C-a"}.
+Информация по синтаксису чтения символов(знаков) @xref{Character Type}.
 
-  Properly speaking, strings cannot hold meta characters; but when a
-string is to be used as a key sequence, there is a special convention
-that provides a way to represent meta versions of @acronym{ASCII}
-characters in a string.  If you use the @samp{\M-} syntax to indicate
-a meta character in a string constant, this sets the
+  Но, не все символы(знаки) которые могут быть записаны с использованием
+обратного слеша корректно использовать в строках. Строки могут
+хранить только управляющие символы для @acronym{ASCII}. Строки
+не различают регистр в @acronym{ASCII} управляющих символах.
+
+  Строго говоря, строки не могут хранить мета символы, но когда строка
+используется как последовательность клавиш, есть соглашение
+по представлению meta версий символов @acronym{ASCII} в строке.
+Если использовать @samp{\M-} синтаксис для указания, что это
+мета символ(знак) в строковой константе, будет установлен
 @tex
 @math{2^{7}}
 @end tex
 @ifnottex
 2**7
 @end ifnottex
-bit of the character in the string.  If the string is used in
-@code{define-key} or @code{lookup-key}, this numeric code is translated
-into the equivalent meta character.  @xref{Character Type}.
+бит символа(знака) в строке. Если строка используется
+в @code{define-key} или @code{lookup-key}, такой код будет
+преобразован в эквивалентный meta символ. @xref{Character Type}.
 
-  Strings cannot hold characters that have the hyper, super, or alt
-modifiers.
+  Строки не могут хранить символы, которые имеют hyper, super, или alt
+модификаторы.
 
 @node Text Props and Strings
 @subsubsection Text Properties in Strings
+Тестовые свойства в строках.
 
 @cindex @samp{#(} read syntax
 @cindex text properties, read syntax
-  A string can hold properties for the characters it contains, in
-addition to the characters themselves.  This enables programs that copy
-text between strings and buffers to copy the text's properties with no
-special effort.  @xref{Text Properties}, for an explanation of what text
-properties mean.  Strings with text properties use a special read and
-print syntax:
+  Строки могут хранить свойства для символов из которых они состоят,
+кроме непосредственно самих символов. Это позволяет программам, которые
+копируют текст между строками и буферами копировать тестовые свойства
+без дополнительных действий. @xref{Text Properties} содержит информацию
+по тому, что представляют собой свойства текста. Строки с текстовыми
+свойствами используют специальный синтаксис чтения и печати:
 
 @example
 #("@var{characters}" @var{property-data}...)
 @end example
 
 @noindent
-where @var{property-data} consists of zero or more elements, in groups
-of three as follows:
+где @var{property-data} состоит из 0 или более элементов, сгруппированным
+по трое:
 
 @example
 @var{beg} @var{end} @var{plist}
 @end example
 
 @noindent
-The elements @var{beg} and @var{end} are integers, and together specify
-a range of indices in the string; @var{plist} is the property list for
-that range.  For example,
+Элементы @var{beg} и @var{end} целые числа, и вместе определяют
+диапазон индексов строки, @var{plist} список свойств для заданного
+диапазона. Например,
 
 @example
 #("foo bar" 0 3 (face bold) 3 4 nil 4 7 (face italic))
 @end example
 
 @noindent
-represents a string whose textual contents are @samp{foo bar}, in which
-the first three characters have a @code{face} property with value
-@code{bold}, and the last three have a @code{face} property with value
-@code{italic}.  (The fourth character has no text properties, so its
-property list is @code{nil}.  It is not actually necessary to mention
-ranges with @code{nil} as the property list, since any characters not
-mentioned in any range will default to having no properties.)
+представляет строку, содержащую @samp{foo bar}, в которой первые
+3 символа имеют шрифт(@code{face}) свойство со значением @code{bold},
+и три крайних символа шрифт @code{italic}. (Четвертый символ не имеет свойств.
+Устанавливать свойство для интервала 3,4 не обязательно, так как если
+символы не входят ни в какой интервал со свойствами, они по умолчанию
+не будут иметь свойств, т.е. можно было бы написать так:
+
+@example
+#("foo bar" 0 3 (face bold) 4 7 (face italic))
+@end example
+
+)
 
 @node Vector Type
 @subsection Vector Type
 
-  A @dfn{vector} is a one-dimensional array of elements of any type.  It
-takes a constant amount of time to access any element of a vector.  (In
-a list, the access time of an element is proportional to the distance of
-the element from the beginning of the list.)
+  @dfn{Вектор} (@dfn{vector}) это одномерный массив элементов произвольного
+типа. Доступ к любому элементу вектора выполняется за константное время.
+(В списке, время доступа к элементу пропорционально положению элемента
+от начала списка.)
 
-  The printed representation of a vector consists of a left square
-bracket, the elements, and a right square bracket.  This is also the
-read syntax.  Like numbers and strings, vectors are considered constants
-for evaluation.
+    Печатная форма вектора состоит из левой квадратной скобки, элементов
+и правой квадратной скобки. Такая форма так же является синтаксисом чтения.
+Как числа и строки, вектора рассматриваются как константы при вычислении.
+(не до конца понятно что подразумевается под константами).
 
 @example
 [1 "two" (three)]      ; @r{A vector of three elements.}
      @result{} [1 "two" (three)]
 @end example
 
-  @xref{Vectors}, for functions that work with vectors.
+  См. @xref{Vectors}, по функциям работы с векторами.
 
 @node Char-Table Type
 @subsection Char-Table Type
 
-  A @dfn{char-table} is a one-dimensional array of elements of any type,
-indexed by character codes.  Char-tables have certain extra features to
-make them more useful for many jobs that involve assigning information
-to character codes---for example, a char-table can have a parent to
-inherit from, a default value, and a small number of extra slots to use for
-special purposes.  A char-table can also specify a single value for
-a whole character set.
+  @dfn{Символьная-таблица} (@dfn{char-table}) представляет собой
+одномерный массив элементов произвольного типа, с доступом по коду
+символа. Символьные-таблицы имеют ряд возможностей, делающих
+их удобными для многих задач которые включают присваивание информации
+кодам символов(знаков) -- например, символьные таблицы могут иметь
+родителя и наследовать его свойства, значение по умолчанию, небольшое
+количество дополнительных слотов для использования специальным образом.
+Символьные таблицы могут определять одного значение для целого множества
+символов(знаков).
 
 @cindex @samp{#^} read syntax
-  The printed representation of a char-table is like a vector
-except that there is an extra @samp{#^} at the beginning.@footnote{You
-may also encounter @samp{#^^}, used for sub-char-tables.}
-
-  @xref{Char-Tables}, for special functions to operate on char-tables.
-Uses of char-tables include:
+  Печатная форма символьной-таблицы, как и вектор ожидает
+@samp{#^} в начале.@footnote{Можно встретить  @samp{#^^},
+используемые для вложенных символьных таблиц (sub-char-tables).}
+  
+  См. @xref{Char-Tables}, по функциям работы с символьными таблицами.
+Использование символьных таблиц включает:
 
 @itemize @bullet
 @item
 Case tables (@pxref{Case Tables}).
 
 @item
-Character category tables (@pxref{Categories}).
+Таблицы категорий (Character category tables) (@pxref{Categories}).
 
 @item
 Display tables (@pxref{Display Tables}).
 
 @item
-Syntax tables (@pxref{Syntax Tables}).
+Таблицы синтаксиса (синтаксические таблицы) (@pxref{Syntax Tables}).
 @end itemize
 
 @node Bool-Vector Type
 @subsection Bool-Vector Type
 
-  A @dfn{bool-vector} is a one-dimensional array whose elements must
-be @code{t} or @code{nil}.
+  @dfn{Двоичный-вектор} (@dfn{bool-vector}) это одномерный массив, элементы
+которого @code{t} или @code{nil}. Печатное представление двоичного вектора
+выглядит как строка, за исключением того, что начинается с @samp{#&},
+за которым следует длина. Строковые константы, которые 
 
   The printed representation of a bool-vector is like a string, except
-that it begins with @samp{#&} followed by the length.  The string
-constant that follows actually specifies the contents of the bool-vector
-as a bitmap---each character in the string contains 8 bits, which
-specify the next 8 elements of the bool-vector (1 stands for @code{t},
-and 0 for @code{nil}).  The least significant bits of the character
-correspond to the lowest indices in the bool-vector.
+that it begins with @samp{#&} followed by the length. Строковая константа
+следующая за длиной определяет содержимое двоичного вектора как битовая маска---
+каждый символ в строке состоит из 8 бит, который определяет следующие
+8 элементов двоичного вектора (1 соответствует @code{t} и 0 @code{nil}).
+Самый меньший бит символа, соответствует самому маленькому индексу двоичного
+вектора.
 
 @example
 (make-bool-vector 3 t)
@@ -1217,13 +1288,12 @@ correspond to the lowest indices in the bool-vector.
 @end example
 
 @noindent
-These results make sense, because the binary code for @samp{C-g} is
-111 and @samp{C-@@} is the character with code 0.
+Такой результат, получается, потому что двоичный код @samp{C-g} равен 111
+и @samp{C-@@} это символ с кодом 0.
 
-  If the length is not a multiple of 8, the printed representation
-shows extra elements, but these extras really make no difference.  For
-instance, in the next example, the two bool-vectors are equal, because
-only the first 3 bits are used:
+  Если длина не степень 8, печатается представление, как если бы недостающие
+значение были nil. Например, в следующем примере, двоичные вектора
+эквивалентны, так как значимы только первые 3 бита:
 
 @example
 (equal #&3"\377" #&3"\007")
@@ -1233,10 +1303,10 @@ only the first 3 bits are used:
 @node Hash Table Type
 @subsection Hash Table Type
 
-    A hash table is a very fast kind of lookup table, somewhat like an
-alist in that it maps keys to corresponding values, but much faster.
-The printed representation of a hash table specifies its properties
-and contents, like this:
+    Хеш таблица это вид быстрых таблиц поиска, они похожи на alist
+в том что ставят в соответствие ключей и значений, но более быстрые.
+Печатное представление хеш таблицы определяет свойства и значения,
+как на примере:
 
 @example
 (make-hash-table)
@@ -1245,222 +1315,270 @@ and contents, like this:
 @end example
 
 @noindent
-@xref{Hash Tables}, for more information about hash tables.
+См. @xref{Hash Tables}, для более подробной информации по хеш таблицам.
 
 @node Function Type
 @subsection Function Type
 
-  Lisp functions are executable code, just like functions in other
-programming languages.  In Lisp, unlike most languages, functions are
-also Lisp objects.  A non-compiled function in Lisp is a lambda
-expression: that is, a list whose first element is the symbol
-@code{lambda} (@pxref{Lambda Expressions}).
+  Lisp функции это выполняемый код, как функции в других языках
+программирования. В Lisp, в отличие от большинства языков, функции
+тоже являются Lisp объектами. Не-скомпилированные функции в
+Lisp это lambda выражения, которые являются списками, в которых
+первый элемент символ @code{lambda} (@pxref{Lambda Expressions}).
 
-  In most programming languages, it is impossible to have a function
-without a name.  In Lisp, a function has no intrinsic name.  A lambda
-expression can be called as a function even though it has no name; to
-emphasize this, we also call it an @dfn{anonymous function}
-(@pxref{Anonymous Functions}).  A named function in Lisp is just a
-symbol with a valid function in its function cell (@pxref{Defining
-Functions}).
+  В большинстве языков программирования, не может быть
+безымянных функций (прим. на данный момент в большинстве языков
+есть безымянные функции). В Lisp, функция имеет внутренне имя. Lambda
+выражение может быть вызвано как функция даже если у него нет имени.
+Чтобы это отметить, такие функции будем называть @dfn{анонимные функции}
+(@dfn{anonymous function}) (@pxref{Anonymous Functions}). Именованные
+функции в Lisp это символы(объекты) у которых в ячейке функции
+хранится корректная функция (@pxref{Defining Functions}).
 
-  Most of the time, functions are called when their names are written in
-Lisp expressions in Lisp programs.  However, you can construct or obtain
-a function object at run time and then call it with the primitive
-functions @code{funcall} and @code{apply}.  @xref{Calling Functions}.
+  Как правило, функции вызываются по имени в выражениях Lisp
+программ. Но, можно создать функции во время работы программы и вызвать
+ее с помощью функций @code{funcall} или @code{apply}. @xref{Calling Functions}.
 
 @node Macro Type
 @subsection Macro Type
 
-  A @dfn{Lisp macro} is a user-defined construct that extends the Lisp
-language.  It is represented as an object much like a function, but with
-different argument-passing semantics.  A Lisp macro has the form of a
-list whose first element is the symbol @code{macro} and whose @sc{cdr}
-is a Lisp function object, including the @code{lambda} symbol.
+  @dfn{Lisp макрос} (@dfn{Lisp macro}) это определенный пользователем
+конструкт, который расширяет язык Lisp. Макрос представляется объектом
+похожим на функцию, но имеют другую семантику передачи и обработки
+аргументов. Lisp макрос представляется как список первый элемент
+которого символ @code{macro} и чей @sc{cdr} функция Lisp,
+включающий @code{lambda} символ.
 
-  Lisp macro objects are usually defined with the built-in
-@code{defmacro} macro, but any list that begins with @code{macro} is a
-macro as far as Emacs is concerned.  @xref{Macros}, for an explanation
-of how to write a macro.
+  Lisp макрос как правило определяется с использованием
+встроенного макроса @code{defmacro}, но в целом любой
+список начинающийся с @code{macro}, если он имеет отношение к Emacs.
+См. @xref{Macros} чтобы научится писать макросы.
 
-  @strong{Warning}: Lisp macros and keyboard macros (@pxref{Keyboard
-Macros}) are entirely different things.  When we use the word ``macro''
-without qualification, we mean a Lisp macro, not a keyboard macro.
+  @strong{Предупреждение}: Lisp макросы и клавиатурные макросы
+(@pxref{Keyboard Macros}) совершенно разные вещи. Далее если говорится 
+``macro''(``макрос) без уточнений, будет подразумеваться
+Lisp макрос, а не клавиатурный макрос.
 
 @node Primitive Function Type
 @subsection Primitive Function Type
 @cindex primitive function
 
-  A @dfn{primitive function} is a function callable from Lisp but
-written in the C programming language.  Primitive functions are also
-called @dfn{subrs} or @dfn{built-in functions}.  (The word ``subr'' is
-derived from ``subroutine''.)  Most primitive functions evaluate all
-their arguments when they are called.  A primitive function that does
-not evaluate all its arguments is called a @dfn{special form}
-(@pxref{Special Forms}).
+  @dfn{Базовая функция} (@dfn{primitive function}) это функция,
+которая может вызываться из Lisp, но написанная на C. Базовые функции
+так же называются @dfn{subrs} или @dfn{встроенные функции} (@dfn{built-in functions}).
+(``subr'' сокращение от ``subrouting''). Большинство базовых функций
+которые не вычисляются все свои аргументы называются @dfn{специальными формами}
+(@dfn{special form}) (@pxref{Special Forms}).
 
-  It does not matter to the caller of a function whether the function is
-primitive.  However, this does matter if you try to redefine a primitive
-with a function written in Lisp.  The reason is that the primitive
-function may be called directly from C code.  Calls to the redefined
-function from Lisp will use the new definition, but calls from C code
-may still use the built-in definition.  Therefore, @strong{we discourage
-redefinition of primitive functions}.
+  Для вызывающего кода нет разницы вызывает он функцию или базовую
+функцию. Но, при попытке переопределить базовую функцию, функцией
+написанной на Lisp они будут вести себя по разному. Так как базовая
+функция может быть вызвана напрямую из C кода. Вызов переопределенной
+функции из Lip будет использовать новое определение, но вызовы из
+C кода будут использовать базовое определение. Поэтому,
+@strong{не рекомендуется переопределять базовые функции}.
 
-  The term @dfn{function} refers to all Emacs functions, whether written
-in Lisp or C@.  @xref{Function Type}, for information about the
-functions written in Lisp.
 
-  Primitive functions have no read syntax and print in hash notation
-with the name of the subroutine.
+   Термин @dfn{function} относится ко всем функциям, написанным на Lisp
+или C@. См. @xref{Function Type}, для получения информации по функциям,
+написанным на Lisp.
+
+  Базовые функции не имеют синтаксиса считывания и печатаются в
+хеш нотации с именем подпрограммы.  
 
 @example
 @group
-(symbol-function 'car)          ; @r{Access the function cell}
-                                ;   @r{of the symbol.}
+(symbol-function 'car)          ; @r{Доступ к ячейки функции}
+                                ;   @r{символа.}
      @result{} #<subr car>
-(subrp (symbol-function 'car))  ; @r{Is this a primitive function?}
-     @result{} t                       ; @r{Yes.}
+(subrp (symbol-function 'car))  ; @r{Является ли это примитивной функций?}
+     @result{} t                       ; @r{Да.}
 @end group
 @end example
 
 @node Byte-Code Type
 @subsection Byte-Code Function Type
 
-@dfn{Byte-code function objects} are produced by byte-compiling Lisp
-code (@pxref{Byte Compilation}).  Internally, a byte-code function
-object is much like a vector; however, the evaluator handles this data
-type specially when it appears in a function call.  @xref{Byte-Code
-Objects}.
+@dfn{Функции объекты в байт-коде} (@dfn{Byte-code function objects})
+получаются при байт-компиляции Lisp кода (@pxref{Byte Compilation}).
+Внутренне, функции в байт-коде похожи на вектор, но, вычислитель (evaluator)
+обрабатывает этот тип данных особым образом когда
+он появляется в вызове функции. @xref{Byte-Code Objects}.
 
-The printed representation and read syntax for a byte-code function
-object is like that for a vector, with an additional @samp{#} before the
-opening @samp{[}.
+Печатная форма и синтаксис считывания для функций в байт-коде
+как у вектора, но с добавлением @samp{#} перед @samp{[}.
 
 @node Autoload Type
 @subsection Autoload Type
 
-  An @dfn{autoload object} is a list whose first element is the symbol
-@code{autoload}.  It is stored as the function definition of a symbol,
-where it serves as a placeholder for the real definition.  The autoload
-object says that the real definition is found in a file of Lisp code
-that should be loaded when necessary.  It contains the name of the file,
-plus some other information about the real definition.
+  @dfn{Автоматически загружаемый объект} (@dfn{autoload object}) это
+список первый элемент в котором символ @code{autoload}. Такой объект
+хранится как определение функции в символе, но при этом является
+указателем на настоящее определение. Автоматически загружаемый объект
+указывает, что настоящее определение можно найти в файле
+Lisp кода который должен быть загружен при необходимости. Объект
+хранит имя файла и некоторую другую информацию о настоящем определении.
 
-  After the file has been loaded, the symbol should have a new function
-definition that is not an autoload object.  The new definition is then
-called as if it had been there to begin with.  From the user's point of
-view, the function call works as expected, using the function definition
-in the loaded file.
+  После того, как файл будет загружен, функция в символе будет
+переопределена, и больше не должна быть авто-загружаемым объектом.
+Настоящее определение будет вызвано как будто оно и хранилось
+вместо авто-загружаемого объекта. С точки зрения пользователя, будет
+вызвана ожидаемая функция, из загруженного файла. (Прим. По большей
+части такие объекты нужны для того, чтобы не загружать
+часть кода сразу, а выполнять загрузку по мере необходимости.)
 
-  An autoload object is usually created with the function
-@code{autoload}, which stores the object in the function cell of a
-symbol.  @xref{Autoload}, for more details.
+  Авто-загружаемый объект как правило создается функцией
+@code{autoload}, которая загружает объект в ячейку функции
+символа (объекта). Более подробно см. @xref{Autoload}.
 
 @node Finalizer Type
 @subsection Finalizer Type
 
-  A @dfn{finalizer object} helps Lisp code clean up after objects that
-are no longer needed.  A finalizer holds a Lisp function object.
-When a finalizer object becomes unreachable after a garbage collection
-pass, Emacs calls the finalizer's associated function object.
-When deciding whether a finalizer is reachable, Emacs does not count
-references from finalizer objects themselves, allowing you to use
-finalizers without having to worry about accidentally capturing
-references to finalized objects themselves.
+  @dfn{Объект для сборки мусора(метод завершения, финализатор)}
+@dfn{finalizer object} помогает Lisp выполнить
+очистку больше не нужных объектов. Финализатор хранит объект функцию.
+Когда финализатор становится недоступен после выполнения
+сборки мусора, Emacs вызывает функцию связанную с финализатором.
+Когда Emacs определяет доступность финализатора, он не учитывает
+ссылки из объекта финализатора на себя, позволяя использовать
+финализатор не беспокоясь о захвате ссылок на очищаемые объекты.
 
-Errors in finalizers are printed to @code{*Messages*}.  Emacs runs
-a given finalizer object's associated function exactly once, even
-if that function fails.
+Ошибки в финализаторах печатаются в буфер @code{*Messages*}. Еmacs
+запускает функцию финализатора только один раз, даже если
+произошла ошибка.
 
 @defun make-finalizer function
-Make a finalizer that will run @var{function}.  @var{function} will be
-called after garbage collection when the returned finalizer object
-becomes unreachable.  If the finalizer object is reachable only
+Создает финализатор, который запустит функцию @var{function}.
+Функция будет вызвана после уборки мусора при которой полученный
+в результате вызова финализатор(объект для сборки мусора) будет
+недоступен. Если финализатор доступен только через объекта
+финализатора, он не считается доступным. @var{function}
+будет запущена один раз для каждого финализатора.
+
+(В оригинале написано, что в этом случае финализатор
+не доступен для решения нужно ли запускать функцию
+If the finalizer object is reachable only
 through references from finalizer objects, it does not count as
 reachable for the purpose of deciding whether to run @var{function}.
-@var{function} will be run once per finalizer object.
+@var{function} will be run once per finalizer object.)
 @end defun
 
 @node Editing Types
 @section Editing Types
 @cindex editing types
 
-  The types in the previous section are used for general programming
-purposes, and most of them are common to most Lisp dialects.  Emacs Lisp
-provides several additional data types for purposes connected with
-editing.
+  Типы в предыдущих секциях в основном используются при программировании,
+и большинство из них присутствуют в большинстве диалектов Lisp. Emacs
+Lisp предоставляет дополнительные типы данных связанные с задачами
+редактирования.
 
 @menu
-* Buffer Type::         The basic object of editing.
-* Marker Type::         A position in a buffer.
-* Window Type::         Buffers are displayed in windows.
-* Frame Type::          Windows subdivide frames.
-* Terminal Type::       A terminal device displays frames.
-* Window Configuration Type::   Recording the way a frame is subdivided.
-* Frame Configuration Type::    Recording the status of all frames.
-* Process Type::        A subprocess of Emacs running on the underlying OS.
-* Stream Type::         Receive or send characters.
-* Keymap Type::         What function a keystroke invokes.
-* Overlay Type::        How an overlay is represented.
-* Font Type::           Fonts for displaying text.
+* Buffer Type::         Базовый объект редактирования.
+* Marker Type::         Позиция в буфере.
+* Window Type::         Буферы отображаются в окнах.
+* Frame Type::          Типы фреймов.
+* Terminal Type::       Терминал на котором отображаются фреймы.
+* Window Configuration Type::   Сохранение разделения фрейма на окна.
+* Frame Configuration Type::    Сохранение информации по всем фреймам.
+* Process Type::        Под-процесс Emacs запущенный в основной ОС.
+* Stream Type::         Получение и отправка символов(знаков).
+* Keymap Type::         Привязка функций к комбинациям клавиш.
+* Overlay Type::        Отображение оверлея.
+* Font Type::           Шрифты отображаемого текста.
 @end menu
 
 @node Buffer Type
 @subsection Buffer Type
 
-  A @dfn{buffer} is an object that holds text that can be edited
-(@pxref{Buffers}).  Most buffers hold the contents of a disk file
-(@pxref{Files}) so they can be edited, but some are used for other
-purposes.  Most buffers are also meant to be seen by the user, and
-therefore displayed, at some time, in a window (@pxref{Windows}).  But
-a buffer need not be displayed in any window.  Each buffer has a
-designated position called @dfn{point} (@pxref{Positions}); most
-editing commands act on the contents of the current buffer in the
-neighborhood of point.  At any time, one buffer is the @dfn{current
-buffer}.
+  @dnf{Буфер} (@dfn{buffer}) это объект, который хранит текст
+для редактирования (@pxref{Buffers}). Большинство хранят содержимое
+файлов на диске (@pxref{Files}) и могут редактироваться, но
+некоторые используется для других целей. Большинство буферов предназначены
+для просмотра пользователем, и могут быть отображены в окне (@pxref{Windows}).
+Но буфер не обязан отображаться в каком-то окне (то есть может быть не видим).
+Каждый буфер имеет определенную(заданную) позицию называемую
+@dfn{точка}(курсор, @dfn{point}) (@pxref{Positions}), и большинство
+команд выполняемых с содержимым текущего буфера выполняется
+над текстом около точки. Всегда, один из буферов является @dfn{текущим}
+(@dfn{current buffer}).
 
-  The contents of a buffer are much like a string, but buffers are not
-used like strings in Emacs Lisp, and the available operations are
-different.  For example, you can insert text efficiently into an
-existing buffer, altering the buffer's contents, whereas inserting
-text into a string requires concatenating substrings, and the result
-is an entirely new string object.
+@c   A @dfn{buffer} is an object that holds text that can be edited
+@c (@pxref{Buffers}).  Most buffers hold the contents of a disk file
+@c (@pxref{Files}) so they can be edited, but some are used for other
+@c purposes.  Most buffers are also meant to be seen by the user, and
+@c therefore displayed, at some time, in a window (@pxref{Windows}).  But
+@c a buffer need not be displayed in any window.  Each buffer has a
+@c designated position called @dfn{point} (@pxref{Positions}); most
+@c editing commands act on the contents of the current buffer in the
+@c neighborhood of point.  At any time, one buffer is the @dfn{current
+@c buffer}.
 
-  Many of the standard Emacs functions manipulate or test the
-characters in the current buffer; a whole chapter in this manual is
-devoted to describing these functions (@pxref{Text}).
+  Содержимое буфера очень похоже на строку, но буферы не используются
+как строки в Emacs, с ними выполняются другие действия. Например, можно
+быстро вставить текст в существующих буфер, изменить содержимое
+буфера, в то время как вставка текст в строку требует объединения
+строк, и в результате получается другая строка.
+  
+@c   The contents of a buffer are much like a string, but buffers are not
+@c used like strings in Emacs Lisp, and the available operations are
+@c different.  For example, you can insert text efficiently into an
+@c existing buffer, altering the buffer's contents, whereas inserting
+@c text into a string requires concatenating substrings, and the result
+@c is an entirely new string object.
 
-  Several other data structures are associated with each buffer:
+  Многие стандартные функции Emacs управляют или выполняют проверки
+с символами(знаками) в текущем буфере; в данном руководстве им
+посвящена отдельная глава. (@pxref{Text})
+
+@c   Many of the standard Emacs functions manipulate or test the
+@c characters in the current buffer; a whole chapter in this manual is
+@c devoted to describing these functions (@pxref{Text}).
+
+  Ряд других структур данных связаны с каждым буфером:
+
+  @c Several other data structures are associated with each buffer:
 
 @itemize @bullet
 @item
-a local syntax table (@pxref{Syntax Tables});
+локальная синтаксическая таблица (@pxref{Syntax Tables});
 
 @item
-a local keymap (@pxref{Keymaps}); and,
+локальная таблица привязки клавиатурным комбинаций (@pxref{Keymaps}); и,
 
 @item
-a list of buffer-local variable bindings (@pxref{Buffer-Local Variables}).
+список с локальными для буфера переменными (@pxref{Buffer-Local Variables}).
 
 @item
-overlays (@pxref{Overlays}).
+оверлей (@pxref{Overlays}).
 
 @item
-text properties for the text in the buffer (@pxref{Text Properties}).
+текстовые свойства для буфера (@pxref{Text Properties}).
 @end itemize
 
 @noindent
-The local keymap and variable list contain entries that individually
-override global bindings or values.  These are used to customize the
-behavior of programs in different buffers, without actually changing the
-programs.
+Локальная раскладка (конфигурация сочетаний клавиш) и список
+локальных переменных содержат записи, которые независимо
+переопределяют глобальные сочетания или значения переменных.
+Такая возможность используется для настройки поведения программ
+в разных буферах, без изменения самих программ.
 
-  A buffer may be @dfn{indirect}, which means it shares the text
-of another buffer, but presents it differently.  @xref{Indirect Buffers}.
+@c The local keymap and variable list contain entries that individually
+@c override global bindings or values.  These are used to customize the
+@c behavior of programs in different buffers, without actually changing the
+@c programs.
 
-  Buffers have no read syntax.  They print in hash notation, showing the
-buffer name.
+  Буфер может быть @dfn{дополнительным} (@dfn{indirect}), что означает,
+что он разделяет текст с другим буфером, но отображает его по другому.
+@xref{Indirect Buffers}.
+
+@c   A buffer may be @dfn{indirect}, which means it shares the text
+@c of another buffer, but presents it differently.  @xref{Indirect Buffers}.
+
+  Буферы не имеют синтаксиса чтения, печатная форма буфера показывает
+имя буфера и записывается в хеш нотации.  
+
+@c   Buffers have no read syntax.  They print in hash notation, showing the
+@c buffer name.
 
 @example
 @group
@@ -1472,14 +1590,23 @@ buffer name.
 @node Marker Type
 @subsection Marker Type
 
-  A @dfn{marker} denotes a position in a specific buffer.  Markers
-therefore have two components: one for the buffer, and one for the
-position.  Changes in the buffer's text automatically relocate the
-position value as necessary to ensure that the marker always points
-between the same two characters in the buffer.
+  @dfn{Маркер} (@dfn{marker}) помечает позицию в буфере. Маркеры
+состоят из двух компонентов, один для хранения буфера и один для
+хранения позиции. Изменения в тексте буфера автоматически изменяют
+позицию маркера, чтобы обеспечить указывание маркера на позицию
+между одними и тебе же символами.
 
-  Markers have no read syntax.  They print in hash notation, giving the
-current character position and the name of the buffer.
+@c   A @dfn{marker} denotes a position in a specific buffer.  Markers
+@c therefore have two components: one for the buffer, and one for the
+@c position.  Changes in the buffer's text automatically relocate the
+@c position value as necessary to ensure that the marker always points
+@c between the same two characters in the buffer.
+
+  Маркеры не имеют синтаксиса чтения. Они печатаются в хеш нотации,
+показывающей позицию и имя буфера.
+
+@c   Markers have no read syntax.  They print in hash notation, giving the
+@c current character position and the name of the buffer.
 
 @example
 @group
@@ -1488,30 +1615,55 @@ current character position and the name of the buffer.
 @end group
 @end example
 
-@xref{Markers}, for information on how to test, create, copy, and move
-markers.
+См. @xref{Markers}, для получения дополнительной информации, по тому
+как проверять, создавать, копировать и перемещать маркеры.
+
+@c @xref{Markers}, for information on how to test, create, copy, and move
+@c markers.
 
 @node Window Type
 @subsection Window Type
 
-  A @dfn{window} describes the portion of the terminal screen that Emacs
-uses to display a buffer.  Every window has one associated buffer, whose
-contents appear in the window.  By contrast, a given buffer may appear
-in one window, no window, or several windows.
+  @dfn{Окно}(@dfn{window}) область экрана которую Emacs использует
+для отображения буфера. Каждое окно имеет один связанный буфер, содержимое
+которого отображается в окне. Для сравнения, буфер может отображаться
+в одном окне, ни в одном окне, или нескольких окнах.
 
-  Though many windows may exist simultaneously, at any time one window
-is designated the @dfn{selected window}.  This is the window where the
-cursor is (usually) displayed when Emacs is ready for a command.  The
-selected window usually displays the current buffer (@pxref{Current
-Buffer}), but this is not necessarily the case.
+@c   A @dfn{window} describes the portion of the terminal screen that Emacs
+@c uses to display a buffer.  Every window has one associated buffer, whose
+@c contents appear in the window.  By contrast, a given buffer may appear
+@c in one window, no window, or several windows.
 
-  Windows are grouped on the screen into frames; each window belongs to
-one and only one frame.  @xref{Frame Type}.
+  Хотя множество окон может существовать одновременно, всегда
+только одно окно обозначается @dfn{активным окном} (@dfn{selected window}).
+Обычно это окно в котором отображается курсор, если Emacs готов
+выполнять команды (прим. видимо, а не находится в ожидании).
+Активное окно обычно отображает текущий буфера (@pxref{Current
+Buffer}), но это не обязательно так.
 
-  Windows have no read syntax.  They print in hash notation, giving the
-window number and the name of the buffer being displayed.  The window
-numbers exist to identify windows uniquely, since the buffer displayed
-in any given window can change frequently.
+@c   Though many windows may exist simultaneously, at any time one window
+@c is designated the @dfn{selected window}.  This is the window where the
+@c cursor is (usually) displayed when Emacs is ready for a command.  The
+@c selected window usually displays the current buffer (@pxref{Current
+@c Buffer}), but this is not necessarily the case.
+
+  Окна сгруппированы на экране во фреймы (фрейм как правило соответствует
+окну X-window, а окно, соответствует прямоугольной области с текстом внутри
+X-window, которых в одном X-window окне может бтыь несколько). Каждое
+окно относится только к 1 фрейму. @xref{Frame Type}.
+
+@c   Windows are grouped on the screen into frames; each window belongs to
+@c one and only one frame.  @xref{Frame Type}.
+
+  Окна не имеют синтаксиса чтения. Они печатаются в хеш нотации,
+в которой отображается номер окна, и имя отображаемого буфера.
+Номер окна позволяет уникально идентифицировать окно, так как
+буферы отображаемые к заданном окне могут часто меняться.
+
+@c   Windows have no read syntax.  They print in hash notation, giving the
+@c window number and the name of the buffer being displayed.  The window
+@c numbers exist to identify windows uniquely, since the buffer displayed
+@c in any given window can change frequently.
 
 @example
 @group
@@ -1520,18 +1672,31 @@ in any given window can change frequently.
 @end group
 @end example
 
-  @xref{Windows}, for a description of the functions that work on windows.
+  См. @xref{Windows}, для получения более подробной информации по
+функция работы с окнами.  
 
 @node Frame Type
 @subsection Frame Type
 
-  A @dfn{frame} is a screen area that contains one or more Emacs
-windows; we also use the term ``frame'' to refer to the Lisp object
-that Emacs uses to refer to the screen area.
+  @dfn{Фрейм}(@dfn{frame}) это область экрана, которая хранит
+одно или более окон Emacs.  Термин ``фрейм''(``frame'') так же используется
+для обозначения Lisp объекта, который Emacs использует
+чтобы ссылаться на эту область экрана.
+(Прим. по сути frame это окно X-window или рабочая зона в
+терминале, в этом случае как правило возможен
+только один фрейм.)
 
-  Frames have no read syntax.  They print in hash notation, giving the
-frame's title, plus its address in core (useful to identify the frame
-uniquely).
+@c   A @dfn{frame} is a screen area that contains one or more Emacs
+@c windows; we also use the term ``frame'' to refer to the Lisp object
+@c that Emacs uses to refer to the screen area.
+
+  Фреймы не имеют синтаксиса чтение. Они печатаются в хеш нотации,
+в которой выводится заголовок (title) фрейма, его адрес в ядре
+(что полезно для уникальной идентификации фрейма).
+
+@c   Frames have no read syntax.  They print in hash notation, giving the
+@c frame's title, plus its address in core (useful to identify the frame
+@c uniquely).
 
 @example
 @group
@@ -1540,7 +1705,9 @@ uniquely).
 @end group
 @end example
 
-  @xref{Frames}, for a description of the functions that work on frames.
+  См. @xref{Frames}, для получения информации по функциям работы с фреймами.
+
+@c @xref{Frames}, for a description of the functions that work on frames.
 
 @node Terminal Type
 @subsection Terminal Type
