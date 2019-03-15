@@ -8,49 +8,67 @@
 @cindex integers
 @cindex numbers
 
-  GNU Emacs supports two numeric data types: @dfn{integers} and
-@dfn{floating-point numbers}.  Integers are whole numbers such as
-@minus{}3, 0, 7, 13, and 511.  Floating-point numbers are numbers with
-fractional parts, such as @minus{}4.5, 0.0, and 2.71828.  They can
-also be expressed in exponential notation: @samp{1.5e2} is the same as
-@samp{150.0}; here, @samp{e2} stands for ten to the second power, and
-that is multiplied by 1.5.  Integer computations are exact, though
-they may overflow.  Floating-point computations often involve rounding
-errors, as the numbers have a fixed amount of precision.
+    GNU Emacs supports поддерживает два числовых типа: @dfn{integers} и
+@dfn{floating-point numbers}.  Integers(Целые) это целые числа, такие как
+@minus{}3, 0, 7, 13, и 511.  Floating-point(Числа с плавающей точкой) числа с дробной частью,
+такие как @minus{}4.5, 0.0, и 2.71828. Дробные могут быть записаны с
+использованием экспоненты: @samp{1.5e2}, то же что и @samp{150.0}.
+В @samp{1.5e2}, @samp{e2} задает 10 в степени 2, и на это
+значение умножается 1.5. Целочисленные вычисления точные(без потерь), но
+возможны переполнения. Вычисления с дробными числами, как правило
+содержат ошибки округления, так как числа имеют ограниченную точность.
+
+@c   GNU Emacs supports two numeric data types: @dfn{integers} and
+@c @dfn{floating-point numbers}.  Integers are whole numbers such as
+@c @minus{}3, 0, 7, 13, and 511.  Floating-point numbers are numbers with
+@c fractional parts, such as @minus{}4.5, 0.0, and 2.71828.  They can
+@c also be expressed in exponential notation: @samp{1.5e2} is the same as
+@c @samp{150.0}; here, @samp{e2} stands for ten to the second power, and
+@c that is multiplied by 1.5.  Integer computations are exact, though
+@c they may overflow.  Floating-point computations often involve rounding
+@c errors, as the numbers have a fixed amount of precision.
 
 @menu
-* Integer Basics::            Representation and range of integers.
-* Float Basics::              Representation and range of floating point.
-* Predicates on Numbers::     Testing for numbers.
-* Comparison of Numbers::     Equality and inequality predicates.
-* Numeric Conversions::       Converting float to integer and vice versa.
-* Arithmetic Operations::     How to add, subtract, multiply and divide.
-* Rounding Operations::       Explicitly rounding floating-point numbers.
-* Bitwise Operations::        Logical and, or, not, shifting.
-* Math Functions::            Trig, exponential and logarithmic functions.
-* Random Numbers::            Obtaining random integers, predictable or not.
+* Integer Basics::            Представление и диапазон целых.
+* Float Basics::              Представление и диапазон дробных.
+* Predicates on Numbers::     Предикаты для чисел.
+* Comparison of Numbers::     Предикаты равенства и не равенства.
+* Numeric Conversions::       Конвертирование дробных в целые и наоборот.
+* Arithmetic Operations::     Сложение, вычитание, умножение и деление.
+* Rounding Operations::       Явное округление дробных чисел.
+* Bitwise Operations::        Логические и, или, нет, и сдвиг.
+* Math Functions::            Тригонометрические, экспоненциальные и логарифмические функции.
+* Random Numbers::            Получение случайных чисел предсказуемым и нет способами.
 @end menu
 
 @node Integer Basics
 @section Integer Basics
 
-  The range of values for an integer depends on the machine.  The
-minimum range is @minus{}536,870,912 to 536,870,911 (30 bits; i.e.,
+  Диапазон значение целых чисел зависит от компьютера. Минимальный
+диапазон @minus{}536,870,912 до 536,870,911, соответствует 30 битам.
+Т.е.
+
+@c   The range of values for an integer depends on the machine.  The
+@c minimum range is @minus{}536,870,912 to 536,870,911 (30 bits; i.e.,
+
 @ifnottex
 @minus{}2**29
 @end ifnottex
 @tex
 @math{-2^{29}}
 @end tex
-to
+до
 @ifnottex
 2**29 @minus{} 1),
 @end ifnottex
 @tex
 @math{2^{29}-1}),
 @end tex
-but many machines provide a wider range.  Many examples in this
-chapter assume the minimum integer width of 30 bits.
+но многие компьютеры предоставляют более широкий диапазон. Большинство
+примеров данной главы предполагают минимальный диапазон в 30 бит.
+
+@c but many machines provide a wider range.  Many examples in this
+@c chapter assume the minimum integer width of 30 bits.
 @cindex overflow
 
   The Lisp reader reads an integer as a sequence of digits with optional
@@ -74,14 +92,25 @@ Emacs range is treated as a floating-point number.
 @cindex hex numbers
 @cindex octal numbers
 @cindex reading numbers in hex, octal, and binary
-  The syntax for integers in bases other than 10 uses @samp{#}
-followed by a letter that specifies the radix: @samp{b} for binary,
-@samp{o} for octal, @samp{x} for hex, or @samp{@var{radix}r} to
-specify radix @var{radix}.  Case is not significant for the letter
-that specifies the radix.  Thus, @samp{#b@var{integer}} reads
-@var{integer} in binary, and @samp{#@var{radix}r@var{integer}} reads
-@var{integer} in radix @var{radix}.  Allowed values of @var{radix} run
-from 2 to 36.  For example:
+  Целые числа для систем счисления отличных от 10, записываются
+с использованием @samp{#} и символа определяющего
+основание системы счисления: @samp{b} для двоичной,
+@samp{o} для восьмеричной, @samp{x} для шестнадцатеричной, или
+@samp{@var{radix}r} для явного задания основания @var{radix}.
+Регистр значения не имеет. Таким образом: @samp{#b@var{integer}}
+будет прочитано как @var{integer} в двоичной системе,
+@samp{#@var{radix}r@var{integer}} будет прочитано как 
+@var{integer} в системе с основанием @var{radix}. Допустимые значения
+@var{radix} от 2 до 36. Например:
+
+@c   The syntax for integers in bases other than 10 uses @samp{#}
+@c followed by a letter that specifies the radix: @samp{b} for binary,
+@c @samp{o} for octal, @samp{x} for hex, or @samp{@var{radix}r} to
+@c specify radix @var{radix}.  Case is not significant for the letter
+@c that specifies the radix.  Thus, @samp{#b@var{integer}} reads
+@c @var{integer} in binary, and @samp{#@var{radix}r@var{integer}} reads
+@c @var{integer} in radix @var{radix}.  Allowed values of @var{radix} run
+@c from 2 to 36.  For example:
 
 @example
 #b101100 @result{} 44
@@ -90,22 +119,35 @@ from 2 to 36.  For example:
 #24r1k @result{} 44
 @end example
 
-  To understand how various functions work on integers, especially the
-bitwise operators (@pxref{Bitwise Operations}), it is often helpful to
-view the numbers in their binary form.
+  Для понимания того как разные функции работают с целыми, особенно
+битовые операторы  (@pxref{Bitwise Operations}), бывает полезно
+рассматривать числа в двоичной форме.
 
-  In 30-bit binary, the decimal integer 5 looks like this:
+@c   To understand how various functions work on integers, especially the
+@c bitwise operators (@pxref{Bitwise Operations}), it is often helpful to
+@c view the numbers in their binary form.
+
+  30-битное, число 5 выглядит как: 
+  @c In 30-bit binary, the decimal integer 5 looks like this:
 
 @example
 0000...000101 (30 bits total)
 @end example
 
 @noindent
-(The @samp{...} stands for enough bits to fill out a 30-bit word; in
-this case, @samp{...} stands for twenty 0 bits.  Later examples also
-use the @samp{...} notation to make binary integers easier to read.)
 
-  The integer @minus{}1 looks like this:
+(@samp{...} соответствует 0 необходимым для заполнения 30-битного слова.
+В примере @samp{...} соответствует 12 нулям. В дальнейших примерах
+аналогично будет использоваться запись с @samp{...}, для
+более наглядного представления целых чисел.)
+
+@c (The @samp{...} stands for enough bits to fill out a 30-bit word; in
+@c this case, @samp{...} stands for twenty 0 bits.  Later examples also
+@c use the @samp{...} notation to make binary integers easier to read.)
+
+  Число @minus{}1 выглядит так:
+
+  @c The integer @minus{}1 looks like this:
 
 @example
 1111...111111 (30 bits total)
@@ -113,27 +155,43 @@ use the @samp{...} notation to make binary integers easier to read.)
 
 @noindent
 @cindex two's complement
-@minus{}1 is represented as 30 ones.  (This is called @dfn{two's
-complement} notation.)
 
-  Subtracting 4 from @minus{}1 returns the negative integer @minus{}5.
-In binary, the decimal integer 4 is 100.  Consequently,
-@minus{}5 looks like this:
+@minus{}1 представляется как 30 единиц.  (Такая запись называется @dfn{two's
+complement} запись. дополнительный код)
+(Прим. https://ru.wikipedia.org/wiki/%D0%94%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9_%D0%BA%D0%BE%D0%B4).
+
+@c @minus{}1 is represented as 30 ones.  (This is called @dfn{two's
+@c complement} notation.)
+
+  Вычитание 4 из @minus{}1 вернет @minus{}5.
+В двоичной форме,  4 это 100. Следовательно,
+@minus{}5 будет выглядеть:
+
+@c   Subtracting 4 from @minus{}1 returns the negative integer @minus{}5.
+@c In binary, the decimal integer 4 is 100.  Consequently,
+@c @minus{}5 looks like this:
 
 @example
 1111...111011 (30 bits total)
 @end example
 
-  In this implementation, the largest 30-bit binary integer is
-536,870,911 in decimal.  In binary, it looks like this:
+  Для 30-битных целых, максимальное целое, в десятичной будет
+536,870,911. В двоичной форме, оно будет выглядеть как:
+
+@c   In this implementation, the largest 30-bit binary integer is
+@c 536,870,911 in decimal.  In binary, it looks like this:
 
 @example
 0111...111111 (30 bits total)
 @end example
 
-  Since the arithmetic functions do not check whether integers go
-outside their range, when you add 1 to 536,870,911, the value is the
-negative integer @minus{}536,870,912:
+  Так как арифметические функции не проверяют переполнение,
+если прибавить 1 к 536,870,911, значением будет
+@minus{}536,870,912:
+
+@c   Since the arithmetic functions do not check whether integers go
+@c outside their range, when you add 1 to 536,870,911, the value is the
+@c negative integer @minus{}536,870,912:
 
 @example
 (+ 1 536870911)
@@ -141,96 +199,147 @@ negative integer @minus{}536,870,912:
      @result{} 1000...000000 (30 bits total)
 @end example
 
-  Many of the functions described in this chapter accept markers for
-arguments in place of numbers.  (@xref{Markers}.)  Since the actual
-arguments to such functions may be either numbers or markers, we often
-give these arguments the name @var{number-or-marker}.  When the argument
-value is a marker, its position value is used and its buffer is ignored.
+  Многие функции описанные в этой главе принимают метки (маркеры, позиции в буфере)
+в аргументах на которых должны быть числа. (@xref{Markers}.) Таким
+аргументам часто дается имя @var{number-or-marker}. Когда значением
+аргумента является метка(маркер), в качестве значения используется
+значение позиции, а значение буфера игнорируется.
+
+@c   Many of the functions described in this chapter accept markers for
+@c arguments in place of numbers.  (@xref{Markers}.)  Since the actual
+@c arguments to such functions may be either numbers or markers, we often
+@c give these arguments the name @var{number-or-marker}.  When the argument
+@c value is a marker, its position value is used and its buffer is ignored.
 
 @cindex largest Lisp integer
 @cindex maximum Lisp integer
 @defvar most-positive-fixnum
-The value of this variable is the largest integer that Emacs Lisp can
-handle.  Typical values are
+Значение данной переменной соответствует максимальному целому, которое
+Emacs Lisp может обработать. Обычно это одно из значений:
+
+@c The value of this variable is the largest integer that Emacs Lisp can
+@c handle.  Typical values are
+
 @ifnottex
 2**29 @minus{} 1
 @end ifnottex
 @tex
 @math{2^{29}-1}
 @end tex
-on 32-bit and
+для 32-bit и
 @ifnottex
 2**61 @minus{} 1
 @end ifnottex
 @tex
 @math{2^{61}-1}
 @end tex
-on 64-bit platforms.
+для 64-bit платформ.
 @end defvar
 
 @cindex smallest Lisp integer
 @cindex minimum Lisp integer
 @defvar most-negative-fixnum
-The value of this variable is the smallest integer that Emacs Lisp can
-handle.  It is negative.  Typical values are
+Значение этой переменной соответствует наименьшему целому числу,
+которое Emacs Lisp может обработать. Значение отрицательное.
+Обычно оно равно одному из значений:
+@c The value of this variable is the smallest integer that Emacs Lisp can
+@c handle.  It is negative.  Typical values are
 @ifnottex
 @minus{}2**29
 @end ifnottex
 @tex
 @math{-2^{29}}
 @end tex
-on 32-bit and
+для 32-bit и
 @ifnottex
 @minus{}2**61
 @end ifnottex
 @tex
 @math{-2^{61}}
 @end tex
-on 64-bit platforms.
+для 64-bit платформ.
 @end defvar
 
-  In Emacs Lisp, text characters are represented by integers.  Any
-integer between zero and the value of @code{(max-char)}, inclusive, is
-considered to be valid as a character.  @xref{Character Codes}.
+  В Emacs Lisp, символы текста является целыми числами. Любое число
+от 0 до @code{(max-char)} включительно, может рассматриваться как
+корректный символ (знак). @xref{Character Codes}.
+
+@c   In Emacs Lisp, text characters are represented by integers.  Any
+@c integer between zero and the value of @code{(max-char)}, inclusive, is
+@c considered to be valid as a character.  @xref{Character Codes}.
 
 @node Float Basics
 @section Floating-Point Basics
 
 @cindex @acronym{IEEE} floating point
-  Floating-point numbers are useful for representing numbers that are
-not integral.  The range of floating-point numbers is
-the same as the range of the C data type @code{double} on the machine
-you are using.  On all computers currently supported by Emacs, this is
-double-precision @acronym{IEEE} floating point.
 
-  The read syntax for floating-point numbers requires either a decimal
-point, an exponent, or both.  Optional signs (@samp{+} or @samp{-})
-precede the number and its exponent.  For example, @samp{1500.0},
-@samp{+15e2}, @samp{15.0e+2}, @samp{+1500000e-3}, and @samp{.15e4} are
-five ways of writing a floating-point number whose value is 1500.
-They are all equivalent.  Like Common Lisp, Emacs Lisp requires at
-least one digit after any decimal point in a floating-point number;
-@samp{1500.} is an integer, not a floating-point number.
+  Числа с плавающей точкой используется для представления чисел
+с дробной частью. Диапазон значений чисел с плавающей точкой
+такой же как диапазон значений типа @code{double} в языке C, для
+используемого компьютера. На всех компьютерах поддерживающих
+Emacs, это дробный числа двойной-точности @acronym{IEEE}.
 
-  Emacs Lisp treats @code{-0.0} as numerically equal to ordinary zero
-with respect to @code{equal} and @code{=}.  This follows the
-@acronym{IEEE} floating-point standard, which says @code{-0.0} and
-@code{0.0} are numerically equal even though other operations can
-distinguish them.
+@c   Floating-point numbers are useful for representing numbers that are
+@c not integral.  The range of floating-point numbers is
+@c the same as the range of the C data type @code{double} on the machine
+@c you are using.  On all computers currently supported by Emacs, this is
+@c double-precision @acronym{IEEE} floating point.
+
+  Синтаксис чтения для чисел с плавающей точкой, требует наличие
+использования десятичной точки, экспоненты или их обоих. Перед числом
+могут стоять не обязательные (@samp{+} или @samp{-}).
+Например: @samp{1500.0},
+@samp{+15e2}, @samp{15.0e+2}, @samp{+1500000e-3}, и @samp{.15e4}
+пять способов записать число 1500 (тип числа будет дробное).
+Все способы записи эквивалентны. Как и в Common Lisp, Emacs Lisp
+требует, хотя бы 1 цифру после десятичной точки. Поэтому
+@samp{1500.} будет рассматриваться как целое, а не число
+с плавающей точкой.
+
+@c   The read syntax for floating-point numbers requires either a decimal
+@c point, an exponent, or both.  Optional signs (@samp{+} or @samp{-})
+@c precede the number and its exponent.  For example, @samp{1500.0},
+@c @samp{+15e2}, @samp{15.0e+2}, @samp{+1500000e-3}, and @samp{.15e4} are
+@c five ways of writing a floating-point number whose value is 1500.
+@c They are all equivalent.  Like Common Lisp, Emacs Lisp requires at
+@c least one digit after any decimal point in a floating-point number;
+@c @samp{1500.} is an integer, not a floating-point number.
+
+  Emacs Lisp рассматривает @code{-0.0} эквивалентным обычному нулю
+если сравнивать с помощью @code{equal} или @code{=}. Что соответствует
+стандарту @acronym{IEEE} для чисел с плавающей точкой.
+(Прим, но @code{equal} и @code{eq} для @code{-0.0} и @code{-0.} будет @code{nil}).
+
+@c   Emacs Lisp treats @code{-0.0} as numerically equal to ordinary zero
+@c with respect to @code{equal} and @code{=}.  This follows the
+@c @acronym{IEEE} floating-point standard, which says @code{-0.0} and
+@c @code{0.0} are numerically equal even though other operations can
+@c distinguish them. 
 
 @cindex positive infinity
 @cindex negative infinity
 @cindex infinity
 @cindex NaN
-  The @acronym{IEEE} floating-point standard supports positive
-infinity and negative infinity as floating-point values.  It also
-provides for a class of values called NaN, or ``not a number'';
-numerical functions return such values in cases where there is no
-correct answer.  For example, @code{(/ 0.0 0.0)} returns a NaN@.
-Although NaN values carry a sign, for practical purposes there is no other
-significant difference between different NaN values in Emacs Lisp.
 
-Here are read syntaxes for these special floating-point values:
+  Стандарт @acronym{IEEE} для чисел с плавающей точкой, поддерживает
+положительную и отрицательную бесконечность как значения с плавающей
+точкой. И класс значение называемых NaN, или ``не число'' (``not a number'').
+Функции работы с числами возвращают такие значения в ситуациях
+когда нет правильного значения. Например, @code{(/ 0.0 0.0)} вернет
+NaN@. Хотя NaN значения поддерживаю знак (положительный, отрицательный),
+на практике нет особой разницы между NaN значениями в Emacs Lisp.
+
+@c   The @acronym{IEEE} floating-point standard supports positive
+@c infinity and negative infinity as floating-point values.  It also
+@c provides for a class of values called NaN, or ``not a number'';
+@c numerical functions return such values in cases where there is no
+@c correct answer.  For example, @code{(/ 0.0 0.0)} returns a NaN@.
+@c Although NaN values carry a sign, for practical purposes there is no other
+@c significant difference between different NaN values in Emacs Lisp.
+
+Ниже приводится синтаксис чтения для таких значений с плавающей точкой:
+
+@c Here are read syntaxes for these special floating-point values:
 
 @table @asis
 @item infinity
@@ -239,35 +348,54 @@ Here are read syntaxes for these special floating-point values:
 @samp{0.0e+NaN} and @samp{-0.0e+NaN}
 @end table
 
-  The following functions are specialized for handling floating-point
-numbers:
+  Приведенные ниже функции предназначены для работы с
+числами с плавающей точкой.
+
+@c   The following functions are specialized for handling floating-point
+@c numbers:
 
 @defun isnan x
-This predicate returns @code{t} if its floating-point argument is a NaN,
-@code{nil} otherwise.
+Предикат, возвращает которые  если аргумент является NaN значением,
+иначе @code{nil}.
+
+@c This predicate returns @code{t} if its floating-point argument is a NaN,
+@c @code{nil} otherwise.
 @end defun
 
 @defun frexp x
-This function returns a cons cell @code{(@var{s} . @var{e})},
-where @var{s} and @var{e} are respectively the significand and
-exponent of the floating-point number @var{x}.
+Функция возвращает cons ячейку @code{(@var{s} . @var{e})},
+где @var{s} и @var{e} являются значением
+и экспонентой числа с плавающей точкой @var{x}.
 
-If @var{x} is finite, then @var{s} is a floating-point number between 0.5
-(inclusive) and 1.0 (exclusive), @var{e} is an integer, and
+@c This function returns a cons cell @code{(@var{s} . @var{e})},
+@c where @var{s} and @var{e} are respectively the significand and
+@c exponent of the floating-point number @var{x}.
+
+Если @var{x} конечно, тогда @var{s} значение от 0.5 включительно до
+1.0 (не включительно), @var{e} целое значение, и 
+@c If @var{x} is finite, then @var{s} is a floating-point number between 0.5
+@c (inclusive) and 1.0 (exclusive), @var{e} is an integer, and
 @ifnottex
 @var{x} = @var{s} * 2**@var{e}.
 @end ifnottex
 @tex
 @math{x = s 2^e}.
 @end tex
-If @var{x} is zero or infinity, then @var{s} is the same as @var{x}.
-If @var{x} is a NaN, then @var{s} is also a NaN@.
-If @var{x} is zero, then @var{e} is 0.
+Если @var{x} ноль или бесконечность, тогда @var{s} то же что @var{x}.
+Если @var{x} NaN, тогда @var{s} тоже NaN@.
+Если @var{x} ноль, тогда @var{e} тоже 0.
+
+@c If @var{x} is zero or infinity, then @var{s} is the same as @var{x}.
+@c If @var{x} is a NaN, then @var{s} is also a NaN@.
+@c If @var{x} is zero, then @var{e} is 0.
 @end defun
 
 @defun ldexp s e
-Given a numeric significand @var{s} and an integer exponent @var{e},
-this function returns the floating point number
+Для заданных значимой части @var{s} и экспоненте @var{e}, возвращает
+число с плавающей точкой.
+
+@c Given a numeric significand @var{s} and an integer exponent @var{e},
+@c this function returns the floating point number
 @ifnottex
 @var{s} * 2**@var{e}.
 @end ifnottex
@@ -277,14 +405,21 @@ this function returns the floating point number
 @end defun
 
 @defun copysign x1 x2
-This function copies the sign of @var{x2} to the value of @var{x1},
-and returns the result.  @var{x1} and @var{x2} must be floating point.
+Функция копирует знак @var{x2} в @var{x1} и возвращает результат.
+@var{x1} и @var{x2} должны быть числами с плавающей точкой.
+
+@c This function copies the sign of @var{x2} to the value of @var{x1},
+@c and returns the result.  @var{x1} and @var{x2} must be floating point.
 @end defun
 
 @defun logb x
-This function returns the binary exponent of @var{x}.  More
-precisely, the value is the logarithm base 2 of @math{|x|}, rounded
-down to an integer.
+Функция возвращает двоичную экспоненту числа @var{x}. Если
+точно, то возвращается  значение логарифма по основанию 2, от
+@math{|x|}, округленное вниз до целого.
+
+@c This function returns the binary exponent of @var{x}.  More
+@c precisely, the value is the logarithm base 2 of @math{|x|}, rounded
+@c down to an integer.
 
 @example
 (logb 10)
@@ -298,44 +433,68 @@ down to an integer.
 @section Type Predicates for Numbers
 @cindex predicates for numbers
 
-  The functions in this section test for numbers, or for a specific
-type of number.  The functions @code{integerp} and @code{floatp} can
-take any type of Lisp object as argument (they would not be of much
-use otherwise), but the @code{zerop} predicate requires a number as
-its argument.  See also @code{integer-or-marker-p} and
-@code{number-or-marker-p}, in @ref{Predicates on Markers}.
+  Предикаты для чисел.
+  Функции в данном разделе используются для проверки чисел.
+Функции @code{integerp} и @code{floatp} могут принимать аргумент любого типа,
+но @code{zerop} требует число в качестве параметра.
+Так же стоит обратить внимание на @code{integer-or-marker-p} и
+@code{number-or-marker-p}, в @ref{Predicates on Markers}.
+
+@c   The functions in this section test for numbers, or for a specific
+@c type of number.  The functions @code{integerp} and @code{floatp} can
+@c take any type of Lisp object as argument (they would not be of much
+@c use otherwise), but the @code{zerop} predicate requires a number as
+@c its argument.  See also @code{integer-or-marker-p} and
+@c @code{number-or-marker-p}, in @ref{Predicates on Markers}.
 
 @defun floatp object
-This predicate tests whether its argument is floating point
-and returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет является ли аргумент число с плавающей точкой,
+и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This predicate tests whether its argument is floating point
+@c and returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun integerp object
-This predicate tests whether its argument is an integer, and returns
-@code{t} if so, @code{nil} otherwise.
+Функция проверяет является ли аргумент целым числом,
+и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This predicate tests whether its argument is an integer, and returns
+@c @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun numberp object
-This predicate tests whether its argument is a number (either integer or
-floating point), and returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет является ли аргумент числом (целым числом или числом с плавающей точкой),
+и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This predicate tests whether its argument is a number (either integer or
+@c floating point), and returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun natnump object
 @cindex natural numbers
-This predicate (whose name comes from the phrase ``natural number'')
-tests to see whether its argument is a nonnegative integer, and
-returns @code{t} if so, @code{nil} otherwise.  0 is considered
-non-negative.
+Предикат проверяет является ли число ``натуральным числом''?
+то есть является целым и не отрицательным, и возвращает
+@code{t} если да, и @code{nil} если нет. 0 рассматривается
+как целое число.
+
+@c This predicate (whose name comes from the phrase ``natural number'')
+@c tests to see whether its argument is a nonnegative integer, and
+@c returns @code{t} if so, @code{nil} otherwise.  0 is considered
+@c non-negative.
 
 @findex wholenump
 @code{wholenump} is a synonym for @code{natnump}.
 @end defun
 
 @defun zerop number
-This predicate tests whether its argument is zero, and returns @code{t}
-if so, @code{nil} otherwise.  The argument must be a number.
+Предикат проверяет, что аргумент равен 0, и возвращает @code{t} если да,
+и @code{nil} если нет. Аргумент должен быть числом.
 
-@code{(zerop x)} is equivalent to @code{(= x 0)}.
+@c This predicate tests whether its argument is zero, and returns @code{t}
+@c if so, @code{nil} otherwise.  The argument must be a number.
+
+@code{(zerop x)} эквивалентно @code{(= x 0)}.
 @end defun
 
 @node Comparison of Numbers
@@ -343,32 +502,61 @@ if so, @code{nil} otherwise.  The argument must be a number.
 @cindex number comparison
 @cindex comparing numbers
 
-  To test numbers for numerical equality, you should normally use
-@code{=}, not @code{eq}.  There can be many distinct floating-point
-objects with the same numeric value.  If you use @code{eq} to
-compare them, then you test whether two values are the same
-@emph{object}.  By contrast, @code{=} compares only the numeric values
-of the objects.
+  Сравнение чисел.
 
-  In Emacs Lisp, each integer is a unique Lisp object.
-Therefore, @code{eq} is equivalent to @code{=} where integers are
-concerned.  It is sometimes convenient to use @code{eq} for comparing
-an unknown value with an integer, because @code{eq} does not report an
-error if the unknown value is not a number---it accepts arguments of
-any type.  By contrast, @code{=} signals an error if the arguments are
-not numbers or markers.  However, it is better programming practice to
-use @code{=} if you can, even for comparing integers.
+  Для проверки чисел на равенство, как правило нужно использовать
+@code{=}, а не @code{eq}. Может быть много чисел с плавающей точкой
+имеющих одно значение. Если использовать @code{eq} для сравнения
+будет выполняться проверка, что они являются одним и тем же @emph{объектом}.
+@code{=} сравнивает значение чисел.
 
-  Sometimes it is useful to compare numbers with @code{equal}, which
-treats two numbers as equal if they have the same data type (both
-integers, or both floating point) and the same value.  By contrast,
-@code{=} can treat an integer and a floating-point number as equal.
-@xref{Equality Predicates}.
+@c   To test numbers for numerical equality, you should normally use
+@c @code{=}, not @code{eq}.  There can be many distinct floating-point
+@c objects with the same numeric value.  If you use @code{eq} to
+@c compare them, then you test whether two values are the same
+@c @emph{object}.  By contrast, @code{=} compares only the numeric values
+@c of the objects.
 
-  There is another wrinkle: because floating-point arithmetic is not
-exact, it is often a bad idea to check for equality of floating-point
-values.  Usually it is better to test for approximate equality.
-Here's a function to do this:
+  В Emacs Lisp, каждое целое является уникальным Lisp объектом.
+Поэтому, @code{eq} будет работать так же как @code{=}, для целых.
+В некоторых случаях удобно сравнивать неизвестное значение
+с целым при помощи @code{eq}, потому что @code{eq}, не будет
+сообщать об ошибке если неизвестное значение не число---@code{eq}
+принимает аргументы любого типа. В свою очередь
+@code{=} будет сообщать об ошибке, если аргументы не числа
+или маркеры. Но, хорошей практикой считается, использование
+@code{=} если это возможно, даже если сравниваются целые числа.
+
+@c   In Emacs Lisp, each integer is a unique Lisp object.
+@c Therefore, @code{eq} is equivalent to @code{=} where integers are
+@c concerned.  It is sometimes convenient to use @code{eq} for comparing
+@c an unknown value with an integer, because @code{eq} does not report an
+@c error if the unknown value is not a number---it accepts arguments of
+@c any type.  By contrast, @code{=} signals an error if the arguments are
+@c not numbers or markers.  However, it is better programming practice to
+@c use @code{=} if you can, even for comparing integers.
+
+Иногда полезно сравнить числа с использованием @code{equal}, в которой
+два числа считаются равными если они относятся к одному типу
+(оба целые или оба с плавающей точкой) и имеют одно значение.
+В то время как @code{=} может считать целое и число с плавающей
+точкой равными. @xref{Equality Predicates}.
+
+@c Sometimes it is useful to compare numbers with @code{equal}, which
+@c treats two numbers as equal if they have the same data type (both
+@c integers, or both floating point) and the same value.  By contrast,
+@c @code{=} can treat an integer and a floating-point number as equal.
+@c @xref{Equality Predicates}.
+
+  Совет: так как числа с плавающей точкой не точные, часто
+сравнение их на равенство является ошибкой. Как правило
+более правильным является проверка их приблизительного равенства.
+Ниже приводится функция делающая это:
+
+@c   There is another wrinkle: because floating-point arithmetic is not
+@c exact, it is often a bad idea to check for equality of floating-point
+@c values.  Usually it is better to test for approximate equality.
+@c Here's a function to do this:
 
 @example
 (defvar fuzz-factor 1.0e-6)
@@ -381,54 +569,88 @@ Here's a function to do this:
 
 @cindex CL note---integers vrs @code{eq}
 @quotation
-@b{Common Lisp note:} Comparing numbers in Common Lisp always requires
-@code{=} because Common Lisp implements multi-word integers, and two
-distinct integer objects can have the same numeric value.  Emacs Lisp
-can have just one integer object for any given value because it has a
-limited range of integers.
+@b{Common Lisp note:}  Сравнение чисел в Common Lisp всегда
+требует @code{=}, так как в Common Lisp реализованы много-словные целые,
+и два разных числовых объекта могут иметь одно и тоже числовое значение.
+Emacs Lisp имеет только один объект для каждого целого, поэтому
+в Emacs Lisp ограниченный диапазон целых.
+
+@c Comparing numbers in Common Lisp always requires
+@c @code{=} because Common Lisp implements multi-word integers, and two
+@c distinct integer objects can have the same numeric value.  Emacs Lisp
+@c can have just one integer object for any given value because it has a
+@c limited range of integers.
 @end quotation
 
 @defun = number-or-marker &rest number-or-markers
-This function tests whether all its arguments are numerically equal,
-and returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет являются ли все ее аргументы равными как числа,
+и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This function tests whether all its arguments are numerically equal,
+@c and returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun eql value1 value2
-This function acts like @code{eq} except when both arguments are
-numbers.  It compares numbers by type and numeric value, so that
-@code{(eql 1.0 1)} returns @code{nil}, but @code{(eql 1.0 1.0)} and
-@code{(eql 1 1)} both return @code{t}.
+Функция работает как @code{eq}, кроме случая когда оба аргумента
+числа. Она сравнивает числа по типу и числовому значению, поэтому
+@code{(eql 1.0 1)} вернет @code{nil}, но @code{(eql 1.0 1.0)} и
+@code{(eql 1 1)} вернут @code{t}.
+
+@c This function acts like @code{eq} except when both arguments are
+@c numbers.  It compares numbers by type and numeric value, so that
+@c @code{(eql 1.0 1)} returns @code{nil}, but @code{(eql 1.0 1.0)} and
+@c @code{(eql 1 1)} both return @code{t}.
 @end defun
 
 @defun /= number-or-marker1 number-or-marker2
-This function tests whether its arguments are numerically equal, and
-returns @code{t} if they are not, and @code{nil} if they are.
+Функция проверяет являются ли ее аргументы равными как числа, и
+возвращает @code{t} если нет, и @code{nil} если да.
+
+@c This function tests whether its arguments are numerically equal, and
+@c returns @code{t} if they are not, and @code{nil} if they are.
 @end defun
 
 @defun <  number-or-marker &rest number-or-markers
-This function tests whether each argument is strictly less than the
-following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет, является ли каждый ее аргумент строго меньшим
+чем следующий, и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This function tests whether each argument is strictly less than the
+@c following argument.  It returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun <= number-or-marker &rest number-or-markers
-This function tests whether each argument is less than or equal to
-the following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет является ли каждый аргумент меньшим или равным
+следующего, и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This function tests whether each argument is less than or equal to
+@c the following argument.  It returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun > number-or-marker &rest number-or-markers
-This function tests whether each argument is strictly greater than
-the following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет является ли каждый аргумент строго большим
+чем следующий, и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This function tests whether each argument is strictly greater than
+@c the following argument.  It returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun >= number-or-marker &rest number-or-markers
-This function tests whether each argument is greater than or equal to
-the following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Функция проверяет является ли каждый ее аргумент большим или равным следующему,
+и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This function tests whether each argument is greater than or equal to
+@c the following argument.  It returns @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @defun max number-or-marker &rest numbers-or-markers
-This function returns the largest of its arguments.
-If any of the arguments is floating point, the value is returned
-as floating point, even if it was given as an integer.
+Функция возвращает наибольший из аргументов.
+Если какие-то аргументы с плавающей точкой, возвращается
+значение с плавающей точкой, даже если самое большое
+значение было задано как целое.
+
+@c This function returns the largest of its arguments.
+@c If any of the arguments is floating point, the value is returned
+@c as floating point, even if it was given as an integer.
 
 @example
 (max 20)
@@ -441,9 +663,14 @@ as floating point, even if it was given as an integer.
 @end defun
 
 @defun min number-or-marker &rest numbers-or-markers
-This function returns the smallest of its arguments.
-If any of the arguments is floating point, the value is returned
-as floating point, even if it was given as an integer.
+Функция возвращает наименьший из аргументов.
+Если какие-то аргументы с плавающей точкой, возвращается
+значение с плавающей точкой, даже если самое большое
+значение было задано как целое.
+
+@c This function returns the smallest of its arguments.
+@c If any of the arguments is floating point, the value is returned
+@c as floating point, even if it was given as an integer.
 
 @example
 (min -4 1)
@@ -452,7 +679,9 @@ as floating point, even if it was given as an integer.
 @end defun
 
 @defun abs number
-This function returns the absolute value of @var{number}.
+Функция возвращает абсолютное значение @var{number} (модуль числа). 
+
+@c This function returns the absolute value of @var{number}.
 @end defun
 
 @node Numeric Conversions
@@ -461,28 +690,50 @@ This function returns the absolute value of @var{number}.
 @cindex number conversions
 @cindex converting numbers
 
-To convert an integer to floating point, use the function @code{float}.
+Для преобразования целого в число с плавающей точкой, используется
+функция @code{float}.
+
+@c To convert an integer to floating point, use the function @code{float}.
 
 @defun float number
-This returns @var{number} converted to floating point.
-If @var{number} is already floating point, @code{float} returns
-it unchanged.
+Функция возвращает @var{number} преобразованное в число с плавающей
+точкой. Если @var{number} уже число с плавающей точкой,
+@code{float} возвращает его без изменений.
+
+@c This returns @var{number} converted to floating point.
+@c If @var{number} is already floating point, @code{float} returns
+@c it unchanged.
 @end defun
 
-  There are four functions to convert floating-point numbers to
-integers; they differ in how they round.  All accept an argument
-@var{number} and an optional argument @var{divisor}.  Both arguments
-may be integers or floating-point numbers.  @var{divisor} may also be
-@code{nil}.  If @var{divisor} is @code{nil} or omitted, these
-functions convert @var{number} to an integer, or return it unchanged
-if it already is an integer.  If @var{divisor} is non-@code{nil}, they
-divide @var{number} by @var{divisor} and convert the result to an
-integer.  If @var{divisor} is zero (whether integer or
-floating point), Emacs signals an @code{arith-error} error.
+  Есть четыре функции для преобразования чисел с плавающей
+точкой в целые, которые отличаются способом округления.
+Все принимают аргумент @var{number} и не обязательный аргумент
+@var{divisor} (фактор). Оба аргумента могут быть целыми или
+числами с плавающей точкой. @var{divisor} так же может быть
+@code{nil}. Если @var{divisor} @code{nil} или не задан, функция
+преобразует число в целое, или возвращает его не измененным
+если оно уже целое. Если @var{divisor} не-@code{nil}, тогда
+функция делит @var{number} на @var{divisor} и преобразует результат
+в целое. Если @var{divisor} ноль (целое или число с плавающей точкой),
+Emacs сообщит об арифметической ошибке @code{arith-error}.
+
+@c   There are four functions to convert floating-point numbers to
+@c integers; they differ in how they round.  All accept an argument
+@c @var{number} and an optional argument @var{divisor}.  Both arguments
+@c may be integers or floating-point numbers.  @var{divisor} may also be
+@c @code{nil}.  If @var{divisor} is @code{nil} or omitted, these
+@c functions convert @var{number} to an integer, or return it unchanged
+@c if it already is an integer.  If @var{divisor} is non-@code{nil}, they
+@c divide @var{number} by @var{divisor} and convert the result to an
+@c integer.  If @var{divisor} is zero (whether integer or
+@c floating point), Emacs signals an @code{arith-error} error.
 
 @defun truncate number &optional divisor
-This returns @var{number}, converted to an integer by rounding towards
-zero.
+Функция возвращает @var{number}, преобразованное к целому с
+округлением к 0.
+
+@c This returns @var{number}, converted to an integer by rounding towards
+@c zero.
 
 @example
 (truncate 1.2)
@@ -497,11 +748,19 @@ zero.
 @end defun
 
 @defun floor number &optional divisor
-This returns @var{number}, converted to an integer by rounding downward
-(towards negative infinity).
+Функция возвращает @var{number}, преобразованное в целое, с округлением
+вниз (к отрицательной бесконечности).
 
-If @var{divisor} is specified, this uses the kind of division
-operation that corresponds to @code{mod}, rounding downward.
+@c This returns @var{number}, converted to an integer by rounding downward
+@c (towards negative infinity).
+
+Если @var{divisor} задан, функция использует деление
+соответствующее @code{mod}, округленное вниз.
+(Прим. про @code{mod} возможно имеется ввиду,
+что остаток не влияет на результат.)
+
+@c If @var{divisor} is specified, this uses the kind of division
+@c operation that corresponds to @code{mod}, rounding downward.
 
 @example
 (floor 1.2)
@@ -518,8 +777,11 @@ operation that corresponds to @code{mod}, rounding downward.
 @end defun
 
 @defun ceiling number &optional divisor
-This returns @var{number}, converted to an integer by rounding upward
-(towards positive infinity).
+Функция возвращает @var{number}, преобразованное к целому с окрглением
+вверх (к положительной бесконечности).
+
+@c This returns @var{number}, converted to an integer by rounding upward
+@c (towards positive infinity).
 
 @example
 (ceiling 1.2)
@@ -534,9 +796,13 @@ This returns @var{number}, converted to an integer by rounding upward
 @end defun
 
 @defun round number &optional divisor
-This returns @var{number}, converted to an integer by rounding towards the
-nearest integer.  Rounding a value equidistant between two integers
-returns the even integer.
+Функция возвращает @var{number}, преобразованное к целому, с округлением
+к ближайшему целому. Округление для чисел с ~0.5 дробной частью возвращает
+ближайшее четное
+
+@c This returns @var{number}, converted to an integer by rounding towards the
+@c nearest integer.  Rounding a value equidistant between two integers
+@c returns the even integer.
 
 @example
 (round 1.2)
@@ -547,6 +813,8 @@ returns the even integer.
      @result{} -1
 (round -1.7)
      @result{} -2
+(round 0.50000000000000001)
+     @result{} 0
 @end example
 @end defun
 
@@ -554,20 +822,37 @@ returns the even integer.
 @section Arithmetic Operations
 @cindex arithmetic operations
 
-  Emacs Lisp provides the traditional four arithmetic operations
-(addition, subtraction, multiplication, and division), as well as
-remainder and modulus functions, and functions to add or subtract 1.
-Except for @code{%}, each of these functions accepts both integer and
-floating-point arguments, and returns a floating-point number if any
-argument is floating point.
+  Арифметические операции.
 
-  Emacs Lisp arithmetic functions do not check for integer overflow.
-Thus @code{(1+ 536870911)} may evaluate to
-@minus{}536870912, depending on your hardware.
+  Emacs Lisp предоставляет стандартные четыре арифметических операции
+(сложение, вычитание, умножение, деление), а так же функции деления
+с остатком и взятие модуля, функции добавления или вычитания 1.
+Все функции кроме @code{%}, принимают в качестве аргументов как
+целые числа так и числа с плавающей точкой, и возвращают число
+с плавающей точкой, если хотя бы один из аргументов число с плавающей
+точкой.
+
+@c   Emacs Lisp provides the traditional four arithmetic operations
+@c (addition, subtraction, multiplication, and division), as well as
+@c remainder and modulus functions, and functions to add or subtract 1.
+@c Except for @code{%}, each of these functions accepts both integer and
+@c floating-point arguments, and returns a floating-point number if any
+@c argument is floating point.
+
+  Арифметические функции не проверяются переполнение для целых
+чисел. Поэтому @code{(1+ 536870911)}, может быть вычислено как
+@minus{}536870912, в зависимости от компьютера.
+
+@c   Emacs Lisp arithmetic functions do not check for integer overflow.
+@c Thus @code{(1+ 536870911)} may evaluate to
+@c @minus{}536870912, depending on your hardware.
 
 @defun 1+ number-or-marker
-This function returns @var{number-or-marker} plus 1.
-For example,
+Функция возвращает @var{number-or-marker} плюс 1.
+Например:
+
+@c This function returns @var{number-or-marker} plus 1.
+@c For example,
 
 @example
 (setq foo 4)
@@ -576,16 +861,22 @@ For example,
      @result{} 5
 @end example
 
-This function is not analogous to the C operator @code{++}---it does not
-increment a variable.  It just computes a sum.  Thus, if we continue,
+Функция не является аналого C оператора @code{++}, так как не
+изменяет переменной параметра, она просто вычисляет сумму. То
+есть:
+@c This function is not analogous to the C operator @code{++}---it does not
+@c increment a variable.  It just computes a sum.  Thus, if we continue,
 
 @example
 foo
      @result{} 4
 @end example
 
-If you want to increment the variable, you must use @code{setq},
-like this:
+Если нужно увеличить значение переменной, нужно использовать
+@code{setq}:
+
+@c If you want to increment the variable, you must use @code{setq},
+@c like this:
 
 @example
 (setq foo (1+ foo))
@@ -594,12 +885,14 @@ like this:
 @end defun
 
 @defun 1- number-or-marker
-This function returns @var{number-or-marker} minus 1.
+Функция возвращает @var{number-or-marker} минус 1.
 @end defun
 
 @defun + &rest numbers-or-markers
-This function adds its arguments together.  When given no arguments,
-@code{+} returns 0.
+Функция складывает значения аргументов. Если аргументов не задано
+функция возвращает 0.
+@c This function adds its arguments together.  When given no arguments,
+@c @code{+} returns 0.
 
 @example
 (+)
@@ -612,11 +905,17 @@ This function adds its arguments together.  When given no arguments,
 @end defun
 
 @defun - &optional number-or-marker &rest more-numbers-or-markers
-The @code{-} function serves two purposes: negation and subtraction.
-When @code{-} has a single argument, the value is the negative of the
-argument.  When there are multiple arguments, @code{-} subtracts each of
-the @var{more-numbers-or-markers} from @var{number-or-marker},
-cumulatively.  If there are no arguments, the result is 0.
+Функция @code{-} выполняет две задачи: отрицание и вычитание.
+Если @code{-} имеет один аргумент, функция возвращает отрицание
+этого аргумента. Если аргументов несколько, @code{-} вычитает
+каждый из @var{more-numbers-or-markers} из @var{number-or-marker}.
+Если аргументов нет, возвращается 0.
+
+@c The @code{-} function serves two purposes: negation and subtraction.
+@c When @code{-} has a single argument, the value is the negative of the
+@c argument.  When there are multiple arguments, @code{-} subtracts each of
+@c the @var{more-numbers-or-markers} from @var{number-or-marker},
+@c cumulatively.  If there are no arguments, the result is 0.
 
 @example
 (- 10 1 2 3 4)
@@ -629,8 +928,11 @@ cumulatively.  If there are no arguments, the result is 0.
 @end defun
 
 @defun * &rest numbers-or-markers
-This function multiplies its arguments together, and returns the
-product.  When given no arguments, @code{*} returns 1.
+Функция перемножает свои аргументы и возвращает результат.
+Если аргументов нет, @code{*} возвращает 1.
+
+@c This function multiplies its arguments together, and returns the
+@c product.  When given no arguments, @code{*} returns 1.
 
 @example
 (*)
@@ -643,14 +945,24 @@ product.  When given no arguments, @code{*} returns 1.
 @end defun
 
 @defun / number &rest divisors
-With one or more @var{divisors}, this function divides @var{number}
-by each divisor in @var{divisors} in turn, and returns the quotient.
-With no @var{divisors}, this function returns 1/@var{number}, i.e.,
-the multiplicative inverse of @var{number}.  Each argument may be a
-number or a marker.
+Если @var{divisors} один или более, функция возвращает @var{number}
+разделенное на каждый из аргументов (то есть @var{number} делится на произведение
+аргументов, но деление выполняется по очереди). Если @var{divisors}
+не заданы то возвращается 1/@var{number}. Каждый аргумент
+может быть числом или маркером.
 
-If all the arguments are integers, the result is an integer, obtained
-by rounding the quotient towards zero after each division.
+@c With one or more @var{divisors}, this function divides @var{number}
+@c by each divisor in @var{divisors} in turn, and returns the quotient.
+@c With no @var{divisors}, this function returns 1/@var{number}, i.e.,
+@c the multiplicative inverse of @var{number}.  Each argument may be a
+@c number or a marker.
+
+Если все аргументы целые, результат будет целым, полученным
+путем округления результата деления к нулю, после деления
+на каждый из аргументов.
+
+@c If all the arguments are integers, the result is an integer, obtained
+@c by rounding the quotient towards zero after each division.
 
 @example
 @group
@@ -692,18 +1004,28 @@ by rounding the quotient towards zero after each division.
 @end example
 
 @cindex @code{arith-error} in division
-If you divide an integer by the integer 0, Emacs signals an
-@code{arith-error} error (@pxref{Errors}).  Floating-point division of
-a nonzero number by zero yields either positive or negative infinity
-(@pxref{Float Basics}).
+Если разделить целое число на целый 0, Emacs сообщит об
+@code{arith-error} ошибке (@pxref{Errors}). Деление
+не нулевого числа с плавающей точкой на ноль, вернет
+положительную или отрицательную бесконечность (@pxref{Float Basics}).
+
+@c If you divide an integer by the integer 0, Emacs signals an
+@c @code{arith-error} error (@pxref{Errors}).  Floating-point division of
+@c a nonzero number by zero yields either positive or negative infinity
+@c (@pxref{Float Basics}).
 @end defun
 
 @defun % dividend divisor
 @cindex remainder
-This function returns the integer remainder after division of @var{dividend}
-by @var{divisor}.  The arguments must be integers or markers.
+Функция возвращает целое частное от деления @var{dividend}
+на @var{divisor}. Аргументы могут быть целыми числами или маркерами.
 
-For any two integers @var{dividend} and @var{divisor},
+@c This function returns the integer remainder after division of @var{dividend}
+@c by @var{divisor}.  The arguments must be integers or markers.
+
+Для любых двух аргументов @var{dividend} и @var{divisor},
+
+@c For any two integers @var{dividend} and @var{divisor},
 
 @example
 @group
@@ -713,7 +1035,7 @@ For any two integers @var{dividend} and @var{divisor},
 @end example
 
 @noindent
-always equals @var{dividend} if @var{divisor} is nonzero.
+всегда равно @var{dividend} если @var{divisor} не ноль.
 
 @example
 (% 9 4)
@@ -729,17 +1051,29 @@ always equals @var{dividend} if @var{divisor} is nonzero.
 
 @defun mod dividend divisor
 @cindex modulus
-This function returns the value of @var{dividend} modulo @var{divisor};
-in other words, the remainder after division of @var{dividend}
-by @var{divisor}, but with the same sign as @var{divisor}.
-The arguments must be numbers or markers.
+Функция возвращает @var{dividend} по модулю @var{divisor}.
+То есть возвращает остаток, от деления @var{dividend} на
+@var{divisor}, но с тем же знаком что и @var{divisor}.
+Аргументы должны быть целыми или маркерами.
 
-Unlike @code{%}, @code{mod} permits floating-point arguments; it
-rounds the quotient downward (towards minus infinity) to an integer,
-and uses that quotient to compute the remainder.
+@c This function returns the value of @var{dividend} modulo @var{divisor};
+@c in other words, the remainder after division of @var{dividend}
+@c by @var{divisor}, but with the same sign as @var{divisor}.
+@c The arguments must be numbers or markers.
 
-If @var{divisor} is zero, @code{mod} signals an @code{arith-error}
-error if both arguments are integers, and returns a NaN otherwise.
+Хотя @code{%}, @code{mod} принимают в качестве аргументов числа
+с плавающей точкой; знаменатель округляется вниз (к минус бесконечности)
+до целого, и используется для вычисления.
+
+@c Unlike @code{%}, @code{mod} permits floating-point arguments; it
+@c rounds the quotient downward (towards minus infinity) to an integer,
+@c and uses that quotient to compute the remainder.
+
+Если @var{divisor}, @code{mod} сообщает об ошибке @code{arith-error}
+если оба аргумента целые, и возвращает NaN иначе.
+
+@c If @var{divisor} is zero, @code{mod} signals an @code{arith-error}
+@c error if both arguments are integers, and returns a NaN otherwise.
 
 @example
 @group
@@ -764,7 +1098,7 @@ error if both arguments are integers, and returns a NaN otherwise.
 @end group
 @end example
 
-For any two numbers @var{dividend} and @var{divisor},
+Для любых двух чисел @var{dividend} и @var{divisor},
 
 @example
 @group
@@ -774,42 +1108,71 @@ For any two numbers @var{dividend} and @var{divisor},
 @end example
 
 @noindent
-always equals @var{dividend}, subject to rounding error if either
-argument is floating point and to an @code{arith-error} if @var{dividend} is an
-integer and @var{divisor} is 0.  For @code{floor}, see @ref{Numeric
-Conversions}.
+всегда равно @var{dividend}, с возможной погрешностью округления
+если какой-то из аргументов число с плавающей точкой и @code{arith-error}
+если @var{dividend} целое и @var{divisor} равно нулю. По @code{floor}, см.
+@ref{Numeric Conversions}. 
+
+@c always equals @var{dividend}, subject to rounding error if either
+@c argument is floating point and to an @code{arith-error} if @var{dividend} is an
+@c integer and @var{divisor} is 0.  For @code{floor}, see @ref{Numeric
+@c Conversions}.
 @end defun
 
 @node Rounding Operations
 @section Rounding Operations
 @cindex rounding without conversion
 
-The functions @code{ffloor}, @code{fceiling}, @code{fround}, and
-@code{ftruncate} take a floating-point argument and return a floating-point
-result whose value is a nearby integer.  @code{ffloor} returns the
-nearest integer below; @code{fceiling}, the nearest integer above;
-@code{ftruncate}, the nearest integer in the direction towards zero;
-@code{fround}, the nearest integer.
+ Округление без преобразования.
+
+ Функции @code{ffloor}, @code{fceiling}, @code{fround}, и
+@code{ftruncate} принимают число с плавающей точкой в качестве
+аргумента и возвращают число с плавающей точкой, чье
+значение близко к целому (целое). @code{ffloor} возвращает
+ближайшее не большее целое; @code{fceiling} ближайшее не меньшее
+целое; @code{ftruncate} ближайшее целое в сторону нуля;
+@code{fround} ближайшее целое.
+
+@c The functions @code{ffloor}, @code{fceiling}, @code{fround}, and
+@c @code{ftruncate} take a floating-point argument and return a floating-point
+@c result whose value is a nearby integer.  @code{ffloor} returns the
+@c nearest integer below; @code{fceiling}, the nearest integer above;
+@c @code{ftruncate}, the nearest integer in the direction towards zero;
+@c @code{fround}, the nearest integer.
 
 @defun ffloor float
-This function rounds @var{float} to the next lower integral value, and
-returns that value as a floating-point number.
+Функция округляет @var{float} до ближайшего целого значения вниз,
+из возвращает это значение в виде числа с плавающей точкой.
+
+@c This function rounds @var{float} to the next lower integral value, and
+@c returns that value as a floating-point number.
 @end defun
 
 @defun fceiling float
-This function rounds @var{float} to the next higher integral value, and
-returns that value as a floating-point number.
+Функция округляет @var{float} до ближайшего целого значения вверх,
+из возвращает это значение в виде числа с плавающей точкой.
+
+@c This function rounds @var{float} to the next higher integral value, and
+@c returns that value as a floating-point number.
 @end defun
 
 @defun ftruncate float
-This function rounds @var{float} towards zero to an integral value, and
-returns that value as a floating-point number.
+Функция округляет @var{float} до ближайшего целого значения в сторону нуля,
+из возвращает это значение в виде числа с плавающей точкой.
+
+@c This function rounds @var{float} towards zero to an integral value, and
+@c returns that value as a floating-point number.
 @end defun
 
 @defun fround float
-This function rounds @var{float} to the nearest integral value,
-and returns that value as a floating-point number.
-Rounding a value equidistant between two integers returns the even integer.
+Функция округляет @var{float} до ближайшего целого значения,
+из возвращает это значение в виде числа с плавающей точкой.
+Округление дробных одинаково удаленных от целых (0.5)
+происходит до четного.
+
+@c This function rounds @var{float} to the nearest integral value,
+@c and returns that value as a floating-point number.
+@c Rounding a value equidistant between two integers returns the even integer.
 @end defun
 
 @node Bitwise Operations
@@ -817,65 +1180,91 @@ Rounding a value equidistant between two integers returns the even integer.
 @cindex bitwise arithmetic
 @cindex logical arithmetic
 
-  In a computer, an integer is represented as a binary number, a
-sequence of @dfn{bits} (digits which are either zero or one).  A bitwise
-operation acts on the individual bits of such a sequence.  For example,
-@dfn{shifting} moves the whole sequence left or right one or more places,
-reproducing the same pattern moved over.
+  Двоичные операторы.
+  В компьютере, целые представлены как двоичные числа,
+последовательности @dfn{битов}(@dfn{bits}) (цифр 0 или 1).
+Побитовые операции действуют с отдельными битами таких
+последовательностей. Например @dfn{shifting} сдвигает последовательность
+влево или вправо на одну или более позиций.
+  
+@c   In a computer, an integer is represented as a binary number, a
+@c sequence of @dfn{bits} (digits which are either zero or one).  A bitwise
+@c operation acts on the individual bits of such a sequence.  For example,
+@c @dfn{shifting} moves the whole sequence left or right one or more places,
+@c reproducing the same pattern moved over.
 
-  The bitwise operations in Emacs Lisp apply only to integers.
+  Побитовые операции в Emacs Lisp принимают в качестве аргументов
+только целые числа.
+
+  @c The bitwise operations in Emacs Lisp apply only to integers.
 
 @defun lsh integer1 count
 @cindex logical shift
-@code{lsh}, which is an abbreviation for @dfn{logical shift}, shifts the
-bits in @var{integer1} to the left @var{count} places, or to the right
-if @var{count} is negative, bringing zeros into the vacated bits.  If
-@var{count} is negative, @code{lsh} shifts zeros into the leftmost
-(most-significant) bit, producing a positive result even if
-@var{integer1} is negative.  Contrast this with @code{ash}, below.
+@code{lsh}, аббревиатура от @dfn{logical shift} (логический сдвиг),
+сдвигает биты в @var{integer1} влево на @var{count}, или вправо, если
+@var{count} отрицательное, заполняя освободившиеся биты нулями. Если
+@var{count} отрицательное, @code{lsh} сдвигает нулевой бит (знаковый бит),
+получая в результате положительное число, даже если @var{integer1}
+отрицательное. Другая функция, @code{ash}, такого не делает, см. ниже.
 
-Here are two examples of @code{lsh}, shifting a pattern of bits one
-place to the left.  We show only the low-order eight bits of the binary
-pattern; the rest are all zero.
+@c @code{lsh}, which is an abbreviation for @dfn{logical shift}, shifts the
+@c bits in @var{integer1} to the left @var{count} places, or to the right
+@c if @var{count} is negative, bringing zeros into the vacated bits.  If
+@c @var{count} is negative, @code{lsh} shifts zeros into the leftmost
+@c (most-significant) bit, producing a positive result even if
+@c @var{integer1} is negative.  Contrast this with @code{ash}, below.
+
+Ниже два примера использования @code{lsh}. В примере рассматриваются, только
+меньшие восемь бит, остальные нули.
+
+@c Here are two examples of @code{lsh}, shifting a pattern of bits one
+@c place to the left.  We show only the low-order eight bits of the binary
+@c pattern; the rest are all zero.
 
 @example
 @group
 (lsh 5 1)
      @result{} 10
-;; @r{Decimal 5 becomes decimal 10.}
+;; @r{Десятичное 5 становится 10.}
 00000101 @result{} 00001010
 
 (lsh 7 1)
      @result{} 14
-;; @r{Decimal 7 becomes decimal 14.}
+;; @r{Десятичное 7 становится 14.}
 00000111 @result{} 00001110
 @end group
 @end example
 
 @noindent
-As the examples illustrate, shifting the pattern of bits one place to
-the left produces a number that is twice the value of the previous
-number.
+В примерах видно, что сдвиг на одну позицию влево, эквивалентно
+умножению числа на 2.
 
-Shifting a pattern of bits two places to the left produces results
-like this (with 8-bit binary numbers):
+@c As the examples illustrate, shifting the pattern of bits one place to
+@c the left produces a number that is twice the value of the previous
+@c number.
+
+Ниже пример сдвига на две позиции влево:
+@c Shifting a pattern of bits two places to the left produces results
+@c like this (with 8-bit binary numbers):
 
 @example
 @group
 (lsh 3 2)
      @result{} 12
-;; @r{Decimal 3 becomes decimal 12.}
+;; @r{Десятичная 3 становится 12.}
 00000011 @result{} 00001100
 @end group
 @end example
 
-On the other hand, shifting one place to the right looks like this:
+Ниже пример сдвига на одну позицию вправо:
+
+@c On the other hand, shifting one place to the right looks like this:
 
 @example
 @group
 (lsh 6 -1)
      @result{} 3
-;; @r{Decimal 6 becomes decimal 3.}
+;; @r{Десятичная 6 становится 3.}
 00000110 @result{} 00000011
 @end group
 
@@ -888,20 +1277,30 @@ On the other hand, shifting one place to the right looks like this:
 @end example
 
 @noindent
-As the example illustrates, shifting one place to the right divides the
-value of a positive integer by two, rounding downward.
+Как видно на примерах сдвиг на одну позиция вправо, эквивалентен делению
+положительного числа на 2, с округлением вниз.
 
-The function @code{lsh}, like all Emacs Lisp arithmetic functions, does
-not check for overflow, so shifting left can discard significant bits
-and change the sign of the number.  For example, left shifting
-536,870,911 produces @minus{}2 in the 30-bit implementation:
+@c As the example illustrates, shifting one place to the right divides the
+@c value of a positive integer by two, rounding downward.
+
+Функция @code{lsh}, как и все арифметические функции в Emacs Lisp?
+не проверяет переполнение целого, поэтому сдвиг влево, может изменить
+знаковый бит и полученный результат будет иметь знак отличный от знака
+параметра. Например сдвиг влево 536,870,911, даст результат @minus{}2
+для 30-битных целых:
+
+@c The function @code{lsh}, like all Emacs Lisp arithmetic functions, does
+@c not check for overflow, so shifting left can discard significant bits
+@c and change the sign of the number.  For example, left shifting
+@c 536,870,911 produces @minus{}2 in the 30-bit implementation:
 
 @example
 (lsh 536870911 1)          ; @r{left shift}
      @result{} -2
 @end example
 
-In binary, the argument looks like this:
+В двоичной системе, аргумент будет выглядеть:
+@c In binary, the argument looks like this:
 
 @example
 @group
@@ -911,7 +1310,8 @@ In binary, the argument looks like this:
 @end example
 
 @noindent
-which becomes the following when left shifted:
+в результате сдвига будет получено:
+@c which becomes the following when left shifted:
 
 @example
 @group
@@ -923,42 +1323,57 @@ which becomes the following when left shifted:
 
 @defun ash integer1 count
 @cindex arithmetic shift
-@code{ash} (@dfn{arithmetic shift}) shifts the bits in @var{integer1}
-to the left @var{count} places, or to the right if @var{count}
-is negative.
+@code{ash} (@dfn{арифметический сдвиг}, @dfn{arithmetic shift})
+сдвигает биты @var{integer1} влево @var{count}, или
+вправо если @var{count} отрицательное.
 
-@code{ash} gives the same results as @code{lsh} except when
-@var{integer1} and @var{count} are both negative.  In that case,
-@code{ash} puts ones in the empty bit positions on the left, while
-@code{lsh} puts zeros in those bit positions.
+@c @code{ash} (@dfn{arithmetic shift}) shifts the bits in @var{integer1}
+@c to the left @var{count} places, or to the right if @var{count}
+@c is negative.
 
-Thus, with @code{ash}, shifting the pattern of bits one place to the right
-looks like this:
+@code{ash} возвращает тот же результат, что и @code{lsh},
+за исключением случай когда @var{integer1} оба отрицательные.
+В этом случае @code{ash}, помещает единицы на освободившиеся
+позиции, в то время как @code{lsh} помещает нули.
+
+@c @code{ash} gives the same results as @code{lsh} except when
+@c @var{integer1} and @var{count} are both negative.  In that case,
+@c @code{ash} puts ones in the empty bit positions on the left, while
+@c @code{lsh} puts zeros in those bit positions.
+
+Таким образом, сдвиг с @code{ash}, на одну позицию вправо выглядит:
+
+@c Thus, with @code{ash}, shifting the pattern of bits one place to the right
+@c looks like this:
 
 @example
 @group
 (ash -6 -1) @result{} -3
-;; @r{Decimal @minus{}6 becomes decimal @minus{}3.}
+;; @r{Десятичное @minus{}6 становится @minus{}3.}
 1111...111010 (30 bits total)
      @result{}
 1111...111101 (30 bits total)
 @end group
 @end example
 
-In contrast, shifting the pattern of bits one place to the right with
-@code{lsh} looks like this:
+Для сравнения, сдвиг на один бит вправо с @code{lsh}:
+
+@c In contrast, shifting the pattern of bits one place to the right with
+@c @code{lsh} looks like this:
 
 @example
 @group
 (lsh -6 -1) @result{} 536870909
-;; @r{Decimal @minus{}6 becomes decimal 536,870,909.}
+;; @r{Десятичное @minus{}6 становится 536,870,909.}
 1111...111010 (30 bits total)
      @result{}
 0111...111101 (30 bits total)
 @end group
 @end example
 
-Here are other examples:
+Ниже другие примеры:
+
+@c Here are other examples:
 
 @c !!! Check if lined up in smallbook format!  XDVI shows problem
 @c     with smallbook but not with regular book! --rjc 16mar92
@@ -998,19 +1413,31 @@ Here are other examples:
 @end defun
 
 @defun logand &rest ints-or-markers
-This function returns the bitwise AND of the arguments: the @var{n}th
-bit is 1 in the result if, and only if, the @var{n}th bit is 1 in all
-the arguments.
+Функция возвращает побитовое AND (И) аргументов, @var{n}-ый бита
+результата будет 1, если оба @var{n}-ые биты всех параметров
+равны 1.
 
-For example, using 4-bit binary numbers, the bitwise AND of 13 and
-12 is 12: 1101 combined with 1100 produces 1100.
-In both the binary numbers, the leftmost two bits are both 1
-so the leftmost two bits of the returned value are both 1.
-However, for the rightmost two bits, each is 0 in at least one of
-the arguments, so the rightmost two bits of the returned value are both 0.
+@c This function returns the bitwise AND of the arguments: the @var{n}th
+@c bit is 1 in the result if, and only if, the @var{n}th bit is 1 in all
+@c the arguments.
+
+Например, используя 4-битные числа, побитовое AND 13 и 12 равно 12,
+т.к. объединение 1101 AND 1100 даст 1100.
+В обоих числах два самых левых биты 1, поэтому самые левые биты результата 1.
+Но, два правых бита равны 0 хотя бы в один из аргументов, поэтому правые
+биты результат 0.
+
+@c For example, using 4-bit binary numbers, the bitwise AND of 13 and
+@c 12 is 12: 1101 combined with 1100 produces 1100.
+@c In both the binary numbers, the leftmost two bits are both 1
+@c so the leftmost two bits of the returned value are both 1.
+@c However, for the rightmost two bits, each is 0 in at least one of
+@c the arguments, so the rightmost two bits of the returned value are both 0.
 
 @noindent
-Therefore,
+Поэтому,
+
+@c Therefore,
 
 @example
 @group
@@ -1019,10 +1446,15 @@ Therefore,
 @end group
 @end example
 
-If @code{logand} is not passed any argument, it returns a value of
-@minus{}1.  This number is an identity element for @code{logand}
-because its binary representation consists entirely of ones.  If
-@code{logand} is passed just one argument, it returns that argument.
+Если @code{logand} не получает аргументов, возвращается @minus{}1.
+Это число является элементом идентификации @code{logand}, потому
+что состоит из одних 1 в битовом представлении. Если @code{logand}
+принимает один аргумент, будет возвращен этот аргумент.
+
+@c If @code{logand} is not passed any argument, it returns a value of
+@c @minus{}1.  This number is an identity element for @code{logand}
+@c because its binary representation consists entirely of ones.  If
+@c @code{logand} is passed just one argument, it returns that argument.
 
 @smallexample
 @group
@@ -1048,11 +1480,16 @@ because its binary representation consists entirely of ones.  If
 @end defun
 
 @defun logior &rest ints-or-markers
-This function returns the bitwise inclusive OR of its arguments: the @var{n}th
-bit is 1 in the result if, and only if, the @var{n}th bit is 1 in at
-least one of the arguments.  If there are no arguments, the result is 0,
-which is an identity element for this operation.  If @code{logior} is
-passed just one argument, it returns that argument.
+Функция возвращает побитовое OR (ИЛИ) аргументов, в результате @var{n}-ый
+бит будет 1 если @var{n}-ый бит хотя бы в одном из аргументов равен 1.
+Если аргументов нет, возвращается 0, который является идентифицирующим элементом
+для этого оператора. Если передан один аргумент, будет возвращен этот аргумент.
+
+@c This function returns the bitwise inclusive OR of its arguments: the @var{n}th
+@c bit is 1 in the result if, and only if, the @var{n}th bit is 1 in at
+@c least one of the arguments.  If there are no arguments, the result is 0,
+@c which is an identity element for this operation.  If @code{logior} is
+@c passed just one argument, it returns that argument.
 
 @smallexample
 @group
@@ -1073,11 +1510,18 @@ passed just one argument, it returns that argument.
 @end defun
 
 @defun logxor &rest ints-or-markers
-This function returns the bitwise exclusive OR of its arguments: the
-@var{n}th bit is 1 in the result if, and only if, the @var{n}th bit is
-1 in an odd number of the arguments.  If there are no arguments, the
-result is 0, which is an identity element for this operation.  If
-@code{logxor} is passed just one argument, it returns that argument.
+Функция возвращает побитовое исключающее OR (ИЛИ), @var{n}-ый
+бит в результате будет равен 1, только если @var{n}-ый бит равен
+1 в нечетном количестве аргументов. Если аргументов не задано, будет
+возвращено 0, который является идентифицирующим элементом
+данного оператора. Если передан один аргумент, будет возвращен
+этот аргумент.
+
+@c This function returns the bitwise exclusive OR of its arguments: the
+@c @var{n}th bit is 1 in the result if, and only if, the @var{n}th bit is
+@c 1 in an odd number of the arguments.  If there are no arguments, the
+@c result is 0, which is an identity element for this operation.  If
+@c @code{logxor} is passed just one argument, it returns that argument.
 
 @smallexample
 @group
@@ -1098,9 +1542,12 @@ result is 0, which is an identity element for this operation.  If
 @end defun
 
 @defun lognot integer
-This function returns the bitwise complement of its argument: the @var{n}th
-bit is one in the result if, and only if, the @var{n}th bit is zero in
-@var{integer}, and vice-versa.
+Функция возвращает побитовое дополнение аргумента, @var{n}-ый бит результата
+равен 1, если @var{n}-ый бит аргумента равен 0 и наоборот.
+
+@c This function returns the bitwise complement of its argument: the @var{n}th
+@c bit is one in the result if, and only if, the @var{n}th bit is zero in
+@c @var{integer}, and vice-versa.
 
 @example
 (lognot 5)
@@ -1117,146 +1564,230 @@ bit is one in the result if, and only if, the @var{n}th bit is zero in
 @cindex mathematical functions
 @cindex floating-point functions
 
-  These mathematical functions allow integers as well as floating-point
-numbers as arguments.
+  Математические функции принимают как целые так и числа с плавающей
+точкой.
+  
+@c   These mathematical functions allow integers as well as floating-point
+@c numbers as arguments.
 
 @defun sin arg
 @defunx cos arg
 @defunx tan arg
-These are the basic trigonometric functions, with argument @var{arg}
-measured in radians.
+Базовая тригонометрическая функция, с аргументом @var{arg},
+заданным в радианах.
+
+@c These are the basic trigonometric functions, with argument @var{arg}
+@c measured in radians.
 @end defun
 
 @defun asin arg
-The value of @code{(asin @var{arg})} is a number between
+Значение @code{(asin @var{arg})} число между
 @ifnottex
 @minus{}pi/2
 @end ifnottex
 @tex
 @math{-\pi/2}
 @end tex
-and
+и
 @ifnottex
 pi/2
 @end ifnottex
 @tex
 @math{\pi/2}
 @end tex
-(inclusive) whose sine is @var{arg}.  If @var{arg} is out of range
-(outside [@minus{}1, 1]), @code{asin} returns a NaN.
+(включительно) чей синус равен @var{arg}. Если @var{arg} вне диапазона
+(вне [@minus{}1, 1]), @code{asin} возвращает NaN.
+
+@c (inclusive) whose sine is @var{arg}.  If @var{arg} is out of range
+@c (outside [@minus{}1, 1]), @code{asin} returns a NaN.
 @end defun
 
 @defun acos arg
-The value of @code{(acos @var{arg})} is a number between 0 and
+Значение @code{(acos @var{arg})} число от 0 до
+
+@c The value of @code{(acos @var{arg})} is a number between 0 and
+
 @ifnottex
 pi
 @end ifnottex
 @tex
 @math{\pi}
 @end tex
-(inclusive) whose cosine is @var{arg}.  If @var{arg} is out of range
-(outside [@minus{}1, 1]), @code{acos} returns a NaN.
+(включительно) чей косинус равен @var{arg}.  Если @var{arg} вне диапазона
+(вне [@minus{}1, 1]), @code{acos} возвращает NaN.
+
+@c (inclusive) whose cosine is @var{arg}.  If @var{arg} is out of range
+@c (outside [@minus{}1, 1]), @code{acos} returns a NaN.
 @end defun
 
 @defun atan y &optional x
-The value of @code{(atan @var{y})} is a number between
+Значение @code{(atan @var{y})} число между
+
+@c The value of @code{(atan @var{y})} is a number between
 @ifnottex
 @minus{}pi/2
 @end ifnottex
 @tex
 @math{-\pi/2}
 @end tex
-and
+и
 @ifnottex
 pi/2
 @end ifnottex
 @tex
 @math{\pi/2}
 @end tex
-(exclusive) whose tangent is @var{y}.  If the optional second
-argument @var{x} is given, the value of @code{(atan y x)} is the
-angle in radians between the vector @code{[@var{x}, @var{y}]} and the
-@code{X} axis.
+(не включительно) чей тангенс равен @var{y}.  Если задан необязательный второй
+аргумент @var{x}, значение @code{(atan y x)} угол в радианах между
+вектором @code{[@var{x}, @var{y}]} и осью @code{X}.
+
+@c (exclusive) whose tangent is @var{y}.  If the optional second
+@c argument @var{x} is given, the value of @code{(atan y x)} is the
+@c angle in radians between the vector @code{[@var{x}, @var{y}]} and the
+@c @code{X} axis.
 @end defun
 
 @defun exp arg
-This is the exponential function; it returns @math{e} to the power
-@var{arg}.
+Функция экспоненты, возвращающей @math{e} в степени @var{arg}.
+
+@c This is the exponential function; it returns @math{e} to the power
+@c @var{arg}.
 @end defun
 
 @defun log arg &optional base
-This function returns the logarithm of @var{arg}, with base
-@var{base}.  If you don't specify @var{base}, the natural base
-@math{e} is used.  If @var{arg} or @var{base} is negative, @code{log}
-returns a NaN.
+Функция возвращает логарифм @var{arg}, по основанию @var{base}.
+Если не определить @var{base}, будет использовано @math{e}
+в качестве основания. Если @var{arg} или @var{base} отрицательные,
+@code{log} вернет NaN.
+
+@c This function returns the logarithm of @var{arg}, with base
+@c @var{base}.  If you don't specify @var{base}, the natural base
+@c @math{e} is used.  If @var{arg} or @var{base} is negative, @code{log}
+@c returns a NaN.
 @end defun
 
 @defun expt x y
-This function returns @var{x} raised to power @var{y}.  If both
-arguments are integers and @var{y} is positive, the result is an
-integer; in this case, overflow causes truncation, so watch out.
-If @var{x} is a finite negative number and @var{y} is a finite
-non-integer, @code{expt} returns a NaN.
+Функция возвращает @var{x} в степени @var{y}. Если оба
+аргумента целые числа и @var{y} положительное, результат
+будет целым числом. Стоит следить за переполнением.
+Если @var{x} конечное отрицательное число и @var{y}
+конечное не-целое, @code{expt} вернет NaN.
+
+@c This function returns @var{x} raised to power @var{y}.  If both
+@c arguments are integers and @var{y} is positive, the result is an
+@c integer; in this case, overflow causes truncation, so watch out.
+@c If @var{x} is a finite negative number and @var{y} is a finite
+@c non-integer, @code{expt} returns a NaN.
 @end defun
 
 @defun sqrt arg
-This returns the square root of @var{arg}.  If @var{arg} is finite
-and less than zero, @code{sqrt} returns a NaN.
+Функция возвращает квадратный корень @var{arg}. Если @var{arg},
+конечное отрицательное, @code{sqrt} вернет NaN.
+
+@c This returns the square root of @var{arg}.  If @var{arg} is finite
+@c and less than zero, @code{sqrt} returns a NaN.
 @end defun
 
-In addition, Emacs defines the following common mathematical
-constants:
+В Emacs Lisp определены следующие математические константы:
+
+@c In addition, Emacs defines the following common mathematical
+@c constants:
 
 @defvar float-e
-The mathematical constant @math{e} (2.71828@dots{}).
+Математическая константа @math{e} (2.71828@dots{}).
+
+@c The mathematical constant @math{e} (2.71828@dots{}).
 @end defvar
 
 @defvar float-pi
-The mathematical constant @math{pi} (3.14159@dots{}).
+Математическая константа @math{pi} (3.14159@dots{}).
+
+@c The mathematical constant @math{pi} (3.14159@dots{}).
 @end defvar
 
 @node Random Numbers
 @section Random Numbers
 @cindex random numbers
 
-  A deterministic computer program cannot generate true random
-numbers.  For most purposes, @dfn{pseudo-random numbers} suffice.  A
-series of pseudo-random numbers is generated in a deterministic
-fashion.  The numbers are not truly random, but they have certain
-properties that mimic a random series.  For example, all possible
-values occur equally often in a pseudo-random series.
+  Случайные числа.
+
+  Детерминированная компьютерная программ не может генерировать
+истинно случайные числа. Но в большинстве случаев, достаточно
+@dfn{псевдослучайных чисел} (@dfn{pseudo-random numbers}).
+Псевдослучайные числа генерируются определенным образом. Числа
+не истинно случайные, но они походят на случайные. Например,
+все возможные значения встречаются с одинаковой частотой в
+псевдослучайных последовательностях.
+
+@c   A deterministic computer program cannot generate true random
+@c numbers.  For most purposes, @dfn{pseudo-random numbers} suffice.  A
+@c series of pseudo-random numbers is generated in a deterministic
+@c fashion.  The numbers are not truly random, but they have certain
+@c properties that mimic a random series.  For example, all possible
+@c values occur equally often in a pseudo-random series.
 
 @cindex seed, for random number generation
-  Pseudo-random numbers are generated from a @dfn{seed value}.  Starting from
-any given seed, the @code{random} function always generates the same
-sequence of numbers.  By default, Emacs initializes the random seed at
-startup, in such a way that the sequence of values of @code{random}
-(with overwhelming likelihood) differs in each Emacs run.
+  Псевдослучайные числа генерируются с @dfn{начального значения} (@dfn{seed value}).
+Начиная с заданного начального значения, @code{random} функция возвращает
+всегда одну и ту же последовательность. По умолчанию, Emacs инициализирует
+начальное значение для random при старте, таким образом
+(с подавляющей вероятностью) последовательность @code{random} значений
+будет отличаться при каждом запуске Emacs.
 
-  Sometimes you want the random number sequence to be repeatable.  For
-example, when debugging a program whose behavior depends on the random
-number sequence, it is helpful to get the same behavior in each
-program run.  To make the sequence repeat, execute @code{(random "")}.
-This sets the seed to a constant value for your particular Emacs
-executable (though it may differ for other Emacs builds).  You can use
-other strings to choose various seed values.
+@c   Pseudo-random numbers are generated from a @dfn{seed value}.  Starting from
+@c any given seed, the @code{random} function always generates the same
+@c sequence of numbers.  By default, Emacs initializes the random seed at
+@c startup, in such a way that the sequence of values of @code{random}
+@c (with overwhelming likelihood) differs in each Emacs run.
+
+  Иногда требуется, чтобы последовательность случайных чисел
+была повторяемое, например при отладке. Чтобы сделать последовательность
+повторяющейся нужно выполнить @code{(random "")}. Что установит
+начальное значение в значение константы текущего запуска Emacs
+(может отличаться для разных сборок Emacs). При этом
+можно использовать и другие строки для выбора разных начальных значений.
+
+@c   Sometimes you want the random number sequence to be repeatable.  For
+@c example, when debugging a program whose behavior depends on the random
+@c number sequence, it is helpful to get the same behavior in each
+@c program run.  To make the sequence repeat, execute @code{(random "")}.
+@c This sets the seed to a constant value for your particular Emacs
+@c executable (though it may differ for other Emacs builds).  You can use
+@c other strings to choose various seed values.
 
 @defun random &optional limit
-This function returns a pseudo-random integer.  Repeated calls return a
-series of pseudo-random integers.
+Функция возвращает псевдослучайное целое число. Повторные вызовы
+возвращают последовательность псевдослучайных целых чисел.
 
-If @var{limit} is a positive integer, the value is chosen to be
-nonnegative and less than @var{limit}.  Otherwise, the value might be
-any integer representable in Lisp, i.e., an integer between
-@code{most-negative-fixnum} and @code{most-positive-fixnum}
+@c This function returns a pseudo-random integer.  Repeated calls return a
+@c series of pseudo-random integers.
+
+Если @var{limit} положительное целое, значение будет положительным и меньше
+чем @var{limit}, иначе значением может быть любое поддерживаемое Lisp
+целое. (Целое между @code{most-negative-fixnum} и @code{most-positive-fixnum}).
 (@pxref{Integer Basics}).
 
-If @var{limit} is @code{t}, it means to choose a new seed as if Emacs
-were restarting, typically from the system entropy.  On systems
-lacking entropy pools, choose the seed from less-random volatile data
-such as the current time.
+@c If @var{limit} is a positive integer, the value is chosen to be
+@c nonnegative and less than @var{limit}.  Otherwise, the value might be
+@c any integer representable in Lisp, i.e., an integer between
+@c @code{most-negative-fixnum} and @code{most-positive-fixnum}
+@c (@pxref{Integer Basics}).
 
-If @var{limit} is a string, it means to choose a new seed based on the
-string's contents.
+Если @var{limit} @code{t}, то будет выбран новый начальный элемент, как
+если бы Emacs был пере-запущен. (Используя энтропию системы.)
+На системах где это не возможно (? нет достаточно случайных данных ?)?
+начальное значение выбирается по менее случайным данным, таким как
+текущее время.
+
+@c If @var{limit} is @code{t}, it means to choose a new seed as if Emacs
+@c were restarting, typically from the system entropy.  On systems
+@c lacking entropy pools, choose the seed from less-random volatile data
+@c such as the current time.
+
+Если @var{limit} строка, начальное значение выбирается на основе
+содержимого строки.
+
+@c If @var{limit} is a string, it means to choose a new seed based on the
+@c string's contents.
 
 @end defun
