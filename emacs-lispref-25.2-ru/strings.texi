@@ -4,113 +4,192 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Strings and Characters
-@chapter Strings and Characters
+@chapter Строки и символы
 @cindex strings
 @cindex character arrays
 @cindex characters
 @cindex bytes
 
-  A string in Emacs Lisp is an array that contains an ordered sequence
-of characters.  Strings are used as names of symbols, buffers, and
-files; to send messages to users; to hold text being copied between
-buffers; and for many other purposes.  Because strings are so important,
-Emacs Lisp has many functions expressly for manipulating them.  Emacs
-Lisp programs use strings more often than individual characters.
+  Строки в Emacs Lisp являются массивами символов. Строки используются
+в качестве имен для символов, буферов, и файлов; для отправки
+сообщений пользователям; хранения скопированного текста; и для многих
+других задач. В виду большой важности строк, в Emacs Lisp есть
+много функций для работы со строками. В Emacs Lisp строки
+используются чаще чем отдельные символы.
 
-  @xref{Strings of Events}, for special considerations for strings of
-keyboard character events.
+@c   A string in Emacs Lisp is an array that contains an ordered sequence
+@c of characters.  Strings are used as names of symbols, buffers, and
+@c files; to send messages to users; to hold text being copied between
+@c buffers; and for many other purposes.  Because strings are so important,
+@c Emacs Lisp has many functions expressly for manipulating them.  Emacs
+@c Lisp programs use strings more often than individual characters.
+
+  @xref{Strings of Events}, для получения информации по строкам событий клавиатуры.
+
+@c   @xref{Strings of Events}, for special considerations for strings of
+@c keyboard character events.
 
 @menu
-* Basics: String Basics.      Basic properties of strings and characters.
-* Predicates for Strings::    Testing whether an object is a string or char.
-* Creating Strings::          Functions to allocate new strings.
-* Modifying Strings::         Altering the contents of an existing string.
-* Text Comparison::           Comparing characters or strings.
-* String Conversion::         Converting to and from characters and strings.
-* Formatting Strings::        @code{format}: Emacs's analogue of @code{printf}.
-* Case Conversion::           Case conversion functions.
-* Case Tables::               Customizing case conversion.
+* Basics: String Basics.      Основные свойства строк и символов.
+* Predicates for Strings::    Определение того, что объект строка или символ.
+* Creating Strings::          Функции для выделения новых строк.
+* Modifying Strings::         Изменение содержимого существующей строк.
+* Text Comparison::           Сравнение символов или строк.
+* String Conversion::         Конвертирование строк и символов.
+* Formatting Strings::        @code{format}: Emacs аналог @code{printf}.
+* Case Conversion::           Функции преобразования регистра.
+* Case Tables::               Настройка преобразования регистра.
 @end menu
 
 @node String Basics
 @section String and Character Basics
 
-  A character is a Lisp object which represents a single character of
-text.  In Emacs Lisp, characters are simply integers; whether an
-integer is a character or not is determined only by how it is used.
-@xref{Character Codes}, for details about character representation in
-Emacs.
+  Основные свойства строк и символов.
+  Символ это Lisp объект который представляет один символ текста.
+В Emacs Lisp, символы являются целыми числами; является ли целое числом
+или нет определяется только тем как оно используется.
+@xref{Character Codes}, где детально описано представление
+символов в Emacs.
 
-  A string is a fixed sequence of characters.  It is a type of
-sequence called a @dfn{array}, meaning that its length is fixed and
-cannot be altered once it is created (@pxref{Sequences Arrays
-Vectors}).  Unlike in C, Emacs Lisp strings are @emph{not} terminated
-by a distinguished character code.
+@c   A character is a Lisp object which represents a single character of
+@c text.  In Emacs Lisp, characters are simply integers; whether an
+@c integer is a character or not is determined only by how it is used.
+@c @xref{Character Codes}, for details about character representation in
+@c Emacs.
 
-  Since strings are arrays, and therefore sequences as well, you can
-operate on them with the general array and sequence functions documented
-in @ref{Sequences Arrays Vectors}.  For example, you can access or
-change individual characters in a string using the functions @code{aref}
-and @code{aset} (@pxref{Array Functions}).  However, note that
-@code{length} should @emph{not} be used for computing the width of a
-string on display; use @code{string-width} (@pxref{Size of Displayed
-Text}) instead.
+  Строка это последовательность символов. Такой тип последовательности
+называется @dfn{array}, подразумевая, что его длина фиксирована и не может
+быть изменена после создания. (@pxref{Sequences Arrays Vectors}). В отличие
+от C, строки в Emacs Lisp @emph{не} оканчиваются специальным символом.
 
-  There are two text representations for non-@acronym{ASCII}
-characters in Emacs strings (and in buffers): unibyte and multibyte.
-For most Lisp programming, you don't need to be concerned with these
-two representations.  @xref{Text Representations}, for details.
+@c   A string is a fixed sequence of characters.  It is a type of
+@c sequence called a @dfn{array}, meaning that its length is fixed and
+@c cannot be altered once it is created (@pxref{Sequences Arrays
+@c Vectors}).  Unlike in C, Emacs Lisp strings are @emph{not} terminated
+@c by a distinguished character code.
 
-  Sometimes key sequences are represented as unibyte strings.  When a
-unibyte string is a key sequence, string elements in the range 128 to
-255 represent meta characters (which are large integers) rather than
-character codes in the range 128 to 255.  Strings cannot hold
-characters that have the hyper, super or alt modifiers; they can hold
-@acronym{ASCII} control characters, but no other control characters.
-They do not distinguish case in @acronym{ASCII} control characters.
-If you want to store such characters in a sequence, such as a key
-sequence, you must use a vector instead of a string.  @xref{Character
-Type}, for more information about keyboard input characters.
+  Так как строки являются массивами, и следовательно и последовательностями,
+с ними можно работать общими для массивов и последовательностей функциями
+описанных в @ref{Sequences Arrays Vectors}. Например, можно получить
+или изменить отдельный элемент строки с использованием функций @code{aref}
+и @code{aset} (@pxref{Array Functions}). Но, не стоит использовать
+@code{length} для вычисления ширины строки на экране; стоит использовать
+@code{string-width} (@pxref{Size of Displayed Text}).
 
-  Strings are useful for holding regular expressions.  You can also
-match regular expressions against strings with @code{string-match}
-(@pxref{Regexp Search}).  The functions @code{match-string}
-(@pxref{Simple Match Data}) and @code{replace-match} (@pxref{Replacing
-Match}) are useful for decomposing and modifying strings after
-matching regular expressions against them.
+@c   Since strings are arrays, and therefore sequences as well, you can
+@c operate on them with the general array and sequence functions documented
+@c in @ref{Sequences Arrays Vectors}.  For example, you can access or
+@c change individual characters in a string using the functions @code{aref}
+@c and @code{aset} (@pxref{Array Functions}).  However, note that
+@c @code{length} should @emph{not} be used for computing the width of a
+@c string on display; use @code{string-width} (@pxref{Size of Displayed
+@c Text}) instead.
 
-  Like a buffer, a string can contain text properties for the characters
-in it, as well as the characters themselves.  @xref{Text Properties}.
-All the Lisp primitives that copy text from strings to buffers or other
-strings also copy the properties of the characters being copied.
+  Для не-@acronym{ASCII} символов в Emacs строках есть два
+представления: одно-байтовое и много-байтовое. В основном
+при программирование, не нужно беспокоится о представлении.
+@xref{Text Representations}, для получения более полной информации.
 
-  @xref{Text}, for information about functions that display strings or
-copy them into buffers.  @xref{Character Type}, and @ref{String Type},
-for information about the syntax of characters and strings.
-@xref{Non-ASCII Characters}, for functions to convert between text
-representations and to encode and decode character codes.
+@c   There are two text representations for non-@acronym{ASCII}
+@c characters in Emacs strings (and in buffers): unibyte and multibyte.
+@c For most Lisp programming, you don't need to be concerned with these
+@c two representations.  @xref{Text Representations}, for details.
+
+  Иногда последовательности клавиш представляются как одно-байтовые строки.
+Когда одно-байтовая строка является последовательностью клавиш,
+элементы строки из диапазона от 128 до 255 представляют мета символы
+(которые соответствуют значениям с большим значениям) а не кодам
+символов из диапазона от 128 до 255. Строки не могут хранить символы
+которые содержат hyper, super, или alt модификаторы; они могут
+хранить @acronym{ASCII} управляющие символы. Если нужно
+сохранить такие символы, как последовательность клавиш, нужно использовать
+вектор, вместо строки. @xref{Character Type}, для получения информации
+по вводимым с клавиатуры символам.
+
+@c   Sometimes key sequences are represented as unibyte strings.  When a
+@c unibyte string is a key sequence, string elements in the range 128 to
+@c 255 represent meta characters (which are large integers) rather than
+@c character codes in the range 128 to 255.  Strings cannot hold
+@c characters that have the hyper, super or alt modifiers; they can hold
+@c @acronym{ASCII} control characters, but no other control characters.
+@c They do not distinguish case in @acronym{ASCII} control characters.
+@c If you want to store such characters in a sequence, such as a key
+@c sequence, you must use a vector instead of a string.  @xref{Character
+@c Type}, for more information about keyboard input characters.
+
+  Строки используются для хранения регулярных выражений. Можно
+проверить совпадение регулярного выражения для строки с помощью
+функции @code{string-match} (@pxref{Regexp Search}). Функции
+@code{match-string} (@pxref{Simple Match Data}) и @code{replace-match}
+(@pxref{Replacing Match}) полезны при разделении и изменении строки
+после проверки регулярным выражением.
+
+@c   Strings are useful for holding regular expressions.  You can also
+@c match regular expressions against strings with @code{string-match}
+@c (@pxref{Regexp Search}).  The functions @code{match-string}
+@c (@pxref{Simple Match Data}) and @code{replace-match} (@pxref{Replacing
+@c Match}) are useful for decomposing and modifying strings after
+@c matching regular expressions against them.
+
+  Как буфер, строка может содержать текстовые свойства для символов
+входящих в нее. @xref{Text Properties}. Все Lisp примитивы которые копируют
+текст из строк в буферы или другие строки, копируют свойства
+символов которые копируются.
+
+@c   Like a buffer, a string can contain text properties for the characters
+@c in it, as well as the characters themselves.  @xref{Text Properties}.
+@c All the Lisp primitives that copy text from strings to buffers or other
+@c strings also copy the properties of the characters being copied.
+
+  @xref{Text}, для получения информации по функциям, которые отображают
+строки или копируют их в буферы. @xref{Character Type} и @ref{String Type},
+для получения информации по синтаксису символов и строк.
+@xref{Non-ASCII Characters}, для получения информации по функциям
+преобразования текстового представления и кодирования декодирования кодов
+символов.
+
+@c   @xref{Text}, for information about functions that display strings or
+@c copy them into buffers.  @xref{Character Type}, and @ref{String Type},
+@c for information about the syntax of characters and strings.
+@c @xref{Non-ASCII Characters}, for functions to convert between text
+@c representations and to encode and decode character codes.
 
 @node Predicates for Strings
 @section Predicates for Strings
 @cindex predicates for strings
 @cindex string predicates
 
-For more information about general sequence and array predicates,
-see @ref{Sequences Arrays Vectors}, and @ref{Arrays}.
+ Строковые предикаты.
+ Для получения более подробной информации по предикатам
+последовательностей и массивов, см.  @ref{Sequences Arrays Vectors}
+и @ref{Arrays}.
+
+@c For more information about general sequence and array predicates,
+@c see @ref{Sequences Arrays Vectors}, and @ref{Arrays}.
 
 @defun stringp object
-This function returns @code{t} if @var{object} is a string, @code{nil}
-otherwise.
+Функция проверяет является ли объект строки и возвращает
+@code{t} если да, и @code{nil} если нет.
+
+@c This function returns @code{t} if @var{object} is a string, @code{nil}
+@c otherwise.
 @end defun
 
 @defun string-or-null-p object
-This function returns @code{t} if @var{object} is a string or
-@code{nil}.  It returns @code{nil} otherwise.
+Функция проверяет является ли объект строкой или @code{nil},
+и возвращает @code{t} если да, и @code{nil} если нет.
+
+@c This function returns @code{t} if @var{object} is a string or
+@c @code{nil}.  It returns @code{nil} otherwise.
 @end defun
 
 @defun char-or-string-p object
-This function returns @code{t} if @var{object} is a string or a
-character (i.e., an integer), @code{nil} otherwise.
+Функция проверяет является ли объект строкой или
+символом (т.е. числом), и возвращает @code{t} если да,
+и @code{nil} если нет.
+
+@c This function returns @code{t} if @var{object} is a string or a
+@c character (i.e., an integer), @code{nil} otherwise.
 @end defun
 
 @node Creating Strings
@@ -118,12 +197,19 @@ character (i.e., an integer), @code{nil} otherwise.
 @cindex creating strings
 @cindex string creation
 
-  The following functions create strings, either from scratch, or by
-putting strings together, or by taking them apart.
+  Следующие функции создают строки, с нуля, или
+путем соединения или разделения строк.
+
+@c   The following functions create strings, either from scratch, or by
+@c putting strings together, or by taking them apart.
 
 @defun make-string count character
-This function returns a string made up of @var{count} repetitions of
-@var{character}.  If @var{count} is negative, an error is signaled.
+Функция возвращает строку состоящую из @var{count} символов
+@var{character}. Если @var{count} отрицательное сообщается
+об ошибке.
+
+@c This function returns a string made up of @var{count} repetitions of
+@c @var{character}.  If @var{count} is negative, an error is signaled.
 
 @example
 (make-string 5 ?x)
@@ -132,12 +218,17 @@ This function returns a string made up of @var{count} repetitions of
      @result{} ""
 @end example
 
-  Other functions to compare with this one include @code{make-vector}
-(@pxref{Vectors}) and @code{make-list} (@pxref{Building Lists}).
+  Функции аналогичные этой @code{make-vector}
+(@pxref{Vectors}) и @code{make-list} (@pxref{Building Lists}).
+
+@c   Other functions to compare with this one include @code{make-vector}
+@c (@pxref{Vectors}) and @code{make-list} (@pxref{Building Lists}).
 @end defun
 
 @defun string &rest characters
-This returns a string containing the characters @var{characters}.
+Функция возвращает строки состоящую из символов @var{characters}.
+
+@c This returns a string containing the characters @var{characters}.
 
 @example
 (string ?a ?b ?c)
@@ -146,11 +237,16 @@ This returns a string containing the characters @var{characters}.
 @end defun
 
 @defun substring string &optional start end
-This function returns a new string which consists of those characters
-from @var{string} in the range from (and including) the character at the
-index @var{start} up to (but excluding) the character at the index
-@var{end}.  The first character is at index zero.  With one argument,
-this function just copies @var{string}.
+Функция возвращает строки которая состоит из символов
+строки @var{string} в диапазоне @var{start} (включительно) до
+@var{end} (не включительно). Номер первого символа ноль.
+При вызове с одним аргументом функция копирует строку.
+
+@c This function returns a new string which consists of those characters
+@c from @var{string} in the range from (and including) the character at the
+@c index @var{start} up to (but excluding) the character at the index
+@c @var{end}.  The first character is at index zero.  With one argument,
+@c this function just copies @var{string}.
 
 @example
 @group
@@ -160,14 +256,22 @@ this function just copies @var{string}.
 @end example
 
 @noindent
-In the above example, the index for @samp{a} is 0, the index for
-@samp{b} is 1, and the index for @samp{c} is 2.  The index 3---which
-is the fourth character in the string---marks the character position
-up to which the substring is copied.  Thus, @samp{abc} is copied from
-the string @code{"abcdefg"}.
+В примере, индекс @samp{a} 0, @samp{b} 1, @samp{c} 2. Индекс 3 ---
+который в строке соответствует четвертому символу---отмечает символ
+до которого будет выполняться копирование. Таким образом из строки
+копируется @samp{abc}.
 
-A negative number counts from the end of the string, so that @minus{}1
-signifies the index of the last character of the string.  For example:
+@c In the above example, the index for @samp{a} is 0, the index for
+@c @samp{b} is 1, and the index for @samp{c} is 2.  The index 3---which
+@c is the fourth character in the string---marks the character position
+@c up to which the substring is copied.  Thus, @samp{abc} is copied from
+@c the string @code{"abcdefg"}.
+
+ Отрицательные числа считаются с конца, то есть @minus{}1
+означает крайний с конца символ строки. Например:
+
+@c A negative number counts from the end of the string, so that @minus{}1
+@c signifies the index of the last character of the string.  For example:
 
 @example
 @group
@@ -177,12 +281,19 @@ signifies the index of the last character of the string.  For example:
 @end example
 
 @noindent
-In this example, the index for @samp{e} is @minus{}3, the index for
-@samp{f} is @minus{}2, and the index for @samp{g} is @minus{}1.
-Therefore, @samp{e} and @samp{f} are included, and @samp{g} is excluded.
+В примере индекс @samp{e} @minus{}3, индекс @samp{f} @minus{}2, а индекс
+@samp{g} @minus{}1. Поэтому @samp{e} и @samp{f} входят в копию, а
+@samp{g} нет.
 
-When @code{nil} is used for @var{end}, it stands for the length of the
-string.  Thus,
+@c In this example, the index for @samp{e} is @minus{}3, the index for
+@c @samp{f} is @minus{}2, and the index for @samp{g} is @minus{}1.
+@c Therefore, @samp{e} and @samp{f} are included, and @samp{g} is excluded.
+
+Когда @code{nil} используется в качестве аргумента @var{end}, он устанавливатся
+равным длине строки. Таким образом,
+
+@c When @code{nil} is used for @var{end}, it stands for the length of the
+@c string.  Thus,
 
 @example
 @group
@@ -191,9 +302,12 @@ string.  Thus,
 @end group
 @end example
 
-Omitting the argument @var{end} is equivalent to specifying @code{nil}.
-It follows that @code{(substring @var{string} 0)} returns a copy of all
-of @var{string}.
+Пропуск аргумента @var{end} эквивалентен заданию ему значения @code{nil}.
+Поэтому @code{(substring @var{string} 0)} вернет копию всей строки.
+
+@c Omitting the argument @var{end} is equivalent to specifying @code{nil}.
+@c It follows that @code{(substring @var{string} 0)} returns a copy of all
+@c of @var{string}.
 
 @example
 @group
@@ -203,48 +317,78 @@ of @var{string}.
 @end example
 
 @noindent
-But we recommend @code{copy-sequence} for this purpose (@pxref{Sequence
-Functions}).
+Рекомендуется в этом случае использовать @code{copy-sequence}.
+(@pxref{Sequence Functions}).
 
-If the characters copied from @var{string} have text properties, the
-properties are copied into the new string also.  @xref{Text Properties}.
+@c But we recommend @code{copy-sequence} for this purpose (@pxref{Sequence
+@c Functions}).
 
-@code{substring} also accepts a vector for the first argument.
-For example:
+Если символы копируются из @var{string} содержащей текстовые свойства,
+то свойства так же копируются в новую строку. @xref{Text Properties}.
+
+@c If the characters copied from @var{string} have text properties, the
+@c properties are copied into the new string also.  @xref{Text Properties}.
+
+@code{substring} может принимать вектор в качестве первого аргумента.
+Например:
+
+@c @code{substring} also accepts a vector for the first argument.
+@c For example:
 
 @example
 (substring [a b (c) "d"] 1 3)
      @result{} [b (c)]
 @end example
 
-A @code{wrong-type-argument} error is signaled if @var{start} is not
-an integer or if @var{end} is neither an integer nor @code{nil}.  An
-@code{args-out-of-range} error is signaled if @var{start} indicates a
-character following @var{end}, or if either integer is out of range
-for @var{string}.
+Если @var{start} не целое или @var{end} не целое
+или @code{nil}, то сообщается об ошибке @code{wrong-type-argument}.
+Ошибка @code{args-out-of-range} происходит если @var{start} указывает
+на символ после @var{end} или если любой из двух параметров выходит
+за границы строки @var{string}.
 
-Contrast this function with @code{buffer-substring} (@pxref{Buffer
-Contents}), which returns a string containing a portion of the text in
-the current buffer.  The beginning of a string is at index 0, but the
-beginning of a buffer is at index 1.
+@c A @code{wrong-type-argument} error is signaled if @var{start} is not
+@c an integer or if @var{end} is neither an integer nor @code{nil}.  An
+@c @code{args-out-of-range} error is signaled if @var{start} indicates a
+@c character following @var{end}, or if either integer is out of range
+@c for @var{string}.
+
+Данную функцию стоит сравнить с @code{buffer-substring} (@pxref{Buffer
+Contents}), которая возвращает строку скопированную из текста буфера.
+Начальный индекс в строк это 0, но начальный индекс в буфере это 1.
+
+@c Contrast this function with @code{buffer-substring} (@pxref{Buffer
+@c Contents}), which returns a string containing a portion of the text in
+@c the current buffer.  The beginning of a string is at index 0, but the
+@c beginning of a buffer is at index 1.
 @end defun
 
 @defun substring-no-properties string &optional start end
-This works like @code{substring} but discards all text properties from
-the value.  Also, @var{start} may be omitted or @code{nil}, which is
-equivalent to 0.  Thus, @w{@code{(substring-no-properties
-@var{string})}} returns a copy of @var{string}, with all text
-properties removed.
+Функция работает как @code{substring}, за исключением того
+что текстовые свойства игнорируются. Если @var{start} не
+задан или 0, вернется копия строки с удаленными текстовыми
+свойствами.
+
+@c This works like @code{substring} but discards all text properties from
+@c the value.  Also, @var{start} may be omitted or @code{nil}, which is
+@c equivalent to 0.  Thus, @w{@code{(substring-no-properties
+@c @var{string})}} returns a copy of @var{string}, with all text
+@c properties removed.
 @end defun
 
 @defun concat &rest sequences
 @cindex copying strings
 @cindex concatenating strings
-This function returns a new string consisting of the characters in the
-arguments passed to it (along with their text properties, if any).  The
-arguments may be strings, lists of numbers, or vectors of numbers; they
-are not themselves changed.  If @code{concat} receives no arguments, it
-returns an empty string.
+Функция возвращает новую строку состоящую из символов
+всех переданных строк (возвращает конкатенацию строк), вместе
+с текстовыми свойствами если они есть. Аргументы могут быть строками, списками
+чисел, или векторами чисел. Аргументы не изменяются. Если @code{concat}
+вызывается без аргументов, возвращается пустая строка.
+
+@c This function returns a new string consisting of the characters in the
+@c arguments passed to it (along with their text properties, if any).  The
+@c arguments may be strings, lists of numbers, or vectors of numbers; they
+@c are not themselves changed.  If @code{concat} receives no arguments, it
+@c returns an empty string.
 
 @example
 (concat "abc" "-def")
@@ -261,44 +405,81 @@ returns an empty string.
 @end example
 
 @noindent
-This function always constructs a new string that is not @code{eq} to
-any existing string, except when the result is the empty string (to
-save space, Emacs makes only one empty multibyte string).
+Функция всегда создает новую строку которая не @code{eq}
+никакой из существующих строк, за исключением случая когда
+результат пустая строк (для сохранения места, Emacs хранит только одну
+копию пустой строка).
 
-For information about other concatenation functions, see the
-description of @code{mapconcat} in @ref{Mapping Functions},
-@code{vconcat} in @ref{Vector Functions}, and @code{append} in @ref{Building
-Lists}.  For concatenating individual command-line arguments into a
-string to be used as a shell command, see @ref{Shell Arguments,
-combine-and-quote-strings}.
+@c This function always constructs a new string that is not @code{eq} to
+@c any existing string, except when the result is the empty string (to
+@c save space, Emacs makes only one empty multibyte string).
+
+Для информации по другим функциям конкатенации стоит посмотреть
+описания: @code{mapconcat} в @ref{Mapping Functions},
+@code{vconcat} в @ref{Vector Functions}, и
+@code{append} в @ref{Building Lists}. Для
+конкатенации отдельных аргументов командной строки
+в строку которую можно использовать в shell, см
+@ref{Shell Arguments, combine-and-quote-strings}.
+
+@c For information about other concatenation functions, see the
+@c description of @code{mapconcat} in @ref{Mapping Functions},
+@c @code{vconcat} in @ref{Vector Functions}, and @code{append} in @ref{Building
+@c Lists}.  For concatenating individual command-line arguments into a
+@c string to be used as a shell command, see @ref{Shell Arguments,
+@c combine-and-quote-strings}.
 @end defun
 
 @defun split-string string &optional separators omit-nulls trim
-This function splits @var{string} into substrings based on the regular
-expression @var{separators} (@pxref{Regular Expressions}).  Each match
-for @var{separators} defines a splitting point; the substrings between
-splitting points are made into a list, which is returned.
+Функция выполняет разделение строки @var{string} на подстроки
+используя в качестве разделителя регулярное выражение @var{separators}
+(@pxref{Regular Expressions}). Каждое совпадение
+@var{separators} определяет точку разделения; подстроки
+между точками разделения собираются в список, который
+является результатом.
 
-If @var{omit-nulls} is @code{nil} (or omitted), the result contains
-null strings whenever there are two consecutive matches for
-@var{separators}, or a match is adjacent to the beginning or end of
-@var{string}.  If @var{omit-nulls} is @code{t}, these null strings are
-omitted from the result.
+@c This function splits @var{string} into substrings based on the regular
+@c expression @var{separators} (@pxref{Regular Expressions}).  Each match
+@c for @var{separators} defines a splitting point; the substrings between
+@c splitting points are made into a list, which is returned.
 
-If @var{separators} is @code{nil} (or omitted), the default is the
-value of @code{split-string-default-separators}.
+Если @var{omit-nulls} @code{nil} (или опущено), результат
+будет содержать пустые строки когда два совпадения
+идут друг за друга (между ними в строке ничего нет), или
+совпадение находится в начале или конце строки. Если
+@var{omit-nulls} @code{t}, null строки
+будут исключены из результата.
 
-As a special case, when @var{separators} is @code{nil} (or omitted),
-null strings are always omitted from the result.  Thus:
+@c If @var{omit-nulls} is @code{nil} (or omitted), the result contains
+@c null strings whenever there are two consecutive matches for
+@c @var{separators}, or a match is adjacent to the beginning or end of
+@c @var{string}.  If @var{omit-nulls} is @code{t}, these null strings are
+@c omitted from the result.
+
+Если @var{separators}  @code{nil} (или не задан), будет
+использовано значение по умолчанию @code{split-string-default-separators}.
+
+@c If @var{separators} is @code{nil} (or omitted), the default is the
+@c value of @code{split-string-default-separators}.
+
+В случае, когда @var{separators} @code{nil} (или не задан),
+пустые строки всегда исключаются из результата. Таким образом:
+
+@c As a special case, when @var{separators} is @code{nil} (or omitted),
+@c null strings are always omitted from the result.  Thus:
 
 @example
 (split-string "  two words ")
      @result{} ("two" "words")
 @end example
 
-The result is not @code{("" "two" "words" "")}, which would rarely be
-useful.  If you need such a result, use an explicit value for
-@var{separators}:
+Результат не @code{("" "two" "words" "")}, который редко
+полезен. Если нужен именно этот результат, нужно
+использовать  явное задание @var{separators}:
+
+@c The result is not @code{("" "two" "words" "")}, which would rarely be
+@c useful.  If you need such a result, use an explicit value for
+@c @var{separators}:
 
 @example
 (split-string "  two words "
@@ -317,9 +498,13 @@ More examples:
      @result{} ("S" "up is g" "d f" "d")
 @end example
 
-Empty matches do count, except that @code{split-string} will not look
-for a final empty match when it already reached the end of the string
-using a non-empty match or when @var{string} is empty:
+Пустые совпадения считаются, за исключением  случая,
+когда @code{split-string} уже достиг конца строки
+через не пустое совпадение или когда @var{string} пустая:
+
+@c Empty matches do count, except that @code{split-string} will not look
+@c for a final empty match when it already reached the end of the string
+@c using a non-empty match or when @var{string} is empty:
 
 @example
 (split-string "aooob" "o*")
@@ -330,9 +515,13 @@ using a non-empty match or when @var{string} is empty:
      @result{} ("")
 @end example
 
-However, when @var{separators} can match the empty string,
-@var{omit-nulls} is usually @code{t}, so that the subtleties in the
-three previous examples are rarely relevant:
+Но, если @var{separators} может совпадать с пустой строк,
+как правило @var{omit-nulls} @code{t}, поэтому такие
+нюансы как в предыдущем примере редко бывают актуальны:
+
+@c However, when @var{separators} can match the empty string,
+@c @var{omit-nulls} is usually @code{t}, so that the subtleties in the
+@c three previous examples are rarely relevant:
 
 @example
 (split-string "Soup is good food" "o*" t)
@@ -343,10 +532,15 @@ three previous examples are rarely relevant:
      @result{} nil
 @end example
 
-Somewhat odd, but predictable, behavior can occur for certain
-``non-greedy'' values of @var{separators} that can prefer empty
-matches over non-empty matches.  Again, such values rarely occur in
-practice:
+Странное, но предсказуемое, поведение может наблюдаться
+для ``не-жадных'' значений @var{separators}, когда
+они предпочитают пустые совпадения  не-пустым совпадениям.
+Такие ситуации довольно редко встречаются на практике:
+
+@c Somewhat odd, but predictable, behavior can occur for certain
+@c ``non-greedy'' values of @var{separators} that can prefer empty
+@c matches over non-empty matches.  Again, such values rarely occur in
+@c practice:
 
 @example
 (split-string "ooo" "o*" t)
@@ -355,19 +549,33 @@ practice:
      @result{} ("o" "o" "o")
 @end example
 
-If the optional argument @var{trim} is non-@code{nil}, it should be a
-regular expression to match text to trim from the beginning and end of
-each substring.  If trimming makes the substring empty, it is treated
-as null.
+Если необязательный аргумент @var{trim} не-@code{nil}, то
+он должен быть регулярным выражением для удаления
+текста с начала и конца каждой подстроки в разделении,
+который будет подходить под это выражение.
+Если обрезание подстроки делает ее пустой, она рассматривается
+как null строка.
 
-If you need to split a string into a list of individual command-line
-arguments suitable for @code{call-process} or @code{start-process},
-see @ref{Shell Arguments, split-string-and-unquote}.
+@c If the optional argument @var{trim} is non-@code{nil}, it should be a
+@c regular expression to match text to trim from the beginning and end of
+@c each substring.  If trimming makes the substring empty, it is treated
+@c as null.
+
+Если нужно разделить строку на список аргументов командной строки
+пригодный для вызова @code{call-process} или @code{start-process},
+стоит посмотреть @ref{Shell Arguments, split-string-and-unquote}.
+
+@c If you need to split a string into a list of individual command-line
+@c arguments suitable for @code{call-process} or @code{start-process},
+@c see @ref{Shell Arguments, split-string-and-unquote}.
 @end defun
 
 @defvar split-string-default-separators
-The default value of @var{separators} for @code{split-string}.  Its
-usual value is @w{@code{"[ \f\t\n\r\v]+"}}.
+Значение по умолчанию @var{separators} для функции @code{split-string}.
+Как правило это значение @w{@code{"[ \f\t\n\r\v]+"}}.
+
+@c The default value of @var{separators} for @code{split-string}.  Its
+@c usual value is @w{@code{"[ \f\t\n\r\v]+"}}.
 @end defvar
 
 @node Modifying Strings
@@ -375,32 +583,55 @@ usual value is @w{@code{"[ \f\t\n\r\v]+"}}.
 @cindex modifying strings
 @cindex string modification
 
-  The most basic way to alter the contents of an existing string is with
-@code{aset} (@pxref{Array Functions}).  @code{(aset @var{string}
-@var{idx} @var{char})} stores @var{char} into @var{string} at index
-@var{idx}.  Each character occupies one or more bytes, and if @var{char}
-needs a different number of bytes from the character already present at
-that index, @code{aset} signals an error.
+  Изменение строк.
+  Наиболее общий способ изменения содержимого существующей
+строки использовать @code{aset} (@pxref{Array Functions}).
+@code{(aset @var{string} @var{idx} @var{char})} записывает
+@var{char} в @var{string} в позицию @var{idx}. Каждый
+символ занимает один или больше байт, и поэтому если
+@var{char} нужно отличное количество байт от символа который
+уже хранится в строке под индексом @var{idx}, будет ошибка.
 
-  A more powerful function is @code{store-substring}:
+@c   The most basic way to alter the contents of an existing string is with
+@c @code{aset} (@pxref{Array Functions}).  @code{(aset @var{string}
+@c @var{idx} @var{char})} stores @var{char} into @var{string} at index
+@c @var{idx}.  Each character occupies one or more bytes, and if @var{char}
+@c needs a different number of bytes from the character already present at
+@c that index, @code{aset} signals an error.
+
+  Более сильная функция @code{store-substring}:
+  @c A more powerful function is @code{store-substring}:
 
 @defun store-substring string idx obj
-This function alters part of the contents of the string @var{string}, by
-storing @var{obj} starting at index @var{idx}.  The argument @var{obj}
-may be either a character or a (smaller) string.
+Функция изменяет часть строки @var{string},
+путем сохранения @var{obj} в строку начиная с индекса
+@var{idx}. Аргумент @var{obj} может быть символом или (меньшей чем @var{string})
+строкой.
 
-Since it is impossible to change the length of an existing string, it is
-an error if @var{obj} doesn't fit within @var{string}'s actual length,
-or if any new character requires a different number of bytes from the
-character currently present at that point in @var{string}.
+@c This function alters part of the contents of the string @var{string}, by
+@c storing @var{obj} starting at index @var{idx}.  The argument @var{obj}
+@c may be either a character or a (smaller) string.
+
+Так как не возможно изменить длину существующей строки, если
+@var{obj} не помещается в существующую @var{string}, будет ошибка, или
+если символ уже находящийся в строки будет иметь отличное
+количество байт от того на который заменяется.
+
+@c Since it is impossible to change the length of an existing string, it is
+@c an error if @var{obj} doesn't fit within @var{string}'s actual length,
+@c or if any new character requires a different number of bytes from the
+@c character currently present at that point in @var{string}.
 @end defun
 
-  To clear out a string that contained a password, use
+  Для очистки строки, которая например содержит пароль, используйте
 @code{clear-string}:
+  
+@c   To clear out a string that contained a password, use
+@c @code{clear-string}:
 
 @defun clear-string string
-This makes @var{string} a unibyte string and clears its contents to
-zeros.  It may also change @var{string}'s length.
+Делает @var{string} строку одно-байтовой заполненной нулями.
+Может изменить длину @var{string}.
 @end defun
 
 @need 2000
@@ -409,10 +640,16 @@ zeros.  It may also change @var{string}'s length.
 @cindex string equality
 @cindex text comparison
 
+Сравнение текста.
+
 @defun char-equal character1 character2
-This function returns @code{t} if the arguments represent the same
-character, @code{nil} otherwise.  This function ignores differences
-in case if @code{case-fold-search} is non-@code{nil}.
+Функция возвращает @code{t} если аргументы представляют
+один символ, иначе @code{nil}. Функция игнорирует различия в регистре
+если @code{case-fold-search} не-@code{nil}.
+
+@c This function returns @code{t} if the arguments represent the same
+@c character, @code{nil} otherwise.  This function ignores differences
+@c in case if @code{case-fold-search} is non-@code{nil}.
 
 @example
 (char-equal ?x ?x)
@@ -424,17 +661,34 @@ in case if @code{case-fold-search} is non-@code{nil}.
 @end defun
 
 @defun string= string1 string2
-This function returns @code{t} if the characters of the two strings
-match exactly.  Symbols are also allowed as arguments, in which case
-the symbol names are used.  Case is always significant, regardless of
-@code{case-fold-search}.
+Функция возвращает @code{t} если строки (сравниваются символы)
+равны. В качества параметров могут быть использованы символы,
+в этом случае будут сравниваться имена символов.
 
-This function is equivalent to @code{equal} for comparing two strings
-(@pxref{Equality Predicates}).  In particular, the text properties of
-the two strings are ignored; use @code{equal-including-properties} if
-you need to distinguish between strings that differ only in their text
-properties.  However, unlike @code{equal}, if either argument is not a
-string or symbol, @code{string=} signals an error.
+(Прим. под символами понимается quote запись, то есть видимо
+@code{string= 's1 's1}  будет  @code{t},
+@code{string= s1 s2}  будет  @code{t}, если в s1 и s2
+значения одинаковые строки).
+
+Регистр всегда учитывается, в соответствии с @code{case-fold-search}.
+
+@c This function returns @code{t} if the characters of the two strings
+@c match exactly.  Symbols are also allowed as arguments, in which case
+@c the symbol names are used.  Case is always significant, regardless of
+@c @code{case-fold-search}.
+
+Данная функция эквивалентна @code{equal} для сравнения двух строк
+(@pxref{Equality Predicates}). Текстовые свойства строк игнорируются,
+стоит использовать @code{equal-including-properties} если нужно
+сравнить с учетом текстовых свойств. В отличие от @code{equal},
+если один из аргументов не строк, @code{string=} сигнализирует об ошибке.
+
+@c This function is equivalent to @code{equal} for comparing two strings
+@c (@pxref{Equality Predicates}).  In particular, the text properties of
+@c the two strings are ignored; use @code{equal-including-properties} if
+@c you need to distinguish between strings that differ only in their text
+@c properties.  However, unlike @code{equal}, if either argument is not a
+@c string or symbol, @code{string=} signals an error.
 
 @example
 (string= "abc" "abc")
@@ -445,39 +699,64 @@ string or symbol, @code{string=} signals an error.
      @result{} nil
 @end example
 
-For technical reasons, a unibyte and a multibyte string are
-@code{equal} if and only if they contain the same sequence of
-character codes and all these codes are either in the range 0 through
-127 (@acronym{ASCII}) or 160 through 255 (@code{eight-bit-graphic}).
-However, when a unibyte string is converted to a multibyte string, all
-characters with codes in the range 160 through 255 are converted to
-characters with higher codes, whereas @acronym{ASCII} characters
-remain unchanged.  Thus, a unibyte string and its conversion to
-multibyte are only @code{equal} if the string is all @acronym{ASCII}.
-Character codes 160 through 255 are not entirely proper in multibyte
-text, even though they can occur.  As a consequence, the situation
-where a unibyte and a multibyte string are @code{equal} without both
-being all @acronym{ASCII} is a technical oddity that very few Emacs
-Lisp programmers ever get confronted with.  @xref{Text
-Representations}.
+По техническим причинам, одно-байтовые и много-байтовые строки
+@code{equal}, только если они содержат одни и те же последовательности
+кодов символов и все эти кода в диапазонах 0 .. 127 (@acronym{ASCII}),
+160 .. 255 (@code{eight-bit-graphic}).  Но, если одно-байтовая строка
+преобразуется в много-байтовую, все символы с кодами от 160 до 255,
+преобразуются в символы с большими кодами, тогда как @acronym{ASCII}
+не изменяются.  Таким образом, одно-байтовая строка будет @code{equal}
+себе преобразованной в много-байтовую, только если все символы
+acronym{ASCII}. Коды от 160 до 255 не присущи много-байтовым строкам,
+поэтому довольно редко одно-байтовая и много-байтовая строки в которых
+не только @acronym{ASCII} символы бывают @code{equal}. Программисты
+редко встречаются с такой ситуацией @xref{Text Representations}.
+
+@c For technical reasons, a unibyte and a multibyte string are
+@c @code{equal} if and only if they contain the same sequence of
+@c character codes and all these codes are either in the range 0 through
+@c 127 (@acronym{ASCII}) or 160 through 255 (@code{eight-bit-graphic}).
+@c However, when a unibyte string is converted to a multibyte string, all
+@c characters with codes in the range 160 through 255 are converted to
+@c characters with higher codes, whereas @acronym{ASCII} characters
+@c remain unchanged.  Thus, a unibyte string and its conversion to
+@c multibyte are only @code{equal} if the string is all @acronym{ASCII}.
+@c Character codes 160 through 255 are not entirely proper in multibyte
+@c text, even though they can occur.  As a consequence, the situation
+@c where a unibyte and a multibyte string are @code{equal} without both
+@c being all @acronym{ASCII} is a technical oddity that very few Emacs
+@c Lisp programmers ever get confronted with.  @xref{Text
+@c Representations}.
 @end defun
 
 @defun string-equal string1 string2
-@code{string-equal} is another name for @code{string=}.
+@code{string-equal} другое имя для @code{string=}.
+
+@c @code{string-equal} is another name for @code{string=}.
 @end defun
 
 @cindex locale-dependent string equivalence
 @defun string-collate-equalp string1 string2 &optional locale ignore-case
-This function returns @code{t} if @var{string1} and @var{string2} are
-equal with respect to collation rules.  A collation rule is not only
-determined by the lexicographic order of the characters contained in
-@var{string1} and @var{string2}, but also further rules about
-relations between these characters.  Usually, it is defined by the
-@var{locale} environment Emacs is running with.
+Функция возвращает @code{t} если @var{string1} и @var{string2}
+равны с учетом правил сравнения. Правило сравнение
+учитывает не только лексикографический порядок, но
+и отношение между символами. Как правило, зависит
+от @var{locale} окружения с которым запущен Emacs.
 
-For example, characters with different coding points but
-the same meaning might be considered as equal, like different grave
-accent Unicode characters:
+@c This function returns @code{t} if @var{string1} and @var{string2} are
+@c equal with respect to collation rules.  A collation rule is not only
+@c determined by the lexicographic order of the characters contained in
+@c @var{string1} and @var{string2}, but also further rules about
+@c relations between these characters.  Usually, it is defined by the
+@c @var{locale} environment Emacs is running with.
+
+Например, символы в разной кодировке, но с одним значением, могут
+считаться одинаковыми, как например разные символы Unicode с
+ударением:
+
+@c For example, characters with different coding points but
+@c the same meaning might be considered as equal, like different grave
+@c accent Unicode characters:
 
 @example
 @group
@@ -486,46 +765,82 @@ accent Unicode characters:
 @end group
 @end example
 
-The optional argument @var{locale}, a string, overrides the setting of
-your current locale identifier for collation.  The value is system
-dependent; a @var{locale} @code{"en_US.UTF-8"} is applicable on POSIX
-systems, while it would be, e.g., @code{"enu_USA.1252"} on MS-Windows
-systems.
+Не обязательный аргумент @var{locale}, строка, которая перезаписывает
+текущее системное locale для сравнения. Значение зависит от системы
+@var{locale} @code{"en_US.UTF-8"} применимо для POSIX систем,
+в то время как на MS-Windows оно будет @code{"enu_USA.1252"}.
 
-If @var{ignore-case} is non-@code{nil}, characters are converted to lower-case
-before comparing them.
+@c The optional argument @var{locale}, a string, overrides the setting of
+@c your current locale identifier for collation.  The value is system
+@c dependent; a @var{locale} @code{"en_US.UTF-8"} is applicable on POSIX
+@c systems, while it would be, e.g., @code{"enu_USA.1252"} on MS-Windows
+@c systems.
+
+Если @var{ignore-case} не-@code{nil}, символы преобразуются в
+нижний регистр перед сравнением.
+
+@c If @var{ignore-case} is non-@code{nil}, characters are converted to lower-case
+@c before comparing them.
 
 @vindex w32-collate-ignore-punctuation
-To emulate Unicode-compliant collation on MS-Windows systems,
-bind @code{w32-collate-ignore-punctuation} to a non-@code{nil} value, since
-the codeset part of the locale cannot be @code{"UTF-8"} on MS-Windows.
+Для эмулирования Unicode-совместимое сравнение на MS-Windows системах,
+нужно задать @code{w32-collate-ignore-punctuation} в не-@code{nil},
+так часть кода locale не может быть @code{"UTF-8"} на
+MS-Windows.
 
-If your system does not support a locale environment, this function
-behaves like @code{string-equal}.
+@c To emulate Unicode-compliant collation on MS-Windows systems,
+@c bind @code{w32-collate-ignore-punctuation} to a non-@code{nil} value, since
+@c the codeset part of the locale cannot be @code{"UTF-8"} on MS-Windows.
 
-Do @emph{not} use this function to compare file names for equality, as
-filesystems generally don't honor linguistic equivalence of strings
-that collation implements.
+Если система не поддерживает окружение locale (локализацию), функция
+работает как @code{string-equal}.
+
+@c If your system does not support a locale environment, this function
+@c behaves like @code{string-equal}.
+
+@emph{Не} стоит использовать данную функцию для сравнения
+имен файлов, так как файловые системы как правило не соблюдают
+лингвистическую эквивалентность для строк которую
+использует функция.
+
+@c Do @emph{not} use this function to compare file names for equality, as
+@c filesystems generally don't honor linguistic equivalence of strings
+@c that collation implements.
 @end defun
 
 @cindex lexical comparison of strings
 @defun string< string1 string2
 @c (findex string< causes problems for permuted index!!)
-This function compares two strings a character at a time.  It
-scans both the strings at the same time to find the first pair of corresponding
-characters that do not match.  If the lesser character of these two is
-the character from @var{string1}, then @var{string1} is less, and this
-function returns @code{t}.  If the lesser character is the one from
-@var{string2}, then @var{string1} is greater, and this function returns
-@code{nil}.  If the two strings match entirely, the value is @code{nil}.
+Функция проверяет, что первая строка меньше второй. Проверка
+выполняется путем первого не совпадающего символа, и сравнения
+их кодов. Если символ из первой строки меньше символа из второй
+возвращается @code{t}, иначе возвращается @code{nil}.
+Так же @code{nil} возвращается если строки равны.
+Если в первой строке не нашлось символа для пары (она короче),
+то считается, что пустой символ меньше.
 
-Pairs of characters are compared according to their character codes.
-Keep in mind that lower case letters have higher numeric values in the
-@acronym{ASCII} character set than their upper case counterparts; digits and
-many punctuation characters have a lower numeric value than upper case
-letters.  An @acronym{ASCII} character is less than any non-@acronym{ASCII}
-character; a unibyte non-@acronym{ASCII} character is always less than any
-multibyte non-@acronym{ASCII} character (@pxref{Text Representations}).
+@c This function compares two strings a character at a time.  It
+@c scans both the strings at the same time to find the first pair of corresponding
+@c characters that do not match.  If the lesser character of these two is
+@c the character from @var{string1}, then @var{string1} is less, and this
+@c function returns @code{t}.  If the lesser character is the one from
+@c @var{string2}, then @var{string1} is greater, and this function returns
+@c @code{nil}.  If the two strings match entirely, the value is @code{nil}.
+
+Стоит иметь ввиду, что в @acronym{ASCII} символы в нижнем регистре
+имеют больший код, чем соответствующие в верхнем.
+Многие символы и цифры имеют меньший код чем прописные буквы.
+@acronym{ASCII} символ меньше чем не-@acronym{ASCII},
+одно-байтовый не-@acronym{ASCII} всегда меньше много-байтового
+не-@acronym{ASCII} символа. (@pxref{Text Representations})
+
+@c Pairs of characters are compared according to their character codes.
+@c Keep in mind that lower case letters have higher numeric values in the
+@c @acronym{ASCII} character set than their upper case counterparts; digits and
+@c many punctuation characters have a lower numeric value than upper case
+@c letters.  An @acronym{ASCII} character is less than any non-@acronym{ASCII}
+@c character; a unibyte non-@acronym{ASCII} character is always less than any
+@c multibyte non-@acronym{ASCII} character (@pxref{Text Representations}).
 
 @example
 @group
@@ -538,10 +853,13 @@ multibyte non-@acronym{ASCII} character (@pxref{Text Representations}).
 @end group
 @end example
 
-When the strings have different lengths, and they match up to the
-length of @var{string1}, then the result is @code{t}.  If they match up
-to the length of @var{string2}, the result is @code{nil}.  A string of
-no characters is less than any other string.
+
+Пустая строка меньше любой другой строки.
+
+@c When the strings have different lengths, and they match up to the
+@c length of @var{string1}, then the result is @code{t}.  If they match up
+@c to the length of @var{string2}, the result is @code{nil}.  A string of
+@c no characters is less than any other string.
 
 @example
 @group
@@ -558,31 +876,49 @@ no characters is less than any other string.
 @end group
 @end example
 
-Symbols are also allowed as arguments, in which case their print names
-are compared.
+В качестве аргументов принимаются символы, в этом случае сравниваются
+их имена.
+
+@c Symbols are also allowed as arguments, in which case their print names
+@c are compared.
 @end defun
 
 @defun string-lessp string1 string2
-@code{string-lessp} is another name for @code{string<}.
+@code{string-lessp} другое имя для @code{string<}.
+
+@c @code{string-lessp} is another name for @code{string<}.
 @end defun
 
 @defun string-greaterp string1 string2
-This function returns the result of comparing @var{string1} and
-@var{string2} in the opposite order, i.e., it is equivalent to calling
+Функция проверяет что @var{string1} больше
+@var{string2}, то есть вызов эквивалентен
 @code{(string-lessp @var{string2} @var{string1})}.
+
+@c This function returns the result of comparing @var{string1} and
+@c @var{string2} in the opposite order, i.e., it is equivalent to calling
+@c @code{(string-lessp @var{string2} @var{string1})}.
 @end defun
 
 @cindex locale-dependent string comparison
 @defun string-collate-lessp string1 string2 &optional locale ignore-case
-This function returns @code{t} if @var{string1} is less than
-@var{string2} in collation order.  A collation order is not only
-determined by the lexicographic order of the characters contained in
-@var{string1} and @var{string2}, but also further rules about
-relations between these characters.  Usually, it is defined by the
-@var{locale} environment Emacs is running with.
+Функция возвращает @code{t} если @var{string1} меньше
+@var{string2} в порядке сопоставления. Правило сравнение
+учитывает не только лексикографический порядок, но
+и отношение между символами. Сравнение связано с
+с локализацией окружения в котором запущен Emacs.
+ 
+@c This function returns @code{t} if @var{string1} is less than
+@c @var{string2} in collation order.  A collation order is not only
+@c determined by the lexicographic order of the characters contained in
+@c @var{string1} and @var{string2}, but also further rules about
+@c relations between these characters.  Usually, it is defined by the
+@c @var{locale} environment Emacs is running with.
 
-For example, punctuation and whitespace characters might be ignored
-for sorting (@pxref{Sequence Functions}):
+Например, пунктуация и пробелы могут игнорироваться при сортировке
+(@pxref{Sequence Functions}):
+
+@c For example, punctuation and whitespace characters might be ignored
+@c for sorting (@pxref{Sequence Functions}):
 
 @example
 @group
@@ -591,15 +927,25 @@ for sorting (@pxref{Sequence Functions}):
 @end group
 @end example
 
-This behavior is system-dependent; e.g., punctuation and whitespace
-are never ignored on Cygwin, regardless of locale.
+Поведение зависит от системы, например, знаки пунктуации и пробелы
+не игнорируются в Cygwin.
 
-The optional argument @var{locale}, a string, overrides the setting of
-your current locale identifier for collation.  The value is system
-dependent; a @var{locale} @code{"en_US.UTF-8"} is applicable on POSIX
-systems, while it would be, e.g., @code{"enu_USA.1252"} on MS-Windows
-systems.  The @var{locale} value of @code{"POSIX"} or @code{"C"} lets
-@code{string-collate-lessp} behave like @code{string-lessp}:
+@c This behavior is system-dependent; e.g., punctuation and whitespace
+@c are never ignored on Cygwin, regardless of locale.
+
+Не обязательный аргумент @var{locale}, строка, которая перезаписывает
+текущее системное locale для сравнения. Значение зависит от системы
+@var{locale} @code{"en_US.UTF-8"} применимо для POSIX систем,
+в то время как на MS-Windows оно будет @code{"enu_USA.1252"}.
+Значение @var{locale} @code{"POSIX"} или @code{"C"} позволяет
+@code{string-collate-lessp} работать как @code{string-lessp}:
+
+@c The optional argument @var{locale}, a string, overrides the setting of
+@c your current locale identifier for collation.  The value is system
+@c dependent; a @var{locale} @code{"en_US.UTF-8"} is applicable on POSIX
+@c systems, while it would be, e.g., @code{"enu_USA.1252"} on MS-Windows
+@c systems.  The @var{locale} value of @code{"POSIX"} or @code{"C"} lets
+@c @code{string-collate-lessp} behave like @code{string-lessp}:
 
 @example
 @group
@@ -609,99 +955,177 @@ systems.  The @var{locale} value of @code{"POSIX"} or @code{"C"} lets
 @end group
 @end example
 
-If @var{ignore-case} is non-@code{nil}, characters are converted to lower-case
-before comparing them.
+Если @var{ignore-case} не-@code{nil}, символы преобразуются в
+нижний регистр перед сравнением.
 
-To emulate Unicode-compliant collation on MS-Windows systems,
-bind @code{w32-collate-ignore-punctuation} to a non-@code{nil} value, since
-the codeset part of the locale cannot be @code{"UTF-8"} on MS-Windows.
+@c If @var{ignore-case} is non-@code{nil}, characters are converted to lower-case
+@c before comparing them.
 
-If your system does not support a locale environment, this function
-behaves like @code{string-lessp}.
+
+Для эмулирования Unicode-совместимое сравнение на MS-Windows системах,
+нужно задать @code{w32-collate-ignore-punctuation} в не-@code{nil},
+так часть кода locale не может быть @code{"UTF-8"} на
+MS-Windows.
+
+@c To emulate Unicode-compliant collation on MS-Windows systems,
+@c bind @code{w32-collate-ignore-punctuation} to a non-@code{nil} value, since
+@c the codeset part of the locale cannot be @code{"UTF-8"} on MS-Windows.
+
+Если система не поддерживает окружение locale (локализацию), функция
+работает как @code{string-lessp}.
+
+@c If your system does not support a locale environment, this function
+@c behaves like @code{string-lessp}.
 @end defun
 
 @defun string-prefix-p string1 string2 &optional ignore-case
-This function returns non-@code{nil} if @var{string1} is a prefix of
-@var{string2}; i.e., if @var{string2} starts with @var{string1}.  If
-the optional argument @var{ignore-case} is non-@code{nil}, the
-comparison ignores case differences.
+Функция возвращает не-@code{nil} если @var{string1} является
+префиксом @var{string2}, т.е. @var{string2} начинается на @var{string1}.
+Если не обязательный аргумент @var{ignore-case} не-@code{nil}, регистра
+игнорируется при сравнении.
+
+@c This function returns non-@code{nil} if @var{string1} is a prefix of
+@c @var{string2}; i.e., if @var{string2} starts with @var{string1}.  If
+@c the optional argument @var{ignore-case} is non-@code{nil}, the
+@c comparison ignores case differences.
 @end defun
 
 @defun string-suffix-p suffix string &optional ignore-case
-This function returns non-@code{nil} if @var{suffix} is a suffix of
-@var{string}; i.e., if @var{string} ends with @var{suffix}.  If the
-optional argument @var{ignore-case} is non-@code{nil}, the comparison
-ignores case differences.
+Функция возвращает не-@code{nil} если @var{string1} является
+префиксом @var{string2}, т.е. @var{string2} оканчивается на @var{string1}.
+Если не обязательный аргумент @var{ignore-case} не-@code{nil}, регистра
+игнорируется при сравнении.
+
+@c This function returns non-@code{nil} if @var{suffix} is a suffix of
+@c @var{string}; i.e., if @var{string} ends with @var{suffix}.  If the
+@c optional argument @var{ignore-case} is non-@code{nil}, the comparison
+@c ignores case differences.
 @end defun
 
 @defun compare-strings string1 start1 end1 string2 start2 end2 &optional ignore-case
-This function compares a specified part of @var{string1} with a
-specified part of @var{string2}.  The specified part of @var{string1}
-runs from index @var{start1} (inclusive) up to index @var{end1}
-(exclusive); @code{nil} for @var{start1} means the start of the
-string, while @code{nil} for @var{end1} means the length of the
-string.  Likewise, the specified part of @var{string2} runs from index
-@var{start2} up to index @var{end2}.
+Функция сравнивает часть строки @var{string1} с частью строки
+@var{string2}. Часть строки @var{string1} задается
+@var{start1} (включительно)  @var{end1} (не включительно), часть
+строки @var{string2} @var{start2}-@var{end2} соответственно.
+@code{nil} для любого из @var{start} означает начало строки,
+для @var{end} конец строк.
+Сравнение производится как для функции @code{string<}.
 
-The strings are compared by the numeric values of their characters.
-For instance, @var{str1} is considered less than @var{str2} if
-its first differing character has a smaller numeric value.  If
-@var{ignore-case} is non-@code{nil}, characters are converted to
-upper-case before comparing them.  Unibyte strings are converted to
-multibyte for comparison (@pxref{Text Representations}), so that a
-unibyte string and its conversion to multibyte are always regarded as
-equal.
+Если @var{ignore-case} не-@code{nil}, символы преобразуются в
+верхний регистр перед сравнением. Одно-байтовые строки
+преобразуются в много-байтовые перед сравнением
+(@pxref{Text Representations}). Поэтому одно-байтовая строка
+и ее много-байтовая версия всегда будут равными.
 
-If the specified portions of the two strings match, the value is
-@code{t}.  Otherwise, the value is an integer which indicates how many
-leading characters agree, and which string is less.  Its absolute
-value is one plus the number of characters that agree at the beginning
-of the two strings.  The sign is negative if @var{string1} (or its
-specified portion) is less.
+@c This function compares a specified part of @var{string1} with a
+@c specified part of @var{string2}.  The specified part of @var{string1}
+@c runs from index @var{start1} (inclusive) up to index @var{end1}
+@c (exclusive); @code{nil} for @var{start1} means the start of the
+@c string, while @code{nil} for @var{end1} means the length of the
+@c string.  Likewise, the specified part of @var{string2} runs from index
+@c @var{start2} up to index @var{end2}.
+
+@c The strings are compared by the numeric values of their characters.
+@c For instance, @var{str1} is considered less than @var{str2} if
+@c its first differing character has a smaller numeric value.  If
+@c @var{ignore-case} is non-@code{nil}, characters are converted to
+@c upper-case before comparing them.  Unibyte strings are converted to
+@c multibyte for comparison (@pxref{Text Representations}), so that a
+@c unibyte string and its conversion to multibyte are always regarded as
+@c equal.
+
+Если части строк равны функция возвращает @code{t}.
+Иначе возвращается целое число, которое показывает
+как много первых символов частей совпала и какая
+из строк меньше. Абсолютное значение результата равно
+один плюс количество совпавших символов. Число отрицательное если
+первая строка меньше, иначе положительное.
+
+@c If the specified portions of the two strings match, the value is
+@c @code{t}.  Otherwise, the value is an integer which indicates how many
+@c leading characters agree, and which string is less.  Its absolute
+@c value is one plus the number of characters that agree at the beginning
+@c of the two strings.  The sign is negative if @var{string1} (or its
+@c specified portion) is less.
 @end defun
 
 @defun assoc-string key alist &optional case-fold
-This function works like @code{assoc}, except that @var{key} must be a
-string or symbol, and comparison is done using @code{compare-strings}.
-Symbols are converted to strings before testing.
-If @var{case-fold} is non-@code{nil}, @var{key} and the elements of
-@var{alist} are converted to upper-case before comparison.
-Unlike @code{assoc}, this function can also match elements of the alist
-that are strings or symbols rather than conses.  In particular, @var{alist} can
-be a list of strings or symbols rather than an actual alist.
-@xref{Association Lists}.
+Функция работает как @code{assoc}, за исключение того, что
+@var{key} должен быть строкой или символом(объектом), и сравнение
+будет выполняться с использованием @code{compare-strings}.
+Символы преобразуются в строку перед проверкой.
+Если @var{case-fold} не-@code{nil}, @var{key} и элементы
+@var{alist} преобразуются к верхнему регистру перед сравнением.
+В отличие от @code{assoc}, функция может выдать совпадение с элементом
+списка который является строкой или символом, а не cons ячейкой.
+То есть в данном случае, @var{alist} может быть списком
+строк или символов, а не настоящим alist.
+
+@c This function works like @code{assoc}, except that @var{key} must be a
+@c string or symbol, and comparison is done using @code{compare-strings}.
+@c Symbols are converted to strings before testing.
+@c If @var{case-fold} is non-@code{nil}, @var{key} and the elements of
+@c @var{alist} are converted to upper-case before comparison.
+@c Unlike @code{assoc}, this function can also match elements of the alist
+@c that are strings or symbols rather than conses.  In particular, @var{alist} can
+@c be a list of strings or symbols rather than an actual alist.
+@c @xref{Association Lists}.
 @end defun
 
-  See also the function @code{compare-buffer-substrings} in
-@ref{Comparing Text}, for a way to compare text in buffers.  The
-function @code{string-match}, which matches a regular expression
-against a string, can be used for a kind of string comparison; see
+  См. так же функцию @code{compare-buffer-substrings} в
+@ref{Comparing Text}, как способ сравнения текста в буферах.
+Функцию @code{string-match}, которая выполняет поиск по регулярному
+выражению, и может использоваться в качестве сравнения строк, см.
 @ref{Regexp Search}.
+
+@c   See also the function @code{compare-buffer-substrings} in
+@c @ref{Comparing Text}, for a way to compare text in buffers.  The
+@c function @code{string-match}, which matches a regular expression
+@c against a string, can be used for a kind of string comparison; see
+@c @ref{Regexp Search}.
 
 @node String Conversion
 @section Conversion of Characters and Strings
 @cindex conversion of strings
 
-  This section describes functions for converting between characters,
-strings and integers.  @code{format} (@pxref{Formatting Strings}) and
-@code{prin1-to-string} (@pxref{Output Functions}) can also convert
-Lisp objects into strings.  @code{read-from-string} (@pxref{Input
-Functions}) can convert a string representation of a Lisp object
-into an object.  The functions @code{string-to-multibyte} and
-@code{string-to-unibyte} convert the text representation of a string
-(@pxref{Converting Representations}).
+  Данный раздел описывает функции преобразования между символами,
+строками и целыми числами. @code{format} (@pxref{Formatting Strings}) и
+@code{prin1-to-string} (@pxref{Output Functions}) тоже могут
+преобразовывать объекты в строки. @code{read-from-string} (@pxref{Input
+Functions}) может преобразовать строковое представление
+в Lisp объекта в объект. Функции @code{string-to-multibyte} и
+@code{string-to-unibyte} преобразовывают текстовое представление
+строки (@pxref{Converting Representations}).
 
-  @xref{Documentation}, for functions that produce textual descriptions
-of text characters and general input events
-(@code{single-key-description} and @code{text-char-description}).  These
-are used primarily for making help messages.
+@c   This section describes functions for converting between characters,
+@c strings and integers.  @code{format} (@pxref{Formatting Strings}) and
+@c @code{prin1-to-string} (@pxref{Output Functions}) can also convert
+@c Lisp objects into strings.  @code{read-from-string} (@pxref{Input
+@c Functions}) can convert a string representation of a Lisp object
+@c into an object.  The functions @code{string-to-multibyte} and
+@c @code{string-to-unibyte} convert the text representation of a string
+@c (@pxref{Converting Representations}).
+
+  @xref{Documentation}, по функциям дающим текстовое описание
+символов и событий ввода (@code{single-key-description} и
+@code{text-char-description}). Они в основном используются
+для создания справочных сообщений.
+
+@c   @xref{Documentation}, for functions that produce textual descriptions
+@c of text characters and general input events
+@c (@code{single-key-description} and @code{text-char-description}).  These
+@c are used primarily for making help messages.
 
 @defun number-to-string number
 @cindex integer to string
 @cindex integer to decimal
-This function returns a string consisting of the printed base-ten
-representation of @var{number}.  The returned value starts with a
-minus sign if the argument is negative.
+Функция возвращает строку содержащую десятичное представление
+числа @var{number}. Представление начинается с минуса,
+если число отрицательное.
+
+@c This function returns a string consisting of the printed base-ten
+@c representation of @var{number}.  The returned value starts with a
+@c minus sign if the argument is negative.
 
 @example
 (number-to-string 256)
@@ -715,28 +1139,45 @@ minus sign if the argument is negative.
 @end example
 
 @cindex int-to-string
-@code{int-to-string} is a semi-obsolete alias for this function.
+@code{int-to-string} полу-устаревший синоним для функции.
 
-See also the function @code{format} in @ref{Formatting Strings}.
+См. @code{format} в @ref{Formatting Strings}.
 @end defun
 
 @defun string-to-number string &optional base
 @cindex string to number
-This function returns the numeric value of the characters in
-@var{string}.  If @var{base} is non-@code{nil}, it must be an integer
-between 2 and 16 (inclusive), and integers are converted in that base.
-If @var{base} is @code{nil}, then base ten is used.  Floating-point
-conversion only works in base ten; we have not implemented other
-radices for floating-point numbers, because that would be much more
-work and does not seem useful.  If @var{string} looks like an integer
-but its value is too large to fit into a Lisp integer,
-@code{string-to-number} returns a floating-point result.
+Функция возвращает числовое значение символов в строке
+@var{string}. Если @var{base} не-@code{nil}, оно должно
+быть целым от 2 до 16 (включительно), и будет
+использоваться как система счисления числе. Преобразование
+чисел с плавающей точкой, работает только для десятичной система.
+Для других систем поддержки чисел с плавающей точкой
+нет, так как мало используется и потребовало бы много работы.
+Если @var{string} выглядит как целое, но значение слишком большое
+для хранения как Lisp целое, @code{string-to-number} вернет число
+с плавающей точкой.
 
-The parsing skips spaces and tabs at the beginning of @var{string},
-then reads as much of @var{string} as it can interpret as a number in
-the given base.  (On some systems it ignores other whitespace at the
-beginning, not just spaces and tabs.)  If @var{string} cannot be
-interpreted as a number, this function returns 0.
+@c This function returns the numeric value of the characters in
+@c @var{string}.  If @var{base} is non-@code{nil}, it must be an integer
+@c between 2 and 16 (inclusive), and integers are converted in that base.
+@c If @var{base} is @code{nil}, then base ten is used.  Floating-point
+@c conversion only works in base ten; we have not implemented other
+@c radices for floating-point numbers, because that would be much more
+@c work and does not seem useful.  If @var{string} looks like an integer
+@c but its value is too large to fit into a Lisp integer,
+@c @code{string-to-number} returns a floating-point result.
+
+Функция пропускает пробелы и знаки табуляции в начале строки @var{string},
+затем считывает часть строки, которая может быть интерпретирована как
+число в заданной системе счисления. (На некоторых системах игнорируются
+и другие пробелы, не только пробелы и знаки табуляции.) Если
+@var{string} не может быть интерпретирована как число возвращается 0.
+
+@c The parsing skips spaces and tabs at the beginning of @var{string},
+@c then reads as much of @var{string} as it can interpret as a number in
+@c the given base.  (On some systems it ignores other whitespace at the
+@c beginning, not just spaces and tabs.)  If @var{string} cannot be
+@c interpreted as a number, this function returns 0.
 
 @example
 (string-to-number "256")
@@ -752,41 +1193,59 @@ interpreted as a number, this function returns 0.
 @end example
 
 @findex string-to-int
-@code{string-to-int} is an obsolete alias for this function.
+@code{string-to-int} устаревший синоним для этой функции.
 @end defun
 
 @defun char-to-string character
 @cindex character to string
-This function returns a new string containing one character,
-@var{character}.  This function is semi-obsolete because the function
-@code{string} is more general.  @xref{Creating Strings}.
+Функция возвращает новую строку содержащую один символ,
+@var{character}. Функция полу-устаревшая, потому что функция
+@code{string} более общая. @xref{Creating Strings}.
+
+@c This function returns a new string containing one character,
+@c @var{character}.  This function is semi-obsolete because the function
+@c @code{string} is more general.  @xref{Creating Strings}.
 @end defun
 
 @defun string-to-char string
-  This function returns the first character in @var{string}.  This
-mostly identical to @code{(aref string 0)}, except that it returns 0
-if the string is empty.  (The value is also 0 when the first character
-of @var{string} is the null character, @acronym{ASCII} code 0.)  This
-function may be eliminated in the future if it does not seem useful
-enough to retain.
+  Функция возвращает первый символ @var{string}. Функция практически
+идентична @code{(aref string 0)}, за исключением, того, что возвращает
+0 если строка пустая. (Значение так же 0, если первый символ строки
+null символ, @acronym{ASCII} код 0.) Данная функция в будущем
+может быть удалена, если не будет выглядеть достаточно полезной.
+
+@c   This function returns the first character in @var{string}.  This
+@c mostly identical to @code{(aref string 0)}, except that it returns 0
+@c if the string is empty.  (The value is also 0 when the first character
+@c of @var{string} is the null character, @acronym{ASCII} code 0.)  This
+@c function may be eliminated in the future if it does not seem useful
+@c enough to retain.
 @end defun
 
-  Here are some other functions that can convert to or from a string:
+  Ниже приведены функции которые могут преобразовывать в и из строки:
+ 
+  @c Here are some other functions that can convert to or from a string:
 
 @table @code
 @item concat
-This function converts a vector or a list into a string.
+Функция преобразовывает вектор или список в строку.
+@c This function converts a vector or a list into a string.
 @xref{Creating Strings}.
 
 @item vconcat
-This function converts a string into a vector.  @xref{Vector
-Functions}.
+Функция преобразовывает строку в вектор.
+@c This function converts a string into a vector.  
+@xref{Vector Functions}.
 
 @item append
-This function converts a string into a list.  @xref{Building Lists}.
+Функция преобразовывает строку в список. @xref{Building Lists}.
+
+@c This function converts a string into a list.  @xref{Building Lists}.
 
 @item byte-to-string
-This function converts a byte of character data into a unibyte string.
+Функция преобразовывает byte символа(знака) в одно-байтовую строку.
+
+@c This function converts a byte of character data into a unibyte string.
 @xref{Converting Representations}.
 @end table
 
@@ -795,50 +1254,89 @@ This function converts a byte of character data into a unibyte string.
 @cindex formatting strings
 @cindex strings, formatting them
 
-  @dfn{Formatting} means constructing a string by substituting
-computed values at various places in a constant string.  This constant
-string controls how the other values are printed, as well as where
-they appear; it is called a @dfn{format string}.
+  @dfn{Formatting} означает создание строки путем подстановки
+вычисленных значений в различные места строки константы. Строковая
+константа управляет как и где значения будут печататься. Такая
+константа называется @dfn{строкой формата} (@dfn{format string}).
 
-  Formatting is often useful for computing messages to be displayed.  In
-fact, the functions @code{message} and @code{error} provide the same
-formatting feature described here; they differ from @code{format-message} only
-in how they use the result of formatting.
+@c   @dfn{Formatting} means constructing a string by substituting
+@c computed values at various places in a constant string.  This constant
+@c string controls how the other values are printed, as well as where
+@c they appear; it is called a @dfn{format string}.
+
+  Форматирование полезно при вычислении показываемых сообщений.
+Фактически, функции @code{message} и @code{error} предоставляют
+схожие возможность форматирования, они отличаются от @code{format-message},
+только тем как используется результат форматирования.
+
+@c   Formatting is often useful for computing messages to be displayed.  In
+@c fact, the functions @code{message} and @code{error} provide the same
+@c formatting feature described here; they differ from @code{format-message} only
+@c in how they use the result of formatting.
 
 @defun format string &rest objects
-This function returns a new string that is made by copying
-@var{string} and then replacing any format specification
-in the copy with encodings of the corresponding @var{objects}.  The
-arguments @var{objects} are the computed values to be formatted.
+Функция возвращает новую строку, которая создается из
+копии @var{string} в которой выполняются подстановки ключей
+форматирования кодированными значениями соответствующих
+объектов (@var{objects}). 
 
-The characters in @var{string}, other than the format specifications,
-are copied directly into the output, including their text properties,
-if any.
+@c This function returns a new string that is made by copying
+@c @var{string} and then replacing any format specification
+@c in the copy with encodings of the corresponding @var{objects}.  The
+@c arguments @var{objects} are the computed values to be formatted.
+
+Символы @var{string}, отличные от ключей форматирования, копируются
+без изменений в результат, включая текстовые свойства, если они есть.
+
+@c The characters in @var{string}, other than the format specifications,
+@c are copied directly into the output, including their text properties,
+@c if any.
 @end defun
 
 @defun format-message string &rest objects
 @cindex curved quotes
 @cindex curly quotes
-This function acts like @code{format}, except it also converts any
-curved single quotes in @var{string} as per the value of
-@code{text-quoting-style}, and treats grave accent (@t{`}) and
-apostrophe (@t{'}) as if they were curved single quotes.
+Функция работает как @code{format}, за исключением того,
+что преобразует изогнутые одинарные кавычки @var{string},
+по значению @code{text-quoting-style}, работает с
+(@t{`}) и (@t{'}), как если бы они были одинарными кавычками.
+(Прим. изогнутые кавычки может быть имеются ввиду обратные,
+или действительно изогнутые кавычки).
 
-A format that quotes with grave accents and apostrophes @t{`like
-this'} typically generates curved quotes @t{‘like this’}.  In
-contrast, a format that quotes with only apostrophes @t{'like this'}
-typically generates two closing curved quotes @t{’like this’}, an
-unusual style in English.  @xref{Keys in Documentation}, for how the
-@code{text-quoting-style} variable affects generated quotes.
+@c This function acts like @code{format}, except it also converts any
+@c curved single quotes in @var{string} as per the value of
+@c @code{text-quoting-style}, and treats grave accent (@t{`}) and
+@c apostrophe (@t{'}) as if they were curved single quotes.
+
+Формат заключенный в обратный обратную кавычку и обычную,
+как @t{`like this'} будет преобразован к тексту в кривых
+кавычках @t{‘like this’}. При этом, format в апострофах,
+привет к генерированию двух закрывающих кривых кавычек
+@t{’like this’}, как обычно используется в английском.
+@xref{Keys in Documentation}, по тому как @code{text-quoting-style}
+влияет на генерируемые кавычки.
+
+@c A format that quotes with grave accents and apostrophes @t{`like
+@c this'} typically generates curved quotes @t{‘like this’}.  In
+@c contrast, a format that quotes with only apostrophes @t{'like this'}
+@c typically generates two closing curved quotes @t{’like this’}, an
+@c unusual style in English.  @xref{Keys in Documentation}, for how the
+@c @code{text-quoting-style} variable affects generated quotes.
 @end defun
 
 @cindex @samp{%} in format
 @cindex format specification
-  A format specification is a sequence of characters beginning with a
-@samp{%}.  Thus, if there is a @samp{%d} in @var{string}, the
-@code{format} function replaces it with the printed representation of
-one of the values to be formatted (one of the arguments @var{objects}).
-For example:
+  Ключи форматирования это последовательности символов, начинающихся
+с @samp{%}. Таким образом, если @samp{%d} встречается в @var{string},
+@code{format} заменит этот ключ на печатное представление одного
+из значений параметров строки форматирования (один из аргументов @var{objects}).
+Например:
+
+@c   A format specification is a sequence of characters beginning with a
+@c @samp{%}.  Thus, if there is a @samp{%d} in @var{string}, the
+@c @code{format} function replaces it with the printed representation of
+@c one of the values to be formatted (one of the arguments @var{objects}).
+@c For example:
 
 @example
 @group
@@ -847,96 +1345,159 @@ For example:
 @end group
 @end example
 
-  Since @code{format} interprets @samp{%} characters as format
-specifications, you should @emph{never} pass an arbitrary string as
-the first argument.  This is particularly true when the string is
-generated by some Lisp code.  Unless the string is @emph{known} to
-never include any @samp{%} characters, pass @code{"%s"}, described
-below, as the first argument, and the string as the second, like this:
+  Так как @code{format}, интерпретирует @samp{%} как ключи
+форматирования, @emph{нельзя} использовать произвольную строку
+в качестве первого аргумента. Особенно это относится к ситуациям
+когда строка генерируется каким-то Lisp кодом. Если не известно,
+что передаваемая строка не включает никогда не будет
+включать @samp{%}, стоит указать @code{"%s"} в качестве
+первого аргумента и передать строку в качестве второго:
+
+@c   Since @code{format} interprets @samp{%} characters as format
+@c specifications, you should @emph{never} pass an arbitrary string as
+@c the first argument.  This is particularly true when the string is
+@c generated by some Lisp code.  Unless the string is @emph{known} to
+@c never include any @samp{%} characters, pass @code{"%s"}, described
+@c below, as the first argument, and the string as the second, like this:
 
 @example
   (format "%s" @var{arbitrary-string})
 @end example
 
-  If @var{string} contains more than one format specification, the
-format specifications correspond to successive values from
-@var{objects}.  Thus, the first format specification in @var{string}
-uses the first such value, the second format specification uses the
-second such value, and so on.  Any extra format specifications (those
-for which there are no corresponding values) cause an error.  Any
-extra values to be formatted are ignored.
+  Если @var{string}, содержит больше одного ключа форматирования,
+ключи будут соответствовать последовательно значениям
+из @var{objects}. Таким образом первый ключ в @var{string} будет использовать
+первый параметр из @var{objects}, второй ключ второй и т.д. Если
+каким-то ключам не хватило параметров будет ошибка. Лишние параметры
+в @var{objects} игнорируются.
 
-  Certain format specifications require values of particular types.  If
-you supply a value that doesn't fit the requirements, an error is
-signaled.
+@c   If @var{string} contains more than one format specification, the
+@c format specifications correspond to successive values from
+@c @var{objects}.  Thus, the first format specification in @var{string}
+@c uses the first such value, the second format specification uses the
+@c second such value, and so on.  Any extra format specifications (those
+@c for which there are no corresponding values) cause an error.  Any
+@c extra values to be formatted are ignored.
 
-  Here is a table of valid format specifications:
+  Некоторые ключи требуют параметров определенных типов. Если
+передать параметр другого типа будет ошибка.
+
+@c   Certain format specifications require values of particular types.  If
+@c you supply a value that doesn't fit the requirements, an error is
+@c signaled.
+
+  Ниже приводится таблица ключей форматирования:
+
+  @c Here is a table of valid format specifications:
 
 @table @samp
 @item %s
-Replace the specification with the printed representation of the object,
-made without quoting (that is, using @code{princ}, not
-@code{prin1}---@pxref{Output Functions}).  Thus, strings are represented
-by their contents alone, with no @samp{"} characters, and symbols appear
-without @samp{\} characters.
+Заменяет ключ печатным представлением объекта без кавычек,
+(получается использованием функции @code{princ}, не @code{prin1}---
+@pxref{Output Functions}). Таким образом, строки представляются
+их содержимым без @samp{"}, а символы без @samp{\} символов (знаков).
 
-If the object is a string, its text properties are
-copied into the output.  The text properties of the @samp{%s} itself
-are also copied, but those of the object take priority.
+@c Replace the specification with the printed representation of the object,
+@c made without quoting (that is, using @code{princ}, not
+@c @code{prin1}---@pxref{Output Functions}).  Thus, strings are represented
+@c by their contents alone, with no @samp{"} characters, and symbols appear
+@c without @samp{\} characters.
+
+Если объект строка, текстовые свойства копируются в результат.
+Текстовые свойства @samp{%s} тоже копируются, но свойства из объекта
+имеют больший приоритет.
+
+@c If the object is a string, its text properties are
+@c copied into the output.  The text properties of the @samp{%s} itself
+@c are also copied, but those of the object take priority.
 
 @item %S
-Replace the specification with the printed representation of the object,
-made with quoting (that is, using @code{prin1}---@pxref{Output
-Functions}).  Thus, strings are enclosed in @samp{"} characters, and
-@samp{\} characters appear where necessary before special characters.
+Заменяет ключ на печатное представление объекта, с кавычками
+(получается, с использованием функции @code{prin1}---@pxref{Output
+Functions}). Таким образом, строка заключаются в @samp{"} и
+@samp{\} печатается где необходимо перед специальными символами(знаками).
+
+@c Replace the specification with the printed representation of the object,
+@c made with quoting (that is, using @code{prin1}---@pxref{Output
+@c Functions}).  Thus, strings are enclosed in @samp{"} characters, and
+@c @samp{\} characters appear where necessary before special characters.
 
 @item %o
 @cindex integer to octal
-Replace the specification with the base-eight representation of an
-unsigned integer.
+Заменяет ключ, на восьмеричную запись без-знакового целого.
+
+@c Replace the specification with the base-eight representation of an
+@c unsigned integer.
 
 @item %d
-Replace the specification with the base-ten representation of a signed
-integer.
+Заменяет ключ на десятичную запись знакового целого.
+
+@c Replace the specification with the base-ten representation of a signed
+@c integer.
 
 @item %x
 @itemx %X
 @cindex integer to hexadecimal
-Replace the specification with the base-sixteen representation of an
-unsigned integer.  @samp{%x} uses lower case and @samp{%X} uses upper
-case.
+Заменяет ключ на шестнадцатеричную запись без-знакового целого.
+@samp{%x}---нижний регистр, @samp{%X}---верхний регистр.
+
+@c Replace the specification with the base-sixteen representation of an
+@c unsigned integer.  @samp{%x} uses lower case and @samp{%X} uses upper
+@c case.
 
 @item %c
-Replace the specification with the character which is the value given.
+Заменяет ключ на символ(знак) заданный соответствующим параметром.
+
+@c Replace the specification with the character which is the value given.
 
 @item %e
-Replace the specification with the exponential notation for a
-floating-point number.
+Заменяет ключ, на экспоненциальную форму числа с плавающей точкой.
+
+@c Replace the specification with the exponential notation for a
+@c floating-point number.
 
 @item %f
-Replace the specification with the decimal-point notation for a
-floating-point number.
+Заменяет ключ на запись с десятичной точкой, числа с плавающей точкой.
+
+@c Replace the specification with the decimal-point notation for a
+@c floating-point number.
 
 @item %g
-Replace the specification with notation for a floating-point number,
-using either exponential notation or decimal-point notation.  The
-exponential notation is used if the exponent would be less than -4 or
-greater than or equal to the precision (default: 6).  By default,
-trailing zeros are removed from the fractional portion of the result
-and a decimal-point character appears only if it is followed by a
-digit.
+Заменяет ключ на запись числа с плавающей точкой используя
+экспоненциальную запись или запись с десятичной точкой.
+Экспоненциальная запись используется если экспонента меньше -4
+или больше и равна точности (по умолчанию: 6). По умолчанию
+конечные нули удаляются из дробной части, и символ десятичной точки
+появляется только если он стоит за цифрой.
+
+@c Replace the specification with notation for a floating-point number,
+@c using either exponential notation or decimal-point notation.  The
+@c exponential notation is used if the exponent would be less than -4 or
+@c greater than or equal to the precision (default: 6).  By default,
+@c trailing zeros are removed from the fractional portion of the result
+@c and a decimal-point character appears only if it is followed by a
+@c digit.
 
 @item %%
-Replace the specification with a single @samp{%}.  This format
-specification is unusual in that it does not use a value.  For example,
-@code{(format "%% %d" 30)} returns @code{"% 30"}.
+Заменяет ключ на один @samp{%}. Данный ключ не обычен тем что не требует
+параметра. Например: @code{(format "%% %d" 30)} вернет @code{"% 30"}.
+
+@c Replace the specification with a single @samp{%}.  This format
+@c specification is unusual in that it does not use a value.  For example,
+@c @code{(format "%% %d" 30)} returns @code{"% 30"}.
 @end table
 
-  Any other format character results in an @samp{Invalid format
-operation} error.
+  Другие символы формата приведут к ошибке @samp{Invalid format
+operation}.
 
-  Here are several examples, which assume the typical
-@code{text-quoting-style} settings:
+@c   Any other format character results in an @samp{Invalid format
+@c operation} error.
+
+  Ниже приводится несколько примеров, которые подразумевают
+стандартные настройки @code{text-quoting-style}:
+
+@c   Here are several examples, which assume the typical
+@c @code{text-quoting-style} settings:
 
 @example
 @group
@@ -957,12 +1518,19 @@ operation} error.
 
 @cindex field width
 @cindex padding
-  A specification can have a @dfn{width}, which is a decimal number
-between the @samp{%} and the specification character.  If the printed
-representation of the object contains fewer characters than this
-width, @code{format} extends it with padding.  The width specifier is
-ignored for the @samp{%%} specification.  Any padding introduced by
-the width specifier normally consists of spaces inserted on the left:
+  Ключ может задавать ширину, в виде десятичного числа
+между @samp{%} и символом определяющим тип ключа. Если
+печатное представление объекта содержит меньше символов
+чем заданная ширина, @code{format} расширит ее отступами. Ширина
+игнорируется для @samp{%%}. Отступы добавляются пробелами,
+вставляемым слева от значения:
+
+@c   A specification can have a @dfn{width}, which is a decimal number
+@c between the @samp{%} and the specification character.  If the printed
+@c representation of the object contains fewer characters than this
+@c width, @code{format} extends it with padding.  The width specifier is
+@c ignored for the @samp{%%} specification.  Any padding introduced by
+@c the width specifier normally consists of spaces inserted on the left:
 
 @example
 (format "%5d is padded on the left with spaces" 123)
@@ -970,14 +1538,22 @@ the width specifier normally consists of spaces inserted on the left:
 @end example
 
 @noindent
-If the width is too small, @code{format} does not truncate the
-object's printed representation.  Thus, you can use a width to specify
-a minimum spacing between columns with no risk of losing information.
-In the following two examples, @samp{%7s} specifies a minimum width
-of 7.  In the first case, the string inserted in place of @samp{%7s}
-has only 3 letters, and needs 4 blank spaces as padding.  In the
-second case, the string @code{"specification"} is 13 letters wide but
-is not truncated.
+Если ширина слишком маленькая (значение параметра не помещается),
+@code{format} не обрезает текстовое представление. Таким образом,
+width можно использовать для задания минимальной ширины. В следующих
+двух примерах @samp{%7s} задает минимальную ширину 7,
+при этом в первом случае вставляемая строка имеет 3 символа и
+добавляется 4 пробела, во втором случае строка имеет
+@code{"specification"} 13 символов, но не обрезается.
+
+@c If the width is too small, @code{format} does not truncate the
+@c object's printed representation.  Thus, you can use a width to specify
+@c a minimum spacing between columns with no risk of losing information.
+@c In the following two examples, @samp{%7s} specifies a minimum width
+@c of 7.  In the first case, the string inserted in place of @samp{%7s}
+@c has only 3 letters, and needs 4 blank spaces as padding.  In the
+@c second case, the string @code{"specification"} is 13 letters wide but
+@c is not truncated.
 
 @example
 @group
@@ -991,36 +1567,63 @@ is not truncated.
 @end example
 
 @cindex flags in format specifications
-  Immediately after the @samp{%} and before the optional width
-specifier, you can also put certain @dfn{flag characters}.
+  Сразу после @samp{%} и перед необязательной шириной, можно задать
+несколько @dfn{символов флагов} (@dfn{flag characters}).
 
-  The flag @samp{+} inserts a plus sign before a positive number, so
-that it always has a sign.  A space character as flag inserts a space
-before a positive number.  (Otherwise, positive numbers start with the
-first digit.)  These flags are useful for ensuring that positive
-numbers and negative numbers use the same number of columns.  They are
-ignored except for @samp{%d}, @samp{%e}, @samp{%f}, @samp{%g}, and if
-both flags are used, @samp{+} takes precedence.
+@c   Immediately after the @samp{%} and before the optional width
+@c specifier, you can also put certain @dfn{flag characters}.
 
-  The flag @samp{#} specifies an alternate form which depends on
-the format in use.  For @samp{%o}, it ensures that the result begins
-with a @samp{0}.  For @samp{%x} and @samp{%X}, it prefixes the result
-with @samp{0x} or @samp{0X}.  For @samp{%e} and @samp{%f}, the
-@samp{#} flag means include a decimal point even if the precision is
-zero.  For @samp{%g}, it always includes a decimal point, and also
-forces any trailing zeros after the decimal point to be left in place
-where they would otherwise be removed.
+  Флаг @samp{+} вставляет знак плюс перед положительным числом, в
+результате число всегда будет иметь знак. Пробел в качестве флага, приведет
+к добавлению пробела перед положительным числом. Данные флаг полезен, чтобы
+гарантировать что положительное и отрицательное значение имеют одинаковую ширину.
+Флаги игнорируются для ключей кроме @samp{%d}, @samp{%e}, @samp{%f}, @samp{%g}.
+Если используется оба флага @samp{+} имеет преимущество.
 
-  The flag @samp{0} ensures that the padding consists of @samp{0}
-characters instead of spaces.  This flag is ignored for non-numerical
-specification characters like @samp{%s}, @samp{%S} and @samp{%c}.
-These specification characters accept the @samp{0} flag, but still pad
-with @emph{spaces}.
+@c   The flag @samp{+} inserts a plus sign before a positive number, so
+@c that it always has a sign.  A space character as flag inserts a space
+@c before a positive number.  (Otherwise, positive numbers start with the
+@c first digit.)  These flags are useful for ensuring that positive
+@c numbers and negative numbers use the same number of columns.  They are
+@c ignored except for @samp{%d}, @samp{%e}, @samp{%f}, @samp{%g}, and if
+@c both flags are used, @samp{+} takes precedence.
 
-  The flag @samp{-} causes the padding inserted by the width
-specifier, if any, to be inserted on the right rather than the left.
-If both @samp{-} and @samp{0} are present, the @samp{0} flag is
-ignored.
+  Флаг @samp{#} определяет изменение зависящее от ключа. Для
+@samp{%o}, гарантирует что результат будет начинаться с @samp{0}.
+Для @samp{%x} будет префикс @samp{0x} или @samp{0X}. Для
+@samp{%e} и @samp{%f}, @samp{#} флаг означает включение десятичной точки,
+даже если точность 0. Для @samp{%g}, флаг означает включение десятичной
+точки, и оставляет десятичные нули после точки, которые
+иначе будут удалены.
+
+@c   The flag @samp{#} specifies an alternate form which depends on
+@c the format in use.  For @samp{%o}, it ensures that the result begins
+@c with a @samp{0}.  For @samp{%x} and @samp{%X}, it prefixes the result
+@c with @samp{0x} or @samp{0X}.  For @samp{%e} and @samp{%f}, the
+@c @samp{#} flag means include a decimal point even if the precision is
+@c zero.  For @samp{%g}, it always includes a decimal point, and also
+@c forces any trailing zeros after the decimal point to be left in place
+@c where they would otherwise be removed.
+
+  Флаг @samp{0} приводит к созданию отступа с использованием @samp{0}
+вместо пробелов. Этот флаг игнорируется для не-числовых
+ключей таких как @samp{%s}, @samp{%S} и @samp{%c}.
+Эти ключи допускают флаг @samp{0}, но отступ все равно делают
+с использованием @emph{пробелов}.
+
+@c   The flag @samp{0} ensures that the padding consists of @samp{0}
+@c characters instead of spaces.  This flag is ignored for non-numerical
+@c specification characters like @samp{%s}, @samp{%S} and @samp{%c}.
+@c These specification characters accept the @samp{0} flag, but still pad
+@c with @emph{spaces}.
+
+  Флаг @samp{-}, определяет вставку отступа справа, а не слева.
+Если используются флаги @samp{-} и @samp{0}, флаг @samp{0} игнорируется.
+
+@c   The flag @samp{-} causes the padding inserted by the width
+@c specifier, if any, to be inserted on the right rather than the left.
+@c If both @samp{-} and @samp{0} are present, the @samp{0} flag is
+@c ignored.
 
 @example
 @group
@@ -1037,21 +1640,35 @@ ignored.
 @end example
 
 @cindex precision in format specifications
-  All the specification characters allow an optional @dfn{precision}
-before the character (after the width, if present).  The precision is
-a decimal-point @samp{.} followed by a digit-string.  For the
-floating-point specifications (@samp{%e} and @samp{%f}), the
-precision specifies how many digits following the decimal point to
-show; if zero, the decimal-point itself is also omitted.  For
-@samp{%g}, the precision specifies how many significant digits to show
-(significant digits are the first digit before the decimal point and
-all the digits after it).  If the precision of %g is zero or
-unspecified, it is treated as 1.  For @samp{%s} and @samp{%S}, the
-precision truncates the string to the given width, so @samp{%.3s}
-shows only the first three characters of the representation for
-@var{object}.  For other specification characters, the effect of
-precision is what the local library functions of the @code{printf}
-family produce.
+  Все ключи форматирования позволяют задание @dfn{точности}
+(@dfn{precision}) перед символом (после, ширины, если задана). Точность
+задается десятичной точкой @samp{.} и следующей цифровой строкой.
+Для ключей определяющих число с плавающей точкой (@samp{%e} и @samp{%f}),
+точность определяет сколько знаков после десятичной точки будет выведено,
+если ноль, то десятичная точка тоже будет опущена. Для
+@samp{%g}, точность определят как много значащих
+цифр показывать (значимые цифры, это первая цифра до десятичной
+точки и все цифры после нее). Если точность @samp{%g} ноль или не задана,
+она определяется как 1. Для @samp{%s} и @samp{%S}, точность задает
+обрезание строки до заданной ширины, поэтому @samp{%.3s} отобразит
+только первые три символа представления @var{object}. Для других
+ключей, определяется локальной работой семейства функций @code{printf}.
+
+@c   All the specification characters allow an optional @dfn{precision}
+@c before the character (after the width, if present).  The precision is
+@c a decimal-point @samp{.} followed by a digit-string.  For the
+@c floating-point specifications (@samp{%e} and @samp{%f}), the
+@c precision specifies how many digits following the decimal point to
+@c show; if zero, the decimal-point itself is also omitted.  For
+@c @samp{%g}, the precision specifies how many significant digits to show
+@c (significant digits are the first digit before the decimal point and
+@c all the digits after it).  If the precision of %g is zero or
+@c unspecified, it is treated as 1.  For @samp{%s} and @samp{%S}, the
+@c precision truncates the string to the given width, so @samp{%.3s}
+@c shows only the first three characters of the representation for
+@c @var{object}.  For other specification characters, the effect of
+@c precision is what the local library functions of the @code{printf}
+@c family produce.
 
 @node Case Conversion
 @section Case Conversion in Lisp
@@ -1060,29 +1677,49 @@ family produce.
 @cindex character case
 @cindex case conversion in Lisp
 
-  The character case functions change the case of single characters or
-of the contents of strings.  The functions normally convert only
-alphabetic characters (the letters @samp{A} through @samp{Z} and
-@samp{a} through @samp{z}, as well as non-@acronym{ASCII} letters); other
-characters are not altered.  You can specify a different case
-conversion mapping by specifying a case table (@pxref{Case Tables}).
+  Функции преобразование регистра изменяют регистр одного
+или нескольких символов в строке. Функции как правило преобразуют
+только символы являющимися буквами (символы от @samp{A} до @samp{Z},
+от @samp{a} до @samp{z}, и не @acronym{ASCII} буквы);
+не изменяя при этом другие символы. Можно изменить отображения
+для преобразования регистра путем задания таблицы регистра (case table).
+(@pxref{Case Tables}).
 
-  These functions do not modify the strings that are passed to them as
-arguments.
+@c   The character case functions change the case of single characters or
+@c of the contents of strings.  The functions normally convert only
+@c alphabetic characters (the letters @samp{A} through @samp{Z} and
+@c @samp{a} through @samp{z}, as well as non-@acronym{ASCII} letters); other
+@c characters are not altered.  You can specify a different case
+@c conversion mapping by specifying a case table (@pxref{Case Tables}).
 
-  The examples below use the characters @samp{X} and @samp{x} which have
-@acronym{ASCII} codes 88 and 120 respectively.
+  Эти функции не изменяют строки, которые передаются им в качестве
+аргументов.
+
+@c   These functions do not modify the strings that are passed to them as
+@c arguments.
+
+  Примеры ниже используют символы @samp{X} и @samp{x}, которые в
+@acronym{ASCII} имеют коды  88 и 120.
+
+@c   The examples below use the characters @samp{X} and @samp{x} which have
+@c @acronym{ASCII} codes 88 and 120 respectively.
 
 @defun downcase string-or-char
-This function converts @var{string-or-char}, which should be either a
-character or a string, to lower case.
+Функция преобразует @var{string-or-char}, к нижнему регистру.
 
-When @var{string-or-char} is a string, this function returns a new
-string in which each letter in the argument that is upper case is
-converted to lower case.  When @var{string-or-char} is a character,
-this function returns the corresponding lower case character (an
-integer); if the original character is lower case, or is not a letter,
-the return value is equal to the original character.
+Если @var{string-or-char} строка, функция возвращает новую строку
+каждая буква в которой преобразована в нижний регистр, если эта
+буква в исходной строке была в верхнем. Если @var{string-or-char}
+символ функция возвращает соответствующий ей символ в нижнем регистре,
+если символ в нижнем регистре или не буква результат равен оригинальному
+символу.
+
+@c When @var{string-or-char}  is a string, this function returns a new
+@c string in which each letter in the argument that is upper case is
+@c converted to lower case.  When @var{string-or-char} is a character,
+@c this function returns the corresponding lower case character (an
+@c integer); if the original character is lower case, or is not a letter,
+@c the return value is equal to the original character.
 
 @example
 (downcase "The cat in the hat")
@@ -1094,15 +1731,20 @@ the return value is equal to the original character.
 @end defun
 
 @defun upcase string-or-char
-This function converts @var{string-or-char}, which should be either a
-character or a string, to upper case.
+Функция преобразует @var{string-or-char}, строку или символ
+к верхнему регистру.
 
-When @var{string-or-char} is a string, this function returns a new
-string in which each letter in the argument that is lower case is
-converted to upper case.  When @var{string-or-char} is a character,
-this function returns the corresponding upper case character (an
-integer); if the original character is upper case, or is not a letter,
-the return value is equal to the original character.
+@c This function converts @var{string-or-char}, which should be either a
+@c character or a string, to upper case.
+
+Работает как и downcase, только переводит в верхний регистр.
+
+@c When @var{string-or-char} is a string, this function returns a new
+@c string in which each letter in the argument that is lower case is
+@c converted to upper case.  When @var{string-or-char} is a character,
+@c this function returns the corresponding upper case character (an
+@c integer); if the original character is upper case, or is not a letter,
+@c the return value is equal to the original character.
 
 @example
 (upcase "The cat in the hat")
@@ -1115,19 +1757,31 @@ the return value is equal to the original character.
 
 @defun capitalize string-or-char
 @cindex capitalization
-This function capitalizes strings or characters.  If
-@var{string-or-char} is a string, the function returns a new string
-whose contents are a copy of @var{string-or-char} in which each word
-has been capitalized.  This means that the first character of each
-word is converted to upper case, and the rest are converted to lower
-case.
+Функция (озаглавливает) делает заглавные буквы строке или символам. Если
+@var{string-or-char} строка, функция возвращает копию строки
+в которой все слова начинаются с заглавной буквы, то есть,
+первая буква каждого слова преобразуется к верхнему регистру,
+а остальные к нижнему.
 
-The definition of a word is any sequence of consecutive characters that
-are assigned to the word constituent syntax class in the current syntax
-table (@pxref{Syntax Class Table}).
+@c This function capitalizes strings or characters.  If
+@c @var{string-or-char} is a string, the function returns a new string
+@c whose contents are a copy of @var{string-or-char} in which each word
+@c has been capitalized.  This means that the first character of each
+@c word is converted to upper case, and the rest are converted to lower
+@c case.
 
-When @var{string-or-char} is a character, this function does the same
-thing as @code{upcase}.
+Определение слова определяется как любая неразрывная последовательность символов
+которые относятся к классу слов в текущей синтаксической таблице
+(@pxref{Syntax Class Table}).
+
+@c The definition of a word is any sequence of consecutive characters that
+@c are assigned to the word constituent syntax class in the current syntax
+@c table (@pxref{Syntax Class Table}).
+
+Если @var{string-or-char}, функция делает то же, что и @code{upcase}.
+
+@c When @var{string-or-char} is a character, this function does the same
+@c thing as @code{upcase}.
 
 @example
 @group
@@ -1148,18 +1802,30 @@ thing as @code{upcase}.
 @end defun
 
 @defun upcase-initials string-or-char
-If @var{string-or-char} is a string, this function capitalizes the
-initials of the words in @var{string-or-char}, without altering any
-letters other than the initials.  It returns a new string whose
-contents are a copy of @var{string-or-char}, in which each word has
-had its initial letter converted to upper case.
+Если @var{string-or-char} строка, приводит к верхнему
+регистру первые буквы слов из @var{string-or-char}, не изменяя
+остальные буквы слов. Исходная строка не изменяется, возвращается
+измененная копия.
 
-The definition of a word is any sequence of consecutive characters that
-are assigned to the word constituent syntax class in the current syntax
-table (@pxref{Syntax Class Table}).
+@c If @var{string-or-char} is a string, this function capitalizes the
+@c initials of the words in @var{string-or-char}, without altering any
+@c letters other than the initials.  It returns a new string whose
+@c contents are a copy of @var{string-or-char}, in which each word has
+@c had its initial letter converted to upper case.
 
-When the argument to @code{upcase-initials} is a character,
-@code{upcase-initials} has the same result as @code{upcase}.
+Определение слова определяется как любая неразрывная последовательность символов
+которые относятся к классу слов в текущей синтаксической таблице
+(@pxref{Syntax Class Table}).
+
+@c The definition of a word is any sequence of consecutive characters that
+@c are assigned to the word constituent syntax class in the current syntax
+@c table (@pxref{Syntax Class Table}).
+
+Если @var{string-or-char}, функция делает то же,
+что и @code{upcase}.
+
+@c When the argument to @code{upcase-initials} is a character,
+@c @code{upcase-initials} has the same result as @code{upcase}.
 
 @example
 @group
@@ -1169,136 +1835,229 @@ When the argument to @code{upcase-initials} is a character,
 @end example
 @end defun
 
-  @xref{Text Comparison}, for functions that compare strings; some of
-them ignore case differences, or can optionally ignore case differences.
+  @xref{Text Comparison}, по функциям сравнения строк,
+некоторые из них игнорируют различия в регистре, или могут
+игнорировать различия в регистре.
+
+@c   @xref{Text Comparison}, for functions that compare strings; some of
+@c them ignore case differences, or can optionally ignore case differences.
 
 @node Case Tables
 @section The Case Table
 
-  You can customize case conversion by installing a special @dfn{case
-table}.  A case table specifies the mapping between upper case and lower
-case letters.  It affects both the case conversion functions for Lisp
-objects (see the previous section) and those that apply to text in the
-buffer (@pxref{Case Changes}).  Each buffer has a case table; there is
-also a standard case table which is used to initialize the case table
-of new buffers.
+  Можно настроить преобразование регистра путем установки
+специальной таблицы @dfn{case таблица} (@dfn{case table}). case таблица
+определяет отображение между символами в верхнем и нижнем
+регистре. Она влияет на функции преобразования регистра
+(см. предыдущий раздел) и те функции которые применяются к тексту буфера
+(@pxref{Case Changes}). Каждый буфер имеет case таблицу, кроме того есть
+стандартная case таблица которая используется для инициализации case таблицы
+нового буфера.
 
-  A case table is a char-table (@pxref{Char-Tables}) whose subtype is
-@code{case-table}.  This char-table maps each character into the
-corresponding lower case character.  It has three extra slots, which
-hold related tables:
+@c   You can customize case conversion by installing a special @dfn{case
+@c table}.  A case table specifies the mapping between upper case and lower
+@c case letters.  It affects both the case conversion functions for Lisp
+@c objects (see the previous section) and those that apply to text in the
+@c buffer (@pxref{Case Changes}).  Each buffer has a case table; there is
+@c also a standard case table which is used to initialize the case table
+@c of new buffers.
+
+  Case таблицы это char-таблица (@pxref{Char-Tables}), которая является
+подтипом @code{case-table}. char-таблица отображает каждый символ
+на соответствующий ему символ в нижнем регистре. Так же она содержит
+три дополнительных слота в которых хранятся связанные таблицы:
+
+@c   A case table is a char-table (@pxref{Char-Tables}) whose subtype is
+@c @code{case-table}.  This char-table maps each character into the
+@c corresponding lower case character.  It has three extra slots, which
+@c hold related tables:
 
 @table @var
 @item upcase
-The upcase table maps each character into the corresponding upper
-case character.
+upcase таблицы, отображающая каждый символ на соответствующий символ
+в верхнем регистре.
+@c The upcase table maps each character into the corresponding upper
+@c case character.
 @item canonicalize
-The canonicalize table maps all of a set of case-related characters
-into a particular member of that set.
+canonicalize, отображающая все множество связанных с регистрами символов
+на член этого множества.
+@c The canonicalize table maps all of a set of case-related characters
+@c into a particular member of that set.
 @item equivalences
-The equivalences table maps each one of a set of case-related characters
-into the next character in that set.
+equivalences таблица, отображающая каждый элемент множества связанных
+с регистром символов на следующий символ в множестве.
+@c The equivalences table maps each one of a set of case-related characters
+@c into the next character in that set.
 @end table
 
-  In simple cases, all you need to specify is the mapping to lower-case;
-the three related tables will be calculated automatically from that one.
+  В простых случаях, нужно определить только отображения в нижний регистр;
+а три связанных таблицы будут вычислены автоматически по заданной.
 
-  For some languages, upper and lower case letters are not in one-to-one
-correspondence.  There may be two different lower case letters with the
-same upper case equivalent.  In these cases, you need to specify the
-maps for both lower case and upper case.
+@c   In simple cases, all you need to specify is the mapping to lower-case;
+@c the three related tables will be calculated automatically from that one.
 
-  The extra table @var{canonicalize} maps each character to a canonical
-equivalent; any two characters that are related by case-conversion have
-the same canonical equivalent character.  For example, since @samp{a}
-and @samp{A} are related by case-conversion, they should have the same
-canonical equivalent character (which should be either @samp{a} for both
-of them, or @samp{A} for both of them).
+  Для некоторых языков, символы верхнего и нижнего регистра не отображаются
+один в один. Может быть два разных символа в нижней регистре для
+одного символа в верхнем. В этом случае, нужно задавать отображения
+для как для нижнего, так и для верхнего регистров.
 
-  The extra table @var{equivalences} is a map that cyclically permutes
-each equivalence class (of characters with the same canonical
-equivalent).  (For ordinary @acronym{ASCII}, this would map @samp{a} into
-@samp{A} and @samp{A} into @samp{a}, and likewise for each set of
-equivalent characters.)
+@c   For some languages, upper and lower case letters are not in one-to-one
+@c correspondence.  There may be two different lower case letters with the
+@c same upper case equivalent.  In these cases, you need to specify the
+@c maps for both lower case and upper case.
 
-  When constructing a case table, you can provide @code{nil} for
-@var{canonicalize}; then Emacs fills in this slot from the lower case
-and upper case mappings.  You can also provide @code{nil} for
-@var{equivalences}; then Emacs fills in this slot from
-@var{canonicalize}.  In a case table that is actually in use, those
-components are non-@code{nil}.  Do not try to specify
-@var{equivalences} without also specifying @var{canonicalize}.
+  Дополнительная таблица @var{canonicalize}, отображает каждый символ
+на канонический эквивалент; любые два символа которые связаны
+преобразованием регистра имеют один канонический символ. Например,
+@samp{a} и @samp{A} связаны, поэтому они должны иметь
+канонический эквивалент, который должен быть @samp{a} или 
+@samp{A} для обоих.
 
-  Here are the functions for working with case tables:
+@c   The extra table @var{canonicalize} maps each character to a canonical
+@c equivalent; any two characters that are related by case-conversion have
+@c the same canonical equivalent character.  For example, since @samp{a}
+@c and @samp{A} are related by case-conversion, they should have the same
+@c canonical equivalent character (which should be either @samp{a} for both
+@c of them, or @samp{A} for both of them).
+
+  Дополнительная таблица @var{equivalences} отображение, которое
+меняет порядок для каждого класса эквивалентности (символов с одним символом
+эквивалентности). (Для @acronym{ASCII}, будет отображать @samp{a} в @samp{A} и
+@samp{A} в @samp{a}), и так для каждого множества эквивалентных символов.
+  
+@c   The extra table @var{equivalences} is a map that cyclically permutes
+@c each equivalence class (of characters with the same canonical
+@c equivalent).  (For ordinary @acronym{ASCII}, this would map @samp{a} into
+@c @samp{A} and @samp{A} into @samp{a}, and likewise for each set of
+@c equivalent characters.)
+
+  При конструировании case таблицы, нужно задать @code{nil} для
+@var{canonicalize}; тогда Emacs заполнит ее по lower case и upper
+case отображениям. Можно задать @code{nil} и для @var{equivalences},
+тогда Emacs заполнит ее по @var{canonicalize}. В case таблицах который
+используются эти компоненты не-@code{nil}. Не стоит пытаться заполнить
+@var{equivalences} без заполнения @var{canonicalize}.
+
+@c   When constructing a case table, you can provide @code{nil} for
+@c @var{canonicalize}; then Emacs fills in this slot from the lower case
+@c and upper case mappings.  You can also provide @code{nil} for
+@c @var{equivalences}; then Emacs fills in this slot from
+@c @var{canonicalize}.  In a case table that is actually in use, those
+@c components are non-@code{nil}.  Do not try to specify
+@c @var{equivalences} without also specifying @var{canonicalize}.
+
+  Ниже функции для работы с case таблицами:
+
+  @c Here are the functions for working with case tables:
 
 @defun case-table-p object
-This predicate returns non-@code{nil} if @var{object} is a valid case
-table.
+Предикат возвращает не-@code{nil} если @var{object} правильная
+case таблица.
+
+@c This predicate returns non-@code{nil} if @var{object} is a valid case
+@c table.
 @end defun
 
 @defun set-standard-case-table table
-This function makes @var{table} the standard case table, so that it will
-be used in any buffers created subsequently.
+Функция делает @var{table} стандартной case таблицей, то есть
+она будет использоваться во всех созданных далее буферах.
+
+@c This function makes @var{table} the standard case table, so that it will
+@c be used in any buffers created subsequently.
 @end defun
 
 @defun standard-case-table
-This returns the standard case table.
+Функция возвращает стандартную case таблицу.
+
+@c This returns the standard case table.
 @end defun
 
 @defun current-case-table
-This function returns the current buffer's case table.
+Функция возвращает текущую case таблицу буфера.
+
+@c This function returns the current buffer's case table.
 @end defun
 
 @defun set-case-table table
-This sets the current buffer's case table to @var{table}.
+Функция устанавливает текущую case таблицу буфера равной @var{table}.
+
+@c This sets the current buffer's case table to @var{table}.
 @end defun
 
 @defmac with-case-table table body@dots{}
-The @code{with-case-table} macro saves the current case table, makes
-@var{table} the current case table, evaluates the @var{body} forms,
-and finally restores the case table.  The return value is the value of
-the last form in @var{body}.  The case table is restored even in case
-of an abnormal exit via @code{throw} or error (@pxref{Nonlocal
-Exits}).
+Макрос @code{with-case-table} сохраняет текущую case таблицу,
+делает @var{table} текущей case таблицей, выполняет формы @var{body},
+и после этого восстанавливает оригинальную case таблицу. Case таблица
+восстанавливается даже в случае не правильного выхода через 
+@code{throw} или ошибку (@pxref{Nonlocal Exits}).
+
+@c The @code{with-case-table} macro saves the current case table, makes
+@c @var{table} the current case table, evaluates the @var{body} forms,
+@c and finally restores the case table.  The return value is the value of
+@c the last form in @var{body}.  The case table is restored even in case
+@c of an abnormal exit via @code{throw} or error (@pxref{Nonlocal
+@c Exits}).
 @end defmac
 
-  Some language environments modify the case conversions of
-@acronym{ASCII} characters; for example, in the Turkish language
-environment, the @acronym{ASCII} capital I is downcased into
-a Turkish dotless i (@samp{ı}).  This can interfere with code that requires
-ordinary @acronym{ASCII} case conversion, such as implementations of
-@acronym{ASCII}-based network protocols.  In that case, use the
-@code{with-case-table} macro with the variable @var{ascii-case-table},
-which stores the unmodified case table for the @acronym{ASCII}
-character set.
+  Некоторые окружения изменяют case соответствие
+@acronym{ASCII} символов. Например в Турецком языке
+@acronym{ASCII} заглавная I в нижнем регистре будет
+i без точки (@samp{ı}). Это может мешать коду, который
+требует обычного @acronym{ASCII} соответствия. В этом случае,
+стоит использовать макрос @code{with-case-table} с таблицей
+@var{ascii-case-table}, хранящей не измененную case таблицу
+для множества @acronym{ASCII}.
+
+@c   Some language environments modify the case conversions of
+@c @acronym{ASCII} characters; for example, in the Turkish language
+@c environment, the @acronym{ASCII} capital I is downcased into
+@c a Turkish dotless i (@samp{ı}).  This can interfere with code that requires
+@c ordinary @acronym{ASCII} case conversion, such as implementations of
+@c @acronym{ASCII}-based network protocols.  In that case, use the
+@c @code{with-case-table} macro with the variable @var{ascii-case-table},
+@c which stores the unmodified case table for the @acronym{ASCII}
+@c character set.
 
 @defvar ascii-case-table
-The case table for the @acronym{ASCII} character set.  This should not be
-modified by any language environment settings.
+case таблица @acronym{ASCII} символов. Она не должна изменяться
+никаким окружением не для каких языков.
+
+@c The case table for the @acronym{ASCII} character set.  This should not be
+@c modified by any language environment settings.
 @end defvar
 
-  The following three functions are convenient subroutines for packages
-that define non-@acronym{ASCII} character sets.  They modify the specified
-case table @var{case-table}; they also modify the standard syntax table.
-@xref{Syntax Tables}.  Normally you would use these functions to change
-the standard case table.
+  Следующие три функции удобны для пакетов, которые определяют
+не-@acronym{ASCII} множества символов. Они изменяют case таблицу
+@var{case-table} и стандартную таблицу синтаксиса @xref{Syntax Tables}.
+Обычно эти функции используются для изменения case таблицы.
+
+@c   The following three functions are convenient subroutines for packages
+@c that define non-@acronym{ASCII} character sets.  They modify the specified
+@c case table @var{case-table}; they also modify the standard syntax table.
+@c @xref{Syntax Tables}.  Normally you would use these functions to change
+@c the standard case table.
 
 @defun set-case-syntax-pair uc lc case-table
-This function specifies a pair of corresponding letters, one upper case
-and one lower case.
+Функция определяет пару символов, один в верхнем регистре другой в нижнем.
+@c This function specifies a pair of corresponding letters, one upper case
+@c and one lower case.
 @end defun
 
 @defun set-case-syntax-delims l r case-table
-This function makes characters @var{l} and @var{r} a matching pair of
-case-invariant delimiters.
+Функция делает символы @var{l} и @var{r} подходящей парой
+case-независимых разделителей.
+@c This function makes characters @var{l} and @var{r} a matching pair of
+@c case-invariant delimiters.
 @end defun
 
 @defun set-case-syntax char syntax case-table
-This function makes @var{char} case-invariant, with syntax
-@var{syntax}.
+Функция делает @var{char} case-независимым, с синтаксисом @var{syntax}.
+@c This function makes @var{char} case-invariant, with syntax
+@c @var{syntax}.
 @end defun
 
 @deffn Command describe-buffer-case-table
-This command displays a description of the contents of the current
-buffer's case table.
+Команда отображает описание содержимого текущей case таблицы буфера.
+@c This command displays a description of the contents of the current
+@c buffer's case table.
 @end deffn
