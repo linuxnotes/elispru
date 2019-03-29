@@ -4,105 +4,188 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Lists
-@chapter Lists
+@chapter Списки
 @cindex lists
 @cindex element (of list)
 
-  A @dfn{list} represents a sequence of zero or more elements (which may
-be any Lisp objects).  The important difference between lists and
-vectors is that two or more lists can share part of their structure; in
-addition, you can insert or delete elements in a list without copying
-the whole list.
+  @dfn{Список} (@dfn{list}) представляет собой последовательность
+из нуля или более элементов (которые могут быть любыми Lisp объектами).
+Важное отличие списка от вектора, заключается в том что два или
+более списков могут разделять часть своей структуры, и в списки
+можно вставлять и удалять элементы без копирования всего списка.
+
+@c   A @dfn{list} represents a sequence of zero or more elements (which may
+@c be any Lisp objects).  The important difference between lists and
+@c vectors is that two or more lists can share part of their structure; in
+@c addition, you can insert or delete elements in a list without copying
+@c the whole list.
 
 @menu
-* Cons Cells::          How lists are made out of cons cells.
-* List-related Predicates::        Is this object a list?  Comparing two lists.
-* List Elements::       Extracting the pieces of a list.
-* Building Lists::      Creating list structure.
-* List Variables::      Modifying lists stored in variables.
-* Modifying Lists::     Storing new pieces into an existing list.
-* Sets And Lists::      A list can represent a finite mathematical set.
-* Association Lists::   A list can represent a finite relation or mapping.
-* Property Lists::      A list of paired elements.
+* Cons Cells::          Как списки строятся из cons ячеек.
+* List-related Predicates:: Проверка является ли объект списком ? Сравнение двух списков.
+* List Elements::       Извлечение частей списка.
+* Building Lists::      Создание структуры списка.
+* List Variables::      Изменения списков хранящихся в переменных.
+* Modifying Lists::     Сохранение новых частей в существующих список.
+* Sets And Lists::      Список может представлять конечное математическое множество.
+* Association Lists::   Список может представлять конечно отображение.
+* Property Lists::      Список пар элементов.
 @end menu
+
+@c @menu
+@c * Cons Cells::          How lists are made out of cons cells.
+@c * List-related Predicates::        Is this object a list?  Comparing two lists.
+@c * List Elements::       Extracting the pieces of a list.
+@c * Building Lists::      Creating list structure.
+@c * List Variables::      Modifying lists stored in variables.
+@c * Modifying Lists::     Storing new pieces into an existing list.
+@c * Sets And Lists::      A list can represent a finite mathematical set.
+@c * Association Lists::   A list can represent a finite relation or mapping.
+@c * Property Lists::      A list of paired elements.ф
+@c @end menu
 
 @node Cons Cells
 @section Lists and Cons Cells
 @cindex lists and cons cells
 
-  Lists in Lisp are not a primitive data type; they are built up from
-@dfn{cons cells} (@pxref{Cons Cell Type}).  A cons cell is a data
-object that represents an ordered pair.  That is, it has two slots,
-and each slot @dfn{holds}, or @dfn{refers to}, some Lisp object.  One
-slot is known as the @sc{car}, and the other is known as the @sc{cdr}.
-(These names are traditional; see @ref{Cons Cell Type}.)  @sc{cdr} is
-pronounced ``could-er''.
+  Списки в Lisp не базовый(примитивный) тип данных, они строятся из
+@dfn{cons ячеек} (@dfn{cons cells}) (@pxref{Cons Cell Type}). cons ячейка
+это объект данных который представляет упорядоченную пару. Она имеет два
+слота, и каждый слот @dfn{хранит} или @dfn{ссылается}
+(@dfn{holds} или @dfn{refers to}) какой-то Lisp объект. Первый
+слот называется @sc{car}, второй @sc{cdr}.
+(Имена сложились по историческим причинам, см. @ref{Cons Cell Type}).
+@sc{cdr} произносится как ``could-er''.
 
-  We say that ``the @sc{car} of this cons cell is'' whatever object
-its @sc{car} slot currently holds, and likewise for the @sc{cdr}.
+@c   Lists in Lisp are not a primitive data type; they are built up from
+@c @dfn{cons cells} (@pxref{Cons Cell Type}).  A cons cell is a data
+@c object that represents an ordered pair.  That is, it has two slots,
+@c and each slot @dfn{holds}, or @dfn{refers to}, some Lisp object.  One
+@c slot is known as the @sc{car}, and the other is known as the @sc{cdr}.
+@c (These names are traditional; see @ref{Cons Cell Type}.)  @sc{cdr} is
+@c pronounced ``could-er''.
 
-  A list is a series of cons cells chained together, so that each
-cell refers to the next one.  There is one cons cell for each element
-of the list.  By convention, the @sc{car}s of the cons cells hold the
-elements of the list, and the @sc{cdr}s are used to chain the list
-(this asymmetry between @sc{car} and @sc{cdr} is entirely a matter of
-convention; at the level of cons cells, the @sc{car} and @sc{cdr}
-slots have similar properties).  Hence, the @sc{cdr} slot of each cons
-cell in a list refers to the following cons cell.
+  Будем говорить, что @sc{car}, cons ячейки это, подразумевая
+объект хранящийся в @sc{car} слоте, и аналогично для @sc{cdr}.
+
+@c   We say that ``the @sc{car} of this cons cell is'' whatever object
+@c its @sc{car} slot currently holds, and likewise for the @sc{cdr}.
+
+  Список это последовательность cons ячеек связанных друг
+с другом, так что каждая ячейка ссылается на следующую. В списке
+для каждого элемента одна ячейка. По соглашению, в @sc{car}
+ячеек хранятся элементы списка, в @sc{cdr} используется
+для создания цепочки (это различие между ячейками вводит
+соглашения, на уровне ячейки нет разницы между @sc{car} и
+@sc{cdr}). Т.е. каждый @sc{cdr} слот в списке ссылается на следующую
+ячейку списка.
+
+@c   A list is a series of cons cells chained together, so that each
+@c cell refers to the next one.  There is one cons cell for each element
+@c of the list.  By convention, the @sc{car}s of the cons cells hold the
+@c elements of the list, and the @sc{cdr}s are used to chain the list
+@c (this asymmetry between @sc{car} and @sc{cdr} is entirely a matter of
+@c convention; at the level of cons cells, the @sc{car} and @sc{cdr}
+@c slots have similar properties).  Hence, the @sc{cdr} slot of each cons
+@c cell in a list refers to the following cons cell.
 
 @cindex true list
-  Also by convention, the @sc{cdr} of the last cons cell in a list is
-@code{nil}.  We call such a @code{nil}-terminated structure a
-@dfn{true list}.  In Emacs Lisp, the symbol @code{nil} is both a
-symbol and a list with no elements.  For convenience, the symbol
-@code{nil} is considered to have @code{nil} as its @sc{cdr} (and also
-as its @sc{car}).
+  По соглашению, @sc{cdr} крайней cons ячейки списка
+@code{nil}. Такие завершаемые @code{nil} структуры будем
+называть @dfn {правильный список} (@dfn{true list}).
+В Emacs Lisp, символ @code{nil} является символом (объектом) и
+пустым списком. По соглашению, для символа @code{nil}
+считается что @sc{car} и @sc{cdr} равны @code{nil}.
 
-  Hence, the @sc{cdr} of a true list is always a true list.  The
-@sc{cdr} of a nonempty true list is a true list containing all the
-elements except the first.
+@c   Also by convention, the @sc{cdr} of the last cons cell in a list is
+@c @code{nil}.  We call such a @code{nil}-terminated structure a
+@c @dfn{true list}.  In Emacs Lisp, the symbol @code{nil} is both a
+@c symbol and a list with no elements.  For convenience, the symbol
+@c @code{nil} is considered to have @code{nil} as its @sc{cdr} (and also
+@c as its @sc{car}).
+
+  Следовательно, @sc{cdr} для правильного списка, тоже правильный
+список. @sc{cdr} не пустого правильно списка является правильным
+списком содержащим все элементы списка кроме первого.
+
+@c   Hence, the @sc{cdr} of a true list is always a true list.  The
+@c @sc{cdr} of a nonempty true list is a true list containing all the
+@c elements except the first.
 
 @cindex dotted list
 @cindex circular list
-  If the @sc{cdr} of a list's last cons cell is some value other than
-@code{nil}, we call the structure a @dfn{dotted list}, since its
-printed representation would use dotted pair notation (@pxref{Dotted
-Pair Notation}).  There is one other possibility: some cons cell's
-@sc{cdr} could point to one of the previous cons cells in the list.
-We call that structure a @dfn{circular list}.
+  Если @sc{cdr} крайней ячейки списка имеет значение отличное от
+@code{nil}, такой список будем называть @dfn{точечный список}
+(@dfn{dotted list}), так как его печать будет использовать
+представление точечной пары. (@pxref{Dotted Pair Notation}).
+Есть еще один вариант, @sc{cdr} cons ячейки может указывать
+на одну из предыдущих cons ячеек в списке. Такие
+списки будем называть @dfn{циклические списки}. (@dfn{circular list}).
 
-  For some purposes, it does not matter whether a list is true,
-circular or dotted.  If a program doesn't look far enough down the
-list to see the @sc{cdr} of the final cons cell, it won't care.
-However, some functions that operate on lists demand true lists and
-signal errors if given a dotted list.  Most functions that try to find
-the end of a list enter infinite loops if given a circular list.
+@c   If the @sc{cdr} of a list's last cons cell is some value other than
+@c @code{nil}, we call the structure a @dfn{dotted list}, since its
+@c printed representation would use dotted pair notation (@pxref{Dotted
+@c Pair Notation}).  There is one other possibility: some cons cell's
+@c @sc{cdr} could point to one of the previous cons cells in the list.
+@c We call that structure a @dfn{circular list}.
+
+  Для некоторых задач, нет разницы какой список,
+правильный, точечный или циклический. Если программа не
+работает с @sc{cdr} конечной ячейки списка, тип списка не важен.
+Но, часть функций которые работают со списками требуют
+правильных списков и передача им других списков приводит к ошибке.
+Большинство функций которые находят конец списка зацикливаются
+если им передать циклический список.
+
+@c   For some purposes, it does not matter whether a list is true,
+@c circular or dotted.  If a program doesn't look far enough down the
+@c list to see the @sc{cdr} of the final cons cell, it won't care.
+@c However, some functions that operate on lists demand true lists and
+@c signal errors if given a dotted list.  Most functions that try to find
+@c the end of a list enter infinite loops if given a circular list.
 
 @cindex list structure
-  Because most cons cells are used as part of lists, we refer to any
-structure made out of cons cells as a @dfn{list structure}.
+  Так как в основном cons ячейки используются в списках,
+будем называть любую структуру состоящую из cons ячеек
+@dfn{списочной структурой} (@dfn{list structure}).
+
+@c   Because most cons cells are used as part of lists, we refer to any
+@c structure made out of cons cells as a @dfn{list structure}.
 
 @node List-related Predicates
 @section Predicates on Lists
 @cindex predicates for lists
 @cindex list predicates
 
-  The following predicates test whether a Lisp object is an atom,
-whether it is a cons cell or is a list, or whether it is the
-distinguished object @code{nil}.  (Many of these predicates can be
-defined in terms of the others, but they are used so often that it is
-worth having them.)
+  Следующие предикаты проверяют является ли Lisp объект
+атомом(atom), cons ячейкой или списком или это @code{nil}.
+(Многие из этих предикатов могут быть определены через
+другие, но так как они часто используются их наличие обосновано.)
+
+@c   The following predicates test whether a Lisp object is an atom,
+@c whether it is a cons cell or is a list, or whether it is the
+@c distinguished object @code{nil}.  (Many of these predicates can be
+@c defined in terms of the others, but they are used so often that it is
+@c worth having them.)
 
 @defun consp object
-This function returns @code{t} if @var{object} is a cons cell, @code{nil}
-otherwise.  @code{nil} is not a cons cell, although it @emph{is} a list.
+Функция возвращает @code{t} если @var{object} cons ячейка, @code{nil}
+если нет. @code{nil} не  cons ячейка, хотя и является списком.
+
+@c This function returns @code{t} if @var{object} is a cons cell, @code{nil}
+@c otherwise.  @code{nil} is not a cons cell, although it @emph{is} a list.
 @end defun
 
-@defun atom object
-This function returns @code{t} if @var{object} is an atom, @code{nil}
-otherwise.  All objects except cons cells are atoms.  The symbol
-@code{nil} is an atom and is also a list; it is the only Lisp object
-that is both.
+ @defun atom object
+Функция возвращает @code{t} если @var{object} является атомом, иначе
+@code{nil}. Все объекты за исключением cons ячеек являются атомами.
+Символ @code{nil} является атомом и списком. Это единственный
+Lisp объектов с таким свойством.
+
+@c This function returns @code{t} if @var{object} is an atom, @code{nil}
+@c otherwise.  All objects except cons cells are atoms.  The symbol
+@c @code{nil} is an atom and is also a list; it is the only Lisp object
+@c that is both.
 
 @example
 (atom @var{object}) @equiv{} (not (consp @var{object}))
@@ -110,8 +193,12 @@ that is both.
 @end defun
 
 @defun listp object
-This function returns @code{t} if @var{object} is a cons cell or
-@code{nil}.  Otherwise, it returns @code{nil}.
+Функция проверяет является ли объект cons ячейкой
+или @code{nil}. Функция возвращает @code{t}, если да, и
+@code{nil} если нет.
+
+@c This function returns @code{t} if @var{object} is a cons cell or
+@c @code{nil}.  Otherwise, it returns @code{nil}.
 
 @example
 @group
@@ -126,8 +213,11 @@ This function returns @code{t} if @var{object} is a cons cell or
 @end defun
 
 @defun nlistp object
-This function is the opposite of @code{listp}: it returns @code{t} if
-@var{object} is not a list.  Otherwise, it returns @code{nil}.
+Функция является обратной к @code{listp}, и возвращает
+@code{t} если @var{object} не список, иначе @code{nil}.
+
+@c This function is the opposite of @code{listp}: it returns @code{t} if
+@c @var{object} is not a list.  Otherwise, it returns @code{nil}.
 
 @example
 (listp @var{object}) @equiv{} (not (nlistp @var{object}))
@@ -135,11 +225,17 @@ This function is the opposite of @code{listp}: it returns @code{t} if
 @end defun
 
 @defun null object
-This function returns @code{t} if @var{object} is @code{nil}, and
-returns @code{nil} otherwise.  This function is identical to @code{not},
-but as a matter of clarity we use @code{null} when @var{object} is
-considered a list and @code{not} when it is considered a truth value
-(see @code{not} in @ref{Combining Conditions}).
+Функция возвращает @code{t} если @var{object} @code{nil}, иначе @code{nil}.
+Функция идентична @code{not}, но для ясности @code{null} используется
+когда @var{object} считается списком и @code{not} когда подразумевается
+проверка на истинность
+(см. @code{not} в @ref{Combining Conditions}).
+
+@c This function returns @code{t} if @var{object} is @code{nil}, and
+@c returns @code{nil} otherwise.  This function is identical to @code{not},
+@c but as a matter of clarity we use @code{null} when @var{object} is
+@c considered a list and @code{not} when it is considered a truth value
+@c (see @code{not} in @ref{Combining Conditions}).
 
 @example
 @group
@@ -159,13 +255,21 @@ considered a list and @code{not} when it is considered a truth value
 @cindex list elements
 
 @defun car cons-cell
-This function returns the value referred to by the first slot of the
-cons cell @var{cons-cell}.  In other words, it returns the @sc{car} of
-@var{cons-cell}.
+Функция возвращает значение первого слота cons ячейки
+@var{cons-cell}. Другими словами, функция возвращается
+@sc{car} @var{cons-cell}.
 
-As a special case, if @var{cons-cell} is @code{nil}, this function
-returns @code{nil}.  Therefore, any list is a valid argument.  An
-error is signaled if the argument is not a cons cell or @code{nil}.
+@c This function returns the value referred to by the first slot of the
+@c cons cell @var{cons-cell}.  In other words, it returns the @sc{car} of
+@c @var{cons-cell}.
+
+Особый случай, если @var{cons-cell} @code{nil}, функция возвращает
+@code{nil}. Таким образом,  любой список является корректным аргументом.
+Ошибка возникает если аргумент не cons ячейка или @code{nil}.
+
+@c As a special case, if @var{cons-cell} is @code{nil}, this function
+@c returns @code{nil}.  Therefore, any list is a valid argument.  An
+@c error is signaled if the argument is not a cons cell or @code{nil}.
 
 @example
 @group
@@ -180,13 +284,20 @@ error is signaled if the argument is not a cons cell or @code{nil}.
 @end defun
 
 @defun cdr cons-cell
-This function returns the value referred to by the second slot of the
-cons cell @var{cons-cell}.  In other words, it returns the @sc{cdr} of
-@var{cons-cell}.
+Функция возвращает значение второго слота cons ячейки @var{cons-cell},
+то есть @sc{cdr} @var{cons-cell}.
 
-As a special case, if @var{cons-cell} is @code{nil}, this function
-returns @code{nil}; therefore, any list is a valid argument.  An error
-is signaled if the argument is not a cons cell or @code{nil}.
+@c This function returns the value referred to by the second slot of the
+@c cons cell @var{cons-cell}.  In other words, it returns the @sc{cdr} of
+@c @var{cons-cell}.
+
+Особый случай, если @var{cons-cell} @code{nil}, функция возвращает
+@code{nil}. Таким образом,  любой список является корректным аргументом.
+Ошибка возникает если аргумент не cons ячейка или @code{nil}.
+
+@c As a special case, if @var{cons-cell} is @code{nil}, this function
+@c returns @code{nil}; therefore, any list is a valid argument.  An error
+@c is signaled if the argument is not a cons cell or @code{nil}.
 
 @example
 @group
@@ -201,10 +312,14 @@ is signaled if the argument is not a cons cell or @code{nil}.
 @end defun
 
 @defun car-safe object
-This function lets you take the @sc{car} of a cons cell while avoiding
-errors for other data types.  It returns the @sc{car} of @var{object} if
-@var{object} is a cons cell, @code{nil} otherwise.  This is in contrast
-to @code{car}, which signals an error if @var{object} is not a list.
+Функция возвращает @sc{car} cons ячейки, без ошибок для аргументов
+других типов. Если объект не список возвращается @code{nil}.
+(@code{car} сообщает об ошибке если аргумент не список.)
+
+@c This function lets you take the @sc{car} of a cons cell while avoiding
+@c errors for other data types.  It returns the @sc{car} of @var{object} if
+@c @var{object} is a cons cell, @code{nil} otherwise.  This is in contrast
+@c to @code{car}, which signals an error if @var{object} is not a list.
 
 @example
 @group
@@ -219,11 +334,14 @@ to @code{car}, which signals an error if @var{object} is not a list.
 @end defun
 
 @defun cdr-safe object
-This function lets you take the @sc{cdr} of a cons cell while
-avoiding errors for other data types.  It returns the @sc{cdr} of
-@var{object} if @var{object} is a cons cell, @code{nil} otherwise.
-This is in contrast to @code{cdr}, which signals an error if
-@var{object} is not a list.
+Функция @sc{cdr} cons ячейки и @code{nil}, если аргумент не является
+списком.
+
+@c This function lets you take the @sc{cdr} of a cons cell while
+@c avoiding errors for other data types.  It returns the @sc{cdr} of
+@c @var{object} if @var{object} is a cons cell, @code{nil} otherwise.
+@c This is in contrast to @code{cdr}, which signals an error if
+@c @var{object} is not a list.
 
 @example
 @group
@@ -238,15 +356,26 @@ This is in contrast to @code{cdr}, which signals an error if
 @end defun
 
 @defmac pop listname
-This macro provides a convenient way to examine the @sc{car} of a
-list, and take it off the list, all at once.  It operates on the list
-stored in @var{listname}.  It removes the first element from the list,
-saves the @sc{cdr} into @var{listname}, then returns the removed
-element.
+Макрос предоставляет удобный способ получить @sc{car} списка, и извлечь
+его из списка, за одно действие. Действие выполняется для
+списка хранящегося в @var{listname}. Макрос удаляет первый элемент
+из списка, сохраняет @sc{cdr} в @var{listname}, и возвращает
+удаленный элемент.
 
-In the simplest case, @var{listname} is an unquoted symbol naming a
-list; in that case, this macro is equivalent to @w{@code{(prog1
-(car listname) (setq listname (cdr listname)))}}.
+@c This macro provides a convenient way to examine the @sc{car} of a
+@c list, and take it off the list, all at once.  It operates on the list
+@c stored in @var{listname}.  It removes the first element from the list,
+@c saves the @sc{cdr} into @var{listname}, then returns the removed
+@c element.
+
+В простейшем случае, @var{listname} не квотированное имя символа,
+являющееся списком. В этом случае макрос эквивалентен:
+@w{@code{(prog1
+(car listname) (setq listname (cdr listname)))}}
+
+@c In the simplest case, @var{listname} is an unquoted symbol naming a
+@c list; in that case, this macro is equivalent to @w{@code{(prog1
+@c (car listname) (setq listname (cdr listname)))}}.
 
 @example
 x
@@ -257,20 +386,32 @@ x
      @result{} (b c)
 @end example
 
-More generally, @var{listname} can be a generalized variable.  In that
-case, this macro saves into @var{listname} using @code{setf}.
+В более общем случае, @var{listname} может быть обобщенной переменной.
+В этом случае, макрос сохраняет новое значение @var{listname} с
+использованием @code{setf}.
 @xref{Generalized Variables}.
 
-For the @code{push} macro, which adds an element to a list,
+@c More generally, @var{listname} can be a generalized variable.  In that
+@c case, this macro saves into @var{listname} using @code{setf}.
+@c @xref{Generalized Variables}.
+
+Для @code{push} макроса, который добавляет элемент в список,
+
+@c For the @code{push} macro, which adds an element to a list,
 @xref{List Variables}.
 @end defmac
 
 @defun nth n list
 @anchor{Definition of nth}
-This function returns the @var{n}th element of @var{list}.  Elements
-are numbered starting with zero, so the @sc{car} of @var{list} is
-element number zero.  If the length of @var{list} is @var{n} or less,
-the value is @code{nil}.
+Функция возвращает @var{n}-ый элемент @var{list}. Элементы
+нумеруются начиная с нуля, поэтому @sc{car} @var{list}
+имеет номер ноль. Если длина списка @var{n} или меньше,
+возвращается @code{nil}.
+
+@c This function returns the @var{n}th element of @var{list}.  Elements
+@c are numbered starting with zero, so the @sc{car} of @var{list} is
+@c element number zero.  If the length of @var{list} is @var{n} or less,
+@c the value is @code{nil}.
 
 @c Behavior for -ve n undefined since 2013/08; see bug#15059.
 @ignore
@@ -290,20 +431,30 @@ If @var{n} is negative, @code{nth} returns the first element of @var{list}.
 @end group
 @end example
 
-The function @code{elt} is similar, but applies to any kind of sequence.
-For historical reasons, it takes its arguments in the opposite order.
+Функция @code{elt} схожая, но принимает любой вид последовательностей.
+По историческим причинам, она принимает аргументы в обратном порядке.
+
+@c The function @code{elt} is similar, but applies to any kind of sequence.
+@c For historical reasons, it takes its arguments in the opposite order.
 @xref{Sequence Functions}.
 @end defun
 
 @defun nthcdr n list
-This function returns the @var{n}th @sc{cdr} of @var{list}.  In other
-words, it skips past the first @var{n} links of @var{list} and returns
-what follows.
+Функция возвращает @var{n}-ый @sc{cdr} @var{list}. Т.е. она пропускает
+первый @var{n} элементов списка и возвращает следующий.
+
+@c This function returns the @var{n}th @sc{cdr} of @var{list}.  In other
+@c words, it skips past the first @var{n} links of @var{list} and returns
+@c what follows.
 
 @c "or negative" removed 2013/08; see bug#15059.
-If @var{n} is zero, @code{nthcdr} returns all of
-@var{list}.  If the length of @var{list} is @var{n} or less,
-@code{nthcdr} returns @code{nil}.
+Если @var{n}, @code{nthcdr} возвращает весь @var{list}.
+Если длина @var{list} @var{n} или меньше, возвращается
+@code{nil}.
+
+@c If @var{n} is zero, @code{nthcdr} returns all of
+@c @var{list}.  If the length of @var{list} is @var{n} or less,
+@c @code{nthcdr} returns @code{nil}.
 
 @example
 @group
@@ -322,58 +473,92 @@ If @var{n} is zero, @code{nthcdr} returns all of
 @end defun
 
 @defun last list &optional n
-This function returns the last link of @var{list}.  The @code{car} of
-this link is the list's last element.  If @var{list} is null,
-@code{nil} is returned.  If @var{n} is non-@code{nil}, the
-@var{n}th-to-last link is returned instead, or the whole of @var{list}
-if @var{n} is bigger than @var{list}'s length.
-@end defun
+Функция возвращает крайнюю ссылку в списке @var{list}.
+@code{car} этой ссылки, является крайним элементом списка.
+Если @var{list} пустой возвращается @code{nil}.
+Если @var{n} не-@code{nil}, возвращается ``хвост'' списка @var{n}
+длины n. Если @var{n} больше длины списка возвращается весь список.
+
+@c This function returns the last link of @var{list}.  The @code{car} of
+@c this link is the list's last element.  If @var{list} is null,
+@c @code{nil} is returned.  If @var{n} is non-@code{nil}, the
+@c @var{n}th-to-last link is returned instead, or the whole of @var{list}
+@c if @var{n} is bigger than @var{list}'s length.
+@c @end defun
 
 @defun safe-length list
 @anchor{Definition of safe-length}
-This function returns the length of @var{list}, with no risk of either
-an error or an infinite loop.  It generally returns the number of
-distinct cons cells in the list.  However, for circular lists,
-the value is just an upper bound; it is often too large.
+Функция возвращает длину @var{list}, без риска ошибок
+или зацикливаний. Она возвращает количество различных cons ячеек
+в списке. Но, для циклических списков, значение является
+верхней границей (видимо для списков), что часто является
+очень большим.
+(Прим. для циклического списка @code{(setq l1 '(#1=(1) 2 3 4 5 #1#))}
+функция возвращает просто 6.)
 
-If @var{list} is not @code{nil} or a cons cell, @code{safe-length}
-returns 0.
+@c This function returns the length of @var{list}, with no risk of either
+@c an error or an infinite loop.  It generally returns the number of
+@c distinct cons cells in the list.  However, for circular lists,
+@c the value is just an upper bound; it is often too large.
+
+Если @var{list} не @code{nil} или cons ячейка, @code{safe-length}
+возвращает 0.
+
+@c If @var{list} is not @code{nil} or a cons cell, @code{safe-length}
+@c returns 0.
 @end defun
 
-  The most common way to compute the length of a list, when you are not
-worried that it may be circular, is with @code{length}.  @xref{Sequence
-Functions}.
+  Обычный способ вычислить длину списка, если не беспокоится
+о цикличности @code{length}. @xref{Sequence Functions}.
+
+@c   The most common way to compute the length of a list, when you are not
+@c worried that it may be circular, is with @code{length}.  @xref{Sequence
+@c Functions}.
 
 @defun caar cons-cell
-This is the same as @code{(car (car @var{cons-cell}))}.
+То же что @code{(car (car @var{cons-cell}))}.
+@c This is the same as @code{(car (car @var{cons-cell}))}.
 @end defun
 
 @defun cadr cons-cell
-This is the same as @code{(car (cdr @var{cons-cell}))}
+То же что @code{(car (cdr @var{cons-cell}))}.
+@c This is the same as @code{(car (cdr @var{cons-cell}))}
 or @code{(nth 1 @var{cons-cell})}.
 @end defun
 
 @defun cdar cons-cell
-This is the same as @code{(cdr (car @var{cons-cell}))}.
+То же что @code{(cdr (car @var{cons-cell}))}.
+@c This is the same as @code{(cdr (car @var{cons-cell}))}.
 @end defun
 
 @defun cddr cons-cell
-This is the same as @code{(cdr (cdr @var{cons-cell}))}
+То же что @code{(cdr (cdr @var{cons-cell}))}.
+@c This is the same as @code{(cdr (cdr @var{cons-cell}))}
 or @code{(nthcdr 2 @var{cons-cell})}.
 @end defun
 
 @defun butlast x &optional n
-This function returns the list @var{x} with the last element,
-or the last @var{n} elements, removed.  If @var{n} is greater
-than zero it makes a copy of the list so as not to damage the
-original list.  In general, @code{(append (butlast @var{x} @var{n})
-(last @var{x} @var{n}))} will return a list equal to @var{x}.
+Функция возвращает список @var{x} с удаленным крайним элементом, ъ
+или крайними @var{n} элементами. Если @var{n} больше
+нуля делается копия списка, и оригинальный список не повреждается.
+В общем случае: @code{(append (butlast @var{x} @var{n})
+(last @var{x} @var{n}))} вернет список, эквивалентный @var{x}.
+
+@c This function returns the list @var{x} with the last element,
+@c or the last @var{n} elements, removed.  If @var{n} is greater
+@c than zero it makes a copy of the list so as not to damage the
+@c original list.  In general, @code{(append (butlast @var{x} @var{n})
+@c (last @var{x} @var{n}))} will return a list equal to @var{x}.
 @end defun
 
 @defun nbutlast x &optional n
-This is a version of @code{butlast} that works by destructively
-modifying the @code{cdr} of the appropriate element, rather than
-making a copy of the list.
+Функция эквивалентна  @code{butlast}, но изменяет
+оригинальный список, путем модификации @code{cdr} соответствующего
+элемента, вместо создания копии.
+
+@c This is a version of @code{butlast} that works by destructively
+@c modifying the @code{cdr} of the appropriate element, rather than
+@c making a copy of the list.
 @end defun
 
 @node Building Lists
@@ -381,17 +566,28 @@ making a copy of the list.
 @cindex cons cells
 @cindex building lists
 
-  Many functions build lists, as lists reside at the very heart of Lisp.
-@code{cons} is the fundamental list-building function; however, it is
-interesting to note that @code{list} is used more times in the source
-code for Emacs than @code{cons}.
+  Есть много функций для создания списком, так как списки являются
+сердцем Lisp. @code{cons} это фундаментальная функция, для построения
+списков, но @code{list} используется более часто в исходниках
+для Emacs чем @code{cons}.
+
+@c   Many functions build lists, as lists reside at the very heart of Lisp.
+@c @code{cons} is the fundamental list-building function; however, it is
+@c interesting to note that @code{list} is used more times in the source
+@c code for Emacs than @code{cons}.
 
 @defun cons object1 object2
-This function is the most basic function for building new list
-structure.  It creates a new cons cell, making @var{object1} the
-@sc{car}, and @var{object2} the @sc{cdr}.  It then returns the new
-cons cell.  The arguments @var{object1} and @var{object2} may be any
-Lisp objects, but most often @var{object2} is a list.
+Функция является базовой функцией для построение списочной структуры.
+Функция создает cons ячейку, делая @var{object1} @sc{car} ячейки, и
+@var{object2} @sc{cdr}. Функция возвращает новую cons ячейку.
+Аргументы @var{object1} и @var{object2} могут быть любыми
+Lisp, но наиболее часто @var{object2} является списком.
+
+@c This function is the most basic function for building new list
+@c structure.  It creates a new cons cell, making @var{object1} the
+@c @sc{car}, and @var{object2} the @sc{cdr}.  It then returns the new
+@c cons cell.  The arguments @var{object1} and @var{object2} may be any
+@c Lisp objects, but most often @var{object2} is a list.
 
 @example
 @group
@@ -409,31 +605,55 @@ Lisp objects, but most often @var{object2} is a list.
 @end example
 
 @cindex consing
-@code{cons} is often used to add a single element to the front of a
-list.  This is called @dfn{consing the element onto the list}.
-@footnote{There is no strictly equivalent way to add an element to
-the end of a list.  You can use @code{(append @var{listname} (list
-@var{newelt}))}, which creates a whole new list by copying @var{listname}
-and adding @var{newelt} to its end.  Or you can use @code{(nconc
-@var{listname} (list @var{newelt}))}, which modifies @var{listname}
-by following all the @sc{cdr}s and then replacing the terminating
-@code{nil}.  Compare this to adding an element to the beginning of a
-list with @code{cons}, which neither copies nor modifies the list.}
-For example:
+@code{cons} часто используется для добавления одного элемента
+в начало списка. Такое действие называется
+@dfn{consing элемента в список}
+(@dfn{consing the element onto the list}).
+@footnote{Не существует такого же эквивалента для добавления
+элемента в конец списка. Можно использовать @code{(append @var{listname}
+(list @var{newelt}))}, которая создают новый список путем копирования
+@var{listname} и добавления в его конец @var{newelt}. Или можно
+использовать @code{(nconc
+@var{listname} (list @var{newelt}))}, которая изменяет
+@var{listname} проходя по всем @sc{cdr} и заменяя крайний
+равный @code{nil}. Это сильно отличается от добавления элемента
+в начало, которое не копирует и не изменяет список.}
+Например:
+
+@c @code{cons} is often used to add a single element to the front of a
+@c list.  This is called @dfn{consing the element onto the list}.
+@c @footnote{There is no strictly equivalent way to add an element to
+@c the end of a list.  You can use @code{(append @var{listname} (list
+@c @var{newelt}))}, which creates a whole new list by copying @var{listname}
+@c and adding @var{newelt} to its end.  Or you can use @code{(nconc
+@c @var{listname} (list @var{newelt}))}, which modifies @var{listname}
+@c by following all the @sc{cdr}s and then replacing the terminating
+@c @code{nil}.  Compare this to adding an element to the beginning of a
+@c list with @code{cons}, which neither copies nor modifies the list.}
+@c For example:
 
 @example
 (setq list (cons newelt list))
 @end example
 
-Note that there is no conflict between the variable named @code{list}
-used in this example and the function named @code{list} described below;
-any symbol can serve both purposes.
+В данном пример нет конфликта между переменной @code{list} и
+функцией @code{list}, описанной ниже.
+Так как каждый символ может выступать в качестве функции и переменной,
+и хранит значения в разных частях.
+
+@c Note that there is no conflict between the variable named @code{list}
+@c used in this example and the function named @code{list} described below;
+@c any symbol can serve both purposes.
 @end defun
 
 @defun list &rest objects
-This function creates a list with @var{objects} as its elements.  The
-resulting list is always @code{nil}-terminated.  If no @var{objects}
-are given, the empty list is returned.
+Функция создает список с объектами @var{objects} в качестве элементов.
+Полученный список всегда оканчивается @code{nil}. Если не задано
+не одного @var{objects}, создается пустой список.
+
+@c This function creates a list with @var{objects} as its elements.  The
+@c resulting list is always @code{nil}-terminated.  If no @var{objects}
+@c are given, the empty list is returned.
 
 @example
 @group
@@ -452,9 +672,13 @@ are given, the empty list is returned.
 @end defun
 
 @defun make-list length object
-This function creates a list of @var{length} elements, in which each
-element is @var{object}.  Compare @code{make-list} with
+Функция создает список длины @var{length}, состоящий из
+элементов @var{object}. Функция аналогична
 @code{make-string} (@pxref{Creating Strings}).
+
+@c This function creates a list of @var{length} elements, in which each
+@c element is @var{object}.  Compare @code{make-list} with
+@c @code{make-string} (@pxref{Creating Strings}).
 
 @example
 @group
@@ -476,23 +700,40 @@ element is @var{object}.  Compare @code{make-list} with
 
 @defun append &rest sequences
 @cindex copying lists
-This function returns a list containing all the elements of
-@var{sequences}.  The @var{sequences} may be lists, vectors,
-bool-vectors, or strings, but the last one should usually be a list.
-All arguments except the last one are copied, so none of the arguments
-is altered.  (See @code{nconc} in @ref{Rearrangement}, for a way to join
-lists with no copying.)
+Функция возвращает список содержащий все элементы из
+всех @var{sequences}. @var{sequences} могут быть
+списками, векторами, булевыми векторами или строками, но крайний
+должен быть списком. Все аргументы, кроме одного
+крайнего копируются, поэтому не один из аргументов не
+изменяется. (См. @code{nconc} в @ref{Rearrangement}, которая
+выполняет соединение списков без копирования.)
 
-More generally, the final argument to @code{append} may be any Lisp
-object.  The final argument is not copied or converted; it becomes the
-@sc{cdr} of the last cons cell in the new list.  If the final argument
-is itself a list, then its elements become in effect elements of the
-result list.  If the final element is not a list, the result is a
-dotted list since its final @sc{cdr} is not @code{nil} as required
-in a true list.
+@c This function returns a list containing all the elements of
+@c @var{sequences}.  The @var{sequences} may be lists, vectors,
+@c bool-vectors, or strings, but the last one should usually be a list.
+@c All arguments except the last one are copied, so none of the arguments
+@c is altered.  (See @code{nconc} in @ref{Rearrangement}, for a way to join
+@c lists with no copying.)
+
+Боле точно, крайний аргумент @code{append} может быть Lisp объектом.
+Этот аргумент не копируется и не преобразуется, этот аргумент
+становится @sc{cdr}, последней cons ячейки в новом списке. Если
+аргумент список, то его члены становятся членами нового списка.
+Если крайний аргумент не список, результат является точечным списком
+так как крайний элемент списка не имеет @sc{cdr} @code{nil}.
+
+@c More generally, the final argument to @code{append} may be any Lisp
+@c object.  The final argument is not copied or converted; it becomes the
+@c @sc{cdr} of the last cons cell in the new list.  If the final argument
+@c is itself a list, then its elements become in effect elements of the
+@c result list.  If the final element is not a list, the result is a
+@c dotted list since its final @sc{cdr} is not @code{nil} as required
+@c in a true list.
 @end defun
 
-  Here is an example of using @code{append}:
+  Ниже пример использования @code{append}:
+
+  @c Here is an example of using @code{append}:
 
 @example
 @group
@@ -514,11 +755,16 @@ more-trees
 @end group
 @end example
 
-  You can see how @code{append} works by looking at a box diagram.  The
-variable @code{trees} is set to the list @code{(pine oak)} and then the
-variable @code{more-trees} is set to the list @code{(maple birch pine
-oak)}.  However, the variable @code{trees} continues to refer to the
-original list:
+  Представить работу @code{append} можно с помощью блочной диаграммы.
+Переменная @code{trees} представляет собой список @code{(pine oak)},
+а переменная @code{more-trees} устанавливается в @code{(maple birch pine
+oak)}. При этом переменная @code{trees} не изменяется:
+
+@c   You can see how @code{append} works by looking at a box diagram.  The
+@c variable @code{trees} is set to the list @code{(pine oak)} and then the
+@c variable @code{more-trees} is set to the list @code{(maple birch pine
+@c oak)}.  However, the variable @code{trees} continues to refer to the
+@c original list:
 
 @smallexample
 @group
@@ -533,9 +779,12 @@ more-trees                trees
 @end group
 @end smallexample
 
-  An empty sequence contributes nothing to the value returned by
-@code{append}.  As a consequence of this, a final @code{nil} argument
-forces a copy of the previous argument:
+  Пустая последовательность никак не влияет на результат
+@code{append}:
+
+@c   An empty sequence contributes nothing to the value returned by
+@c @code{append}.  As a consequence of this, a final @code{nil} argument
+@c forces a copy of the previous argument:
 
 @example
 @group
@@ -557,10 +806,16 @@ wood
 @end example
 
 @noindent
-This once was the usual way to copy a list, before the function
-@code{copy-sequence} was invented.  @xref{Sequences Arrays Vectors}.
+Данный прием использовался для копирования списка, до
+появления функции @code{copy-sequence} .@xref{Sequences Arrays Vectors}.
 
-  Here we show the use of vectors and strings as arguments to @code{append}:
+@c This once was the usual way to copy a list, before the function
+@c @code{copy-sequence} was invented.  @xref{Sequences Arrays Vectors}.
+
+  Ниже показывается пример использования векторов и строк в качестве
+аргументов @code{append}:
+
+  @c Here we show the use of vectors and strings as arguments to @code{append}:
 
 @example
 @group
@@ -569,8 +824,11 @@ This once was the usual way to copy a list, before the function
 @end group
 @end example
 
-  With the help of @code{apply} (@pxref{Calling Functions}), we can append
-all the lists in a list of lists:
+  С помощью @code{apply} (@pxref{Calling Functions}), можно соединить
+все списки в списке списков:
+
+@c   With the help of @code{apply} (@pxref{Calling Functions}), we can append
+@c all the lists in a list of lists:
 
 @example
 @group
@@ -579,7 +837,7 @@ all the lists in a list of lists:
 @end group
 @end example
 
-  If no @var{sequences} are given, @code{nil} is returned:
+  Если не задано не одной @var{sequences}, возвращается @code{nil}:
 
 @example
 @group
@@ -588,7 +846,9 @@ all the lists in a list of lists:
 @end group
 @end example
 
-  Here are some examples where the final argument is not a list:
+  Ниже пример для случая, если крайний аргумент не список:
+
+  @c Here are some examples where the final argument is not a list:
 
 @example
 (append '(x y) 'z)
@@ -598,51 +858,91 @@ all the lists in a list of lists:
 @end example
 
 @noindent
-The second example shows that when the final argument is a sequence but
-not a list, the sequence's elements do not become elements of the
-resulting list.  Instead, the sequence becomes the final @sc{cdr}, like
-any other non-list final argument.
+Второй пример показывает, что если крайний аргумент последовательность
+но не список, элементы последовательности не становятся элементами списка результата.
+При этом вся последовательность становится @sc{cdr}, крайнего элемента
+результата, аналогично любому крайнему элементу не списку.
+
+@c The second example shows that when the final argument is a sequence but
+@c not a list, the sequence's elements do not become elements of the
+@c resulting list.  Instead, the sequence becomes the final @sc{cdr}, like
+@c any other non-list final argument.
 
 @defun copy-tree tree &optional vecp
-This function returns a copy of the tree @code{tree}.  If @var{tree} is a
-cons cell, this makes a new cons cell with the same @sc{car} and
-@sc{cdr}, then recursively copies the @sc{car} and @sc{cdr} in the
-same way.
+Функция возвращает копию дерева @code{tree}. Если @code{tree}
+cons ячейка, функция создает новую cons ячейку с такими же
+@sc{car} и @sc{cdr}, после чего рекурсивно копируются @sc{car}
+и @sc{cdr} тем же способом.
 
-Normally, when @var{tree} is anything other than a cons cell,
-@code{copy-tree} simply returns @var{tree}.  However, if @var{vecp} is
-non-@code{nil}, it copies vectors too (and operates recursively on
-their elements).
+@c This function returns a copy of the tree @code{tree}.  If @var{tree} is a
+@c cons cell, this makes a new cons cell with the same @sc{car} and
+@c @sc{cdr}, then recursively copies the @sc{car} and @sc{cdr} in the
+@c same way.
+
+Если, @var{tree} не cons ячейка, @code{copy-tree} возвращает
+@var{tree}. Но если @var{vecp} не-@code{nil}, вектора копируются
+тоже (и рекурсивно выполняется для элементов векторов).
+
+@c Normally, when @var{tree} is anything other than a cons cell,
+@c @code{copy-tree} simply returns @var{tree}.  However, if @var{vecp} is
+@c non-@code{nil}, it copies vectors too (and operates recursively on
+@c their elements).
 @end defun
 
 @defun number-sequence from &optional to separation
-This returns a list of numbers starting with @var{from} and
-incrementing by @var{separation}, and ending at or just before
-@var{to}.  @var{separation} can be positive or negative and defaults
-to 1.  If @var{to} is @code{nil} or numerically equal to @var{from},
-the value is the one-element list @code{(@var{from})}.  If @var{to} is
-less than @var{from} with a positive @var{separation}, or greater than
-@var{from} with a negative @var{separation}, the value is @code{nil}
-because those arguments specify an empty sequence.
+Функция возвращает список чисел с @var{from} до @var{to} с
+шагом @var{separation}. @var{separation} может быть как положительным
+так и отрицательным и по умолчанию равно 1.
+Если @var{to} @code{nil} или равно @var{from}, значением является
+одно-элементный список @code{(@var{from})}. Если @var{to} меньше
+@var{from} с положительным @var{separation} или больше @var{from} с отрицательным
+@var{separation}, возвращается @code{nil}, потому что аргументы
+определяют пустую последовательность.
 
-If @var{separation} is 0 and @var{to} is neither @code{nil} nor
-numerically equal to @var{from}, @code{number-sequence} signals an
-error, since those arguments specify an infinite sequence.
+@c This returns a list of numbers starting with @var{from} and
+@c incrementing by @var{separation}, and ending at or just before
+@c @var{to}.  @var{separation} can be positive or negative and defaults
+@c to 1.  If @var{to} is @code{nil} or numerically equal to @var{from},
+@c the value is the one-element list @code{(@var{from})}.  If @var{to} is
+@c less than @var{from} with a positive @var{separation}, or greater than
+@c @var{from} with a negative @var{separation}, the value is @code{nil}
+@c because those arguments specify an empty sequence.
 
-All arguments are numbers.
-Floating-point arguments can be tricky, because floating-point
-arithmetic is inexact.  For instance, depending on the machine, it may
-quite well happen that @code{(number-sequence 0.4 0.6 0.2)} returns
-the one element list @code{(0.4)}, whereas
-@code{(number-sequence 0.4 0.8 0.2)} returns a list with three
-elements.  The @var{n}th element of the list is computed by the exact
-formula @code{(+ @var{from} (* @var{n} @var{separation}))}.  Thus, if
-one wants to make sure that @var{to} is included in the list, one can
-pass an expression of this exact type for @var{to}.  Alternatively,
-one can replace @var{to} with a slightly larger value (or a slightly
-more negative value if @var{separation} is negative).
+Если @var{separation} 0 и @var{to} не @code{nil} и не равно @var{from},
+происходит ошибка, потому, что аргументы соответствуют бесконечной
+последовательности.
 
-Some examples:
+@c If @var{separation} is 0 and @var{to} is neither @code{nil} nor
+@c numerically equal to @var{from}, @code{number-sequence} signals an
+@c error, since those arguments specify an infinite sequence.
+
+Все аргументы числа.
+Аргументы с плавающий точкой могут работать не ясно, потому что
+арифметика для чисел с плавающей точкой не точная. Например, в зависимости от
+машины, может быть так, что @code{(number-sequence 0.4 0.6 0.2)} вернет
+список из одного элемента @code{(0.4)}, при этом @code{(number-sequence 0.4 0.8 0.2)}
+вернет список из трех элементов. @var{n}-ый элемент списка вычисляется по
+формуле @code{(+ @var{from} (* @var{n} @var{separation}))}. Таким образом,
+если нужно быть уверенным что, @var{to} будет входить в список, нужно передать
+такое выражение в качестве @var{to}. Либо передать в качестве @var{to} немного
+большее значение (или немного меньшее значение если @var{separator} отрицательный).
+
+@c All arguments are numbers.
+@c Floating-point arguments can be tricky, because floating-point
+@c arithmetic is inexact.  For instance, depending on the machine, it may
+@c quite well happen that @code{(number-sequence 0.4 0.6 0.2)} returns
+@c the one element list @code{(0.4)}, whereas
+@c @code{(number-sequence 0.4 0.8 0.2)} returns a list with three
+@c elements.  The @var{n}th element of the list is computed by the exact
+@c formula @code{(+ @var{from} (* @var{n} @var{separation}))}.  Thus, if
+@c one wants to make sure that @var{to} is included in the list, one can
+@c pass an expression of this exact type for @var{to}.  Alternatively,
+@c one can replace @var{to} with a slightly larger value (or a slightly
+@c more negative value if @var{separation} is negative).
+
+Примеры:
+
+@c Some examples:
 
 @example
 (number-sequence 4 9)
@@ -667,15 +967,23 @@ Some examples:
 @cindex modify a list
 @cindex list modification
 
-  These functions, and one macro, provide convenient ways
-to modify a list which is stored in a variable.
+  Приведенные ниже функции и один макрос предоставляют удобный
+способ изменения списка, который хранится в переменной.
+
+@c   These functions, and one macro, provide convenient ways
+@c to modify a list which is stored in a variable.
 
 @defmac push element listname
-This macro creates a new list whose @sc{car} is @var{element} and
-whose @sc{cdr} is the list specified by @var{listname}, and saves that
-list in @var{listname}.  In the simplest case, @var{listname} is an
-unquoted symbol naming a list, and this macro is equivalent
-to @w{@code{(setq @var{listname} (cons @var{element} @var{listname}))}}.
+Данный макрос создает новый список @sc{car} которого @var{element} и
+@sc{cdr} список заданный @var{listname}, и сохраняет этот список
+@var{listname}. В простейшем случае, @var{listname} не квотированный символ,
+и макрос эквивалентен @w{@code{(setq @var{listname} (cons @var{element} @var{listname}))}}.
+
+@c This macro creates a new list whose @sc{car} is @var{element} and
+@c whose @sc{cdr} is the list specified by @var{listname}, and saves that
+@c list in @var{listname}.  In the simplest case, @var{listname} is an
+@c unquoted symbol naming a list, and this macro is equivalent
+@c to @w{@code{(setq @var{listname} (cons @var{element} @var{listname}))}}.
 
 @example
 (setq l '(a b))
@@ -686,36 +994,66 @@ l
      @result{} (c a b)
 @end example
 
-More generally, @code{listname} can be a generalized variable.  In
-that case, this macro does the equivalent of @w{@code{(setf
+В более общем случае, @code{listname} может быть обобщенной переменной.
+В этом случае макрос эквивалентен @w{@code{(setf
 @var{listname} (cons @var{element} @var{listname}))}}.
 @xref{Generalized Variables}.
 
-For the @code{pop} macro, which removes the first element from a list,
-@xref{List Elements}.
+@c More generally, @code{listname} can be a generalized variable.  In
+@c that case, this macro does the equivalent of @w{@code{(setf
+@c @var{listname} (cons @var{element} @var{listname}))}}.
+@c @xref{Generalized Variables}.
+
+По парному макросу @code{pop}, который удаляет первый элемент из списка,
+стоит смотреть @xref{List Elements}.
+
+@c For the @code{pop} macro, which removes the first element from a list,
+@c @xref{List Elements}.
 @end defmac
 
-  Two functions modify lists that are the values of variables.
+  Две функции изменяют списки которые являются значениями переменных.
+
+  @c Two functions modify lists that are the values of variables.
 
 @defun add-to-list symbol element &optional append compare-fn
-This function sets the variable @var{symbol} by consing @var{element}
-onto the old value, if @var{element} is not already a member of that
-value.  It returns the resulting list, whether updated or not.  The
-value of @var{symbol} had better be a list already before the call.
-@code{add-to-list} uses @var{compare-fn} to compare @var{element}
-against existing list members; if @var{compare-fn} is @code{nil}, it
-uses @code{equal}.
+Функция устанавливает переменную @var{symbol} в результат consing
+@var{element} и оригинального значения @var{symbol}, если @var{element}
+еще не входит в список. Функция возвращает полученный список, в не зависимости
+было ли обновление или нет. Значение @var{symbol} должны быть списком
+еще до вызова. @code{add-to-list} использует @var{compare-fn} для
+сравнения @var{element} с существующими элементами, если @var{compare-fn}
+@code{nil}, используется @code{equal}.
 
-Normally, if @var{element} is added, it is added to the front of
-@var{symbol}, but if the optional argument @var{append} is
-non-@code{nil}, it is added at the end.
+@c This function sets the variable @var{symbol} by consing @var{element}
+@c onto the old value, if @var{element} is not already a member of that
+@c value.  It returns the resulting list, whether updated or not.  The
+@c value of @var{symbol} had better be a list already before the call.
+@c @code{add-to-list} uses @var{compare-fn} to compare @var{element}
+@c against existing list members; if @var{compare-fn} is @code{nil}, it
+@c uses @code{equal}.
 
-The argument @var{symbol} is not implicitly quoted; @code{add-to-list}
-is an ordinary function, like @code{set} and unlike @code{setq}.  Quote
-the argument yourself if that is what you want.
+По умолчанию, @var{element} добавляется в начало, но если
+аргумент @var{append} не-@code{nil}, то элемент добавляется в конец.
+
+@c Normally, if @var{element} is added, it is added to the front of
+@c @var{symbol}, but if the optional argument @var{append} is
+@c non-@code{nil}, it is added at the end.
+
+Аргумент @var{symbol} не явно квотированный, @code{add-to-list}
+обычная функция, как @code{set}, но не как @code{setq}. @var{symbol}
+должен быть квотированным.
+
+(Прим. оригинал Quote the argument yourself if that is what you want.,
+при этом вызов add-to-list с символом без квотирования приводит к ошибке.
+Поэтому видимо имеется ввиду что, аргумент нужно квотировать)
+
+@c The argument @var{symbol} is not implicitly quoted; @code{add-to-list}
+@c is an ordinary function, like @code{set} and unlike @code{setq}.  Quote
+@c the argument yourself if that is what you want.
 @end defun
 
-Here's a scenario showing how to use @code{add-to-list}:
+Ниже приводится сценарий использования @code{add-to-list}:
+@c Here's a scenario showing how to use @code{add-to-list}:
 
 @example
 (setq foo '(a b))
@@ -731,8 +1069,11 @@ foo                       ;; @r{@code{foo} was changed.}
      @result{} (c a b)
 @end example
 
-  An equivalent expression for @code{(add-to-list '@var{var}
-@var{value})} is this:
+  Эквивалентное выражение для @code{(add-to-list '@var{var}
+@var{value})}:
+
+@c   An equivalent expression for @code{(add-to-list '@var{var}
+@c @var{value})} is this:
 
 @example
 (or (member @var{value} @var{var})
@@ -740,33 +1081,59 @@ foo                       ;; @r{@code{foo} was changed.}
 @end example
 
 @defun add-to-ordered-list symbol element &optional order
-This function sets the variable @var{symbol} by inserting
-@var{element} into the old value, which must be a list, at the
-position specified by @var{order}.  If @var{element} is already a
-member of the list, its position in the list is adjusted according
-to @var{order}.  Membership is tested using @code{eq}.
-This function returns the resulting list, whether updated or not.
+Функция вставляет в @var{symbol}, элемент @var{element} в позицию
+определяемую @var{order}. @var{symbol} должно быть списком.
+Если @var{element} уже в списке, то его позиция корректируется в
+соответствии с @var{order}. Вхождение проверяется с использованием
+@code{eq}. Функция возвращает полученный список.
 
-The @var{order} is typically a number (integer or float), and the
-elements of the list are sorted in non-decreasing numerical order.
+@c This function sets the variable @var{symbol} by inserting
+@c @var{element} into the old value, which must be a list, at the
+@c position specified by @var{order}.  If @var{element} is already a
+@c member of the list, its position in the list is adjusted according
+@c to @var{order}.  Membership is tested using @code{eq}.
+@c This function returns the resulting list, whether updated or not.
 
-@var{order} may also be omitted or @code{nil}.  Then the numeric order
-of @var{element} stays unchanged if it already has one; otherwise,
-@var{element} has no numeric order.  Elements without a numeric list
-order are placed at the end of the list, in no particular order.
+@var{order} как правило это число (целое или с плавающей точкой),
+и элементы списка сортируются в по не-убыванию.
 
-Any other value for @var{order} removes the numeric order of @var{element}
-if it already has one; otherwise, it is equivalent to @code{nil}.
+@c The @var{order} is typically a number (integer or float), and the
+@c elements of the list are sorted in non-decreasing numerical order.
 
-The argument @var{symbol} is not implicitly quoted;
-@code{add-to-ordered-list} is an ordinary function, like @code{set}
-and unlike @code{setq}.  Quote the argument yourself if necessary.
+@var{order} может быть опущено или быть @code{nil}. Тогда порядок
+@var{element} не меняется если он есть в списке, иначе @var{element}
+не будет иметь @var{order}. Элементы без @var{order} помещаются в
+конец списка, без какого-то упорядочивания.
 
-The ordering information is stored in a hash table on @var{symbol}'s
-@code{list-order} property.
+@c @var{order} may also be omitted or @code{nil}.  Then the numeric order
+@c of @var{element} stays unchanged if it already has one; otherwise,
+@c @var{element} has no numeric order.  Elements without a numeric list
+@c order are placed at the end of the list, in no particular order.
+
+Любое другое(прим. видимо не числовое) значение @var{order}, удаляет @var{order} @var{element},
+если оно уже есть, то есть оно эквивалентно @code{nil}.
+
+@c Any other value for @var{order} removes the numeric order of @var{element}
+@c if it already has one; otherwise, it is equivalent to @code{nil}.
+
+Аргумент @var{symbol} не является явно квотированным,
+@code{add-to-ordered-list} обычная функция как @code{set},
+а не как @code{setq}. Поэтому символы как правило нужно квотировать.
+
+@c The argument @var{symbol} is not implicitly quoted;
+@c @code{add-to-ordered-list} is an ordinary function, like @code{set}
+@c and unlike @code{setq}.  Quote the argument yourself if necessary.
+
+Информация по сортировке сохраняется в hash таблицу в свойство
+@code{list-order} символа @var{symbol}.
+
+@c The ordering information is stored in a hash table on @var{symbol}'s
+@c @code{list-order} property.
 @end defun
 
-Here's a scenario showing how to use @code{add-to-ordered-list}:
+Ниже сценарий показывающий использование @code{add-to-ordered-list}:
+
+@c Here's a scenario showing how to use @code{add-to-ordered-list}:
 
 @example
 (setq foo '())
@@ -798,19 +1165,29 @@ foo                       ;; @r{@code{foo} was changed.}
 @section Modifying Existing List Structure
 @cindex destructive list operations
 
-  You can modify the @sc{car} and @sc{cdr} contents of a cons cell with the
-primitives @code{setcar} and @code{setcdr}.  These are destructive
-operations because they change existing list structure.
+  @sc{car} и @sc{cdr} можно изменять с использованием
+базовых(privmitive) функций @code{setcar} и @code{setcdr}. Это деструктивные
+операции, так как они изменяют существующий список.
+
+@c   You can modify the @sc{car} and @sc{cdr} contents of a cons cell with the
+@c primitives @code{setcar} and @code{setcdr}.  These are destructive
+@c operations because they change existing list structure.
 
 @cindex CL note---@code{rplaca} vs @code{setcar}
 @quotation
 @findex rplaca
 @findex rplacd
-@b{Common Lisp note:} Common Lisp uses functions @code{rplaca} and
-@code{rplacd} to alter list structure; they change structure the same
-way as @code{setcar} and @code{setcdr}, but the Common Lisp functions
-return the cons cell while @code{setcar} and @code{setcdr} return the
-new @sc{car} or @sc{cdr}.
+@b{Примечание Common Lisp:} Common Lisp использует функции @code{rplaca}
+и @code{rplacd} для изменения списочной структуры, которые изменяют
+структуру тем же способом что и @code{setcar} и @code{setcdr}, но в Common Lisp
+функции возвращают cons ячейку, в то время как @code{setcar} и @code{setcdr}
+возвращают новые @sc{car} или @sc{cdr}.
+
+@c @b{Common Lisp note:} Common Lisp uses functions @code{rplaca} and
+@c @code{rplacd} to alter list structure; they change structure the same
+@c way as @code{setcar} and @code{setcdr}, but the Common Lisp functions
+@c return the cons cell while @code{setcar} and @code{setcdr} return the
+@c new @sc{car} or @sc{cdr}.
 @end quotation
 
 @menu
@@ -825,15 +1202,23 @@ new @sc{car} or @sc{cdr}.
 @cindex replace list element
 @cindex list, replace element
 
-  Changing the @sc{car} of a cons cell is done with @code{setcar}.  When
-used on a list, @code{setcar} replaces one element of a list with a
-different element.
+  Изменение @sc{car} делается @code{setcar}. Когда функция вызывается для
+списка @code{setcar}, заменяет один элемент списка на другой.
+  
+@c   Changing the @sc{car} of a cons cell is done with @code{setcar}.  When
+@c used on a list, @code{setcar} replaces one element of a list with a
+@c different element.
 
 @defun setcar cons object
-This function stores @var{object} as the new @sc{car} of @var{cons},
-replacing its previous @sc{car}.  In other words, it changes the
-@sc{car} slot of @var{cons} to refer to @var{object}.  It returns the
-value @var{object}.  For example:
+Функция сохраняет @var{object} как новую @sc{car} @var{cons},
+заменяя предыдущее @sc{car}. То есть, меняется @sc{car} слот
+@var{cons} на ссылку (или значение) на @var{object}. Функция возвращает
+значение @var{object}. Например:
+
+@c This function stores @var{object} as the new @sc{car} of @var{cons},
+@c replacing its previous @sc{car}.  In other words, it changes the
+@c @sc{car} slot of @var{cons} to refer to @var{object}.  It returns the
+@c value @var{object}.  For example:
 
 @example
 @group
@@ -851,13 +1236,17 @@ x
 @end example
 @end defun
 
-  When a cons cell is part of the shared structure of several lists,
-storing a new @sc{car} into the cons changes one element of each of
-these lists.  Here is an example:
+  Когда cons ячейка часть разделяемой структуры или некоторых списков
+запись нового значения в @sc{car} влияет на все эти списки.
+Например:
+
+@c   When a cons cell is part of the shared structure of several lists,
+@c storing a new @sc{car} into the cons changes one element of each of
+@c these lists.  Here is an example:
 
 @example
 @group
-;; @r{Create two lists that are partly shared.}
+;; @r{Создание частично разделяемых списков.}
 (setq x1 '(a b c))
      @result{} (a b c)
 (setq x2 (cons 'z (cdr x1)))
@@ -865,29 +1254,32 @@ these lists.  Here is an example:
 @end group
 
 @group
-;; @r{Replace the @sc{car} of a shared link.}
+;; @r{Заменим @sc{car} в разделяемой части.}
 (setcar (cdr x1) 'foo)
      @result{} foo
-x1                           ; @r{Both lists are changed.}
+x1                           ; @r{Изменились оба списка.}
      @result{} (a foo c)
 x2
      @result{} (z foo c)
 @end group
 
 @group
-;; @r{Replace the @sc{car} of a link that is not shared.}
+;; @r{Заменим @sc{car} в не общей части.}
 (setcar x1 'baz)
      @result{} baz
-x1                           ; @r{Only one list is changed.}
+x1                           ; @r{Только один список изменился.}
      @result{} (baz foo c)
 x2
      @result{} (z foo c)
 @end group
 @end example
 
-  Here is a graphical depiction of the shared structure of the two lists
-in the variables @code{x1} and @code{x2}, showing why replacing @code{b}
-changes them both:
+  Ниже графической представление разделяемой структуры. Изменение
+@code{b} изменяет оба списка:
+  
+@c   Here is a graphical depiction of the shared structure of the two lists
+@c in the variables @code{x1} and @code{x2}, showing why replacing @code{b}
+@c changes them both:
 
 @example
 @group
@@ -907,7 +1299,9 @@ x2--> |   |   |--
 @end group
 @end example
 
-  Here is an alternative form of box diagram, showing the same relationship:
+  Ниже другая форма блок-схемы, показывающая тоже самое:
+
+  @c Here is an alternative form of box diagram, showing the same relationship:
 
 @example
 @group
@@ -931,20 +1325,31 @@ x2:              |
 @subsection Altering the CDR of a List
 @cindex replace part of list
 
-  The lowest-level primitive for modifying a @sc{cdr} is @code{setcdr}:
+  @code{setcdr} базовая(primitive) функция для изменения @sc{cdr}:
+
+  @c The lowest-level primitive for modifying a @sc{cdr} is @code{setcdr}:
 
 @defun setcdr cons object
-This function stores @var{object} as the new @sc{cdr} of @var{cons},
-replacing its previous @sc{cdr}.  In other words, it changes the
-@sc{cdr} slot of @var{cons} to refer to @var{object}.  It returns the
-value @var{object}.
+Функция записывает @var{object} в @sc{cdr} @var{cons},
+заменяя предыдущее @sc{cdr}. Другими словами, изменяется @sc{cdr}
+слот @var{cons}, на @var{object}. Возвращается @var{object}.
+
+@c This function stores @var{object} as the new @sc{cdr} of @var{cons},
+@c replacing its previous @sc{cdr}.  In other words, it changes the
+@c @sc{cdr} slot of @var{cons} to refer to @var{object}.  It returns the
+@c value @var{object}.
 @end defun
 
-  Here is an example of replacing the @sc{cdr} of a list with a
-different list.  All but the first element of the list are removed in
-favor of a different sequence of elements.  The first element is
-unchanged, because it resides in the @sc{car} of the list, and is not
-reached via the @sc{cdr}.
+  Ниже пример замены @sc{cdr} списка другим списком. Все за исключением
+первого элемента списка удаляются, в пользу другой последовательности
+элементов. Первый элемент не изменяется, так как находится в
+@sc{car} списка, и не достижима через @sc{cdr}.
+
+@c   Here is an example of replacing the @sc{cdr} of a list with a
+@c different list.  All but the first element of the list are removed in
+@c favor of a different sequence of elements.  The first element is
+@c unchanged, because it resides in the @sc{car} of the list, and is not
+@c reached via the @sc{cdr}.
 
 @example
 @group
@@ -961,10 +1366,14 @@ x
 @end group
 @end example
 
-  You can delete elements from the middle of a list by altering the
-@sc{cdr}s of the cons cells in the list.  For example, here we delete
-the second element, @code{b}, from the list @code{(a b c)}, by changing
-the @sc{cdr} of the first cons cell:
+  Можно удалить элемент из середины списка путем изменения
+@sc{cdr} cons ячеек в списке. Например, удалить второй элемент, @code{b},
+из списка @code{(a b c)}, можно изменением @sc{cdr}, первой ячейки:
+
+@c   You can delete elements from the middle of a list by altering the
+@c @sc{cdr}s of the cons cells in the list.  For example, here we delete
+@c the second element, @code{b}, from the list @code{(a b c)}, by changing
+@c the @sc{cdr} of the first cons cell:
 
 @example
 @group
@@ -977,7 +1386,9 @@ x1
 @end group
 @end example
 
-  Here is the result in box notation:
+  Результат в виде блочном представлении:
+
+  @c Here is the result in box notation:
 
 @smallexample
 @group
@@ -992,11 +1403,15 @@ x1
 @end smallexample
 
 @noindent
-The second cons cell, which previously held the element @code{b}, still
-exists and its @sc{car} is still @code{b}, but it no longer forms part
-of this list.
+Вторая cons, ячейка, которая хранит элемент, @code{b}, остается существовать
+и ее @sc{car} все еще @code{b}, но она больше не часть списка.
 
-  It is equally easy to insert a new element by changing @sc{cdr}s:
+@c The second cons cell, which previously held the element @code{b}, still
+@c exists and its @sc{car} is still @code{b}, but it no longer forms part
+@c of this list.
+
+  Аналогично просто вставить новый элемент:
+  @c It is equally easy to insert a new element by changing @sc{cdr}s:
 
 @example
 @group
@@ -1009,7 +1424,8 @@ x1
 @end group
 @end example
 
-  Here is this result in box notation:
+  Результат в блочном представлении:
+  @c Here is this result in box notation:
 
 @smallexample
 @group
@@ -1030,34 +1446,48 @@ x1
 @end smallexample
 
 @node Rearrangement
-@subsection Functions that Rearrange Lists
+@subsection Функции перестройки списков.
 @cindex rearrangement of lists
 @cindex reordering, of elements in lists
 @cindex modification of lists
 
-  Here are some functions that rearrange lists destructively by
-modifying the @sc{cdr}s of their component cons cells.  These functions
-are destructive because they chew up the original lists passed
-to them as arguments, relinking their cons cells to form a new list that
-is the returned value.
+  Функции данного раздела работают деструктивно путем изменения
+@sc{cdr} cons ячеек из списка.
+  
+@c   Here are some functions that rearrange lists destructively by
+@c modifying the @sc{cdr}s of their component cons cells.  These functions
+@c are destructive because they chew up the original lists passed
+@c to them as arguments, relinking their cons cells to form a new list that
+@c is the returned value.
 
 @ifnottex
-  See @code{delq}, in @ref{Sets And Lists}, for another function
-that modifies cons cells.
+  См. @code{delq}, в @ref{Sets And Lists}, по другим функциям изменяющим списки.
+
+@c     See @code{delq}, in @ref{Sets And Lists}, for another function
+@c that modifies cons cells.
 @end ifnottex
 @iftex
-   The function @code{delq} in the following section is another example
-of destructive list manipulation.
+   Функция @code{delq} в следующем разделе другой пример деструктивной
+манипуляции со списком.
+
+@c    The function @code{delq} in the following section is another example
+@c of destructive list manipulation.
 @end iftex
 
 @defun nconc &rest lists
 @cindex concatenating lists
 @cindex joining lists
-This function returns a list containing all the elements of @var{lists}.
-Unlike @code{append} (@pxref{Building Lists}), the @var{lists} are
-@emph{not} copied.  Instead, the last @sc{cdr} of each of the
-@var{lists} is changed to refer to the following list.  The last of the
-@var{lists} is not altered.  For example:
+Функция возвращает список содержащий все элементы из @var{lists}.
+В отличие от @code{append} (@pxref{Building Lists}), @var{lists} @emph{не}
+копируются. Вместо этого крайний @sc{cdr}, каждого из @var{lists}
+изменяется на следующий список. Крайний из @var{lists} не
+изменяется. Например:
+
+@c This function returns a list containing all the elements of @var{lists}.
+@c Unlike @code{append} (@pxref{Building Lists}), the @var{lists} are
+@c @emph{not} copied.  Instead, the last @sc{cdr} of each of the
+@c @var{lists} is changed to refer to the following list.  The last of the
+@c @var{lists} is not altered.  For example:
 
 @example
 @group
@@ -1074,10 +1504,14 @@ x
 @end group
 @end example
 
-   Since the last argument of @code{nconc} is not itself modified, it is
-reasonable to use a constant list, such as @code{'(4 5)}, as in the
-above example.  For the same reason, the last argument need not be a
-list:
+   Так как крайний аргумент @code{nconc} не изменяется, можно использовать
+в качестве крайнего списка константный список. По той же причине,
+крайний список не обязан быть списком:
+   
+@c    Since the last argument of @code{nconc} is not itself modified, it is
+@c reasonable to use a constant list, such as @code{'(4 5)}, as in the
+@c above example.  For the same reason, the last argument need not be a
+@c list:
 
 @example
 @group
@@ -1094,16 +1528,22 @@ x
 @end group
 @end example
 
-However, the other arguments (all but the last) must be lists.
+Но, другие аргументы (все кроме крайнего) должны быть списками.
+@c However, the other arguments (all but the last) must be lists.
 
-A common pitfall is to use a quoted constant list as a non-last
-argument to @code{nconc}.  If you do this, your program will change
-each time you run it!  Here is what happens:
+Распространенной ошибкой является использование константного
+списка в качестве не последнего аргумента @code{nconc}.
+Если так сделать, программа будет изменяться при каждом
+запуске! Вот что происходит:
+
+@c A common pitfall is to use a quoted constant list as a non-last
+@c argument to @code{nconc}.  If you do this, your program will change
+@c each time you run it!  Here is what happens:
 
 @smallexample
 @group
-(defun add-foo (x)            ; @r{We want this function to add}
-  (nconc '(foo) x))           ;   @r{@code{foo} to the front of its arg.}
+(defun add-foo (x)            ; @r{Нужно чтобы эта функция добавляла}
+  (nconc '(foo) x))           ;   @r{@code{foo} в начало аргумента.}
 @end group
 
 @group
@@ -1112,11 +1552,11 @@ each time you run it!  Here is what happens:
 @end group
 
 @group
-(setq xx (add-foo '(1 2)))    ; @r{It seems to work.}
+(setq xx (add-foo '(1 2)))    ; @r{Вроде работает.}
      @result{} (foo 1 2)
 @end group
 @group
-(setq xy (add-foo '(3 4)))    ; @r{What happened?}
+(setq xy (add-foo '(3 4)))    ; @r{Что произошло?}
      @result{} (foo 1 2 3 4)
 @end group
 @group
@@ -1132,34 +1572,54 @@ each time you run it!  Here is what happens:
 @end defun
 
 @node Sets And Lists
-@section Using Lists as Sets
+@section Использование списков в качестве множеств.
 @cindex lists as sets
 @cindex sets
 
-  A list can represent an unordered mathematical set---simply consider a
-value an element of a set if it appears in the list, and ignore the
-order of the list.  To form the union of two sets, use @code{append} (as
-long as you don't mind having duplicate elements).  You can remove
-@code{equal} duplicates using @code{delete-dups}.  Other useful
-functions for sets include @code{memq} and @code{delq}, and their
-@code{equal} versions, @code{member} and @code{delete}.
+  Список может использоваться для представления неупорядоченного математического
+множества---просто считая, что элемент входит в множество, если он появляется
+в списке, и игнорировать порядок в списке. Для формирования объединения двух множеств,
+можно использовать @code{append} (если не нужно переживать по поводу дубликатов).
+Можно удалить @code{equal} дубликаты используя @code{delete-dups}. Другие полезные
+функции для множеств @code{memq} и @code{delq} и их @code{equal} версии
+@code{member} и @code{delete}.
+
+@c   A list can represent an unordered mathematical set---simply consider a
+@c value an element of a set if it appears in the list, and ignore the
+@c order of the list.  To form the union of two sets, use @code{append} (as
+@c long as you don't mind having duplicate elements).  You can remove
+@c @code{equal} duplicates using @code{delete-dups}.  Other useful
+@c functions for sets include @code{memq} and @code{delq}, and their
+@c @code{equal} versions, @code{member} and @code{delete}.
 
 @cindex CL note---lack @code{union}, @code{intersection}
 @quotation
-@b{Common Lisp note:} Common Lisp has functions @code{union} (which
-avoids duplicate elements) and @code{intersection} for set operations.
-Although standard GNU Emacs Lisp does not have them, the @file{cl-lib}
-library provides versions.
+@b{Common Lisp примечание:} Common Lisp имеет функцию @code{union} (при использовании
+которой не создаются дубликаты) и @code{intersection} для операций со множествами.
+Хотя стандартный GNU Emacs Lisp, не имеет этих функций, модуль @file{cl-lib}
+предоставляет их версии.
 @xref{Lists as Sets,,, cl, Common Lisp Extensions}.
+
+@c @b{Common Lisp note:} Common Lisp has functions @code{union} (which
+@c avoids duplicate elements) and @code{intersection} for set operations.
+@c Although standard GNU Emacs Lisp does not have them, the @file{cl-lib}
+@c library provides versions.
+@c @xref{Lists as Sets,,, cl, Common Lisp Extensions}.
 @end quotation
 
 @defun memq object list
 @cindex membership in a list
-This function tests to see whether @var{object} is a member of
-@var{list}.  If it is, @code{memq} returns a list starting with the
-first occurrence of @var{object}.  Otherwise, it returns @code{nil}.
-The letter @samp{q} in @code{memq} says that it uses @code{eq} to
-compare @var{object} against the elements of the list.  For example:
+Функция проверяет является ли @var{object} членом @var{list}.
+Если да, то @code{memq} возвращает список начинающийся с первого
+вхождения @var{object}. Иначе возвращается @code{nil}.
+Буква @samp{q} в @code{memq} означает, что используется @code{eq}
+для сравнения @var{object} с элементами списка. Например:
+
+@c This function tests to see whether @var{object} is a member of
+@c @var{list}.  If it is, @code{memq} returns a list starting with the
+@c first occurrence of @var{object}.  Otherwise, it returns @code{nil}.
+@c The letter @samp{q} in @code{memq} says that it uses @code{eq} to
+@c compare @var{object} against the elements of the list.  For example:
 
 @example
 @group
@@ -1175,20 +1635,32 @@ compare @var{object} against the elements of the list.  For example:
 
 @defun delq object list
 @cindex deleting list elements
-This function destructively removes all elements @code{eq} to
-@var{object} from @var{list}, and returns the resulting list.  The
-letter @samp{q} in @code{delq} says that it uses @code{eq} to compare
-@var{object} against the elements of the list, like @code{memq} and
-@code{remq}.
+Функция деструктивно (с изменением списка) удаляет все элементы
+которые @code{eq} @var{object} из @var{list}, и возвращает полученный
+список. Буква @samp{q} в @code{memq} означает, что используется @code{eq}
+для сравнения @var{object} с элементами списка. Как в
+@code{memq} и @code{remq}.
 
-Typically, when you invoke @code{delq}, you should use the return
-value by assigning it to the variable which held the original list.
-The reason for this is explained below.
+@c This function destructively removes all elements @code{eq} to
+@c @var{object} from @var{list}, and returns the resulting list.  The
+@c letter @samp{q} in @code{delq} says that it uses @code{eq} to compare
+@c @var{object} against the elements of the list, like @code{memq} and
+@c @code{remq}.
+
+Как правило, когда используется @code{delq}, результат присваивается
+переменной хранящей оригинальный список. Ниже описывается причина этого.
+
+@c Typically, when you invoke @code{delq}, you should use the return
+@c value by assigning it to the variable which held the original list.
+@c The reason for this is explained below.
 @end defun
 
-The @code{delq} function deletes elements from the front of the list
-by simply advancing down the list, and returning a sublist that starts
-after those elements.  For example:
+@code{delq} удаляет элементы с начала списка продвигаясь по списку,
+и возвращает под-список, после этих элементов. Например:
+
+@c The @code{delq} function deletes elements from the front of the list
+@c by simply advancing down the list, and returning a sublist that starts
+@c after those elements.  For example:
 
 @example
 @group
@@ -1197,8 +1669,11 @@ after those elements.  For example:
 @end example
 
 @noindent
-When an element to be deleted appears in the middle of the list,
-removing it involves changing the @sc{cdr}s (@pxref{Setcdr}).
+Если элемент удаляется в середине списка, при его удалении
+изменяются @sc{cdr}ы. (@pxref{Setcdr}).
+
+@c When an element to be deleted appears in the middle of the list,
+@c removing it involves changing the @sc{cdr}s (@pxref{Setcdr}).
 
 @example
 @group
@@ -1223,20 +1698,30 @@ sample-list
 @end group
 @end example
 
-Note that @code{(delq 'c sample-list)} modifies @code{sample-list} to
-splice out the third element, but @code{(delq 'a sample-list)} does not
-splice anything---it just returns a shorter list.  Don't assume that a
-variable which formerly held the argument @var{list} now has fewer
-elements, or that it still holds the original list!  Instead, save the
-result of @code{delq} and use that.  Most often we store the result back
-into the variable that held the original list:
+@code{(delq 'c sample-list)} изменяет список удаляя третий элемент, не
+@code{(delq 'a sample-list)} удаляет ничего, вызов просто возвращает
+более короткий список. При этом переменная, которая хранит @var{list},
+все еще будет хранить оригинальный список. Поэтому, нужно сохранить результат
+@code{delq}. Наиболее часто результат сохраняется в ту же переменную,
+которая использовалась для вызова удаления:
+
+@c Note that @code{(delq 'c sample-list)} modifies @code{sample-list} to
+@c splice out the third element, but @code{(delq 'a sample-list)} does not
+@c splice anything---it just returns a shorter list.  Don't assume that a
+@c variable which formerly held the argument @var{list} now has fewer
+@c elements, or that it still holds the original list!  Instead, save the
+@c result of @code{delq} and use that.  Most often we store the result back
+@c into the variable that held the original list:
 
 @example
 (setq flowers (delq 'rose flowers))
 @end example
 
-In the following example, the @code{(4)} that @code{delq} attempts to match
-and the @code{(4)} in the @code{sample-list} are not @code{eq}:
+В следующем примере, @code{(4)} которая @code{delq} и предполагается
+соответствующей @code{(4)} в @code{sample-list} тем не менее не является @code{eq}:
+
+@c In the following example, the @code{(4)} that @code{delq} attempts to match
+@c and the @code{(4)} in the @code{sample-list} are not @code{eq}:
 
 @example
 @group
@@ -1245,14 +1730,21 @@ and the @code{(4)} in the @code{sample-list} are not @code{eq}:
 @end group
 @end example
 
-If you want to delete elements that are @code{equal} to a given value,
-use @code{delete} (see below).
+Для удаления элемента который @code{equal}, заданному значению,
+нужно использовать @code{delete} (см. ниже).
+
+@c If you want to delete elements that are @code{equal} to a given value,
+@c use @code{delete} (see below).
 
 @defun remq object list
-This function returns a copy of @var{list}, with all elements removed
-which are @code{eq} to @var{object}.  The letter @samp{q} in @code{remq}
-says that it uses @code{eq} to compare @var{object} against the elements
-of @code{list}.
+Функция возвращает копию @var{list}, без элементов которые @code{eq}
+@var{object}. Буква @samp{q} в @code{memq} означает, что используется @code{eq}
+для сравнения @var{object} с элементами списка
+
+@c This function returns a copy of @var{list}, with all elements removed
+@c which are @code{eq} to @var{object}.  The letter @samp{q} in @code{remq}
+@c says that it uses @code{eq} to compare @var{object} against the elements
+@c of @code{list}.
 
 @example
 @group
@@ -1271,13 +1763,21 @@ sample-list
 @end defun
 
 @defun memql object list
-The function @code{memql} tests to see whether @var{object} is a member
-of @var{list}, comparing members with @var{object} using @code{eql},
-so floating-point elements are compared by value.
-If @var{object} is a member, @code{memql} returns a list starting with
-its first occurrence in @var{list}.  Otherwise, it returns @code{nil}.
+Функция @code{memql} проверяет является @var{object} элементом
+@var{list}. Сравнение производится с использованием функции @code{eql},
+поэтому элементы являющиеся числами с плавающей точкой сравниваются
+по значению. Если @var{object} является членом @var{list}, возвращается
+список начинающийся с первого вхождения, если нет возвращается @code{nil}.
 
-Compare this with @code{memq}:
+@c The function @code{memql} tests to see whether @var{object} is a member
+@c of @var{list}, comparing members with @var{object} using @code{eql},
+@c so floating-point elements are compared by value.
+@c If @var{object} is a member, @code{memql} returns a list starting with
+@c its first occurrence in @var{list}.  Otherwise, it returns @code{nil}.
+
+Ниже сравнение с @code{memq}.
+
+@c Compare this with @code{memq}:
 
 @example
 @group
@@ -1291,17 +1791,28 @@ Compare this with @code{memq}:
 @end example
 @end defun
 
-The following three functions are like @code{memq}, @code{delq} and
-@code{remq}, but use @code{equal} rather than @code{eq} to compare
-elements.  @xref{Equality Predicates}.
+Следующие три функции похожи на @code{memq}, @code{delq} и
+@code{remq}, но используют для сравнение @code{equal}, а не
+@code{eq}. @xref{Equality Predicates}.
+
+@c The following three functions are like @code{memq}, @code{delq} and
+@c @code{remq}, but use @code{equal} rather than @code{eq} to compare
+@c elements.  @xref{Equality Predicates}.
 
 @defun member object list
-The function @code{member} tests to see whether @var{object} is a member
-of @var{list}, comparing members with @var{object} using @code{equal}.
-If @var{object} is a member, @code{member} returns a list starting with
-its first occurrence in @var{list}.  Otherwise, it returns @code{nil}.
+Функция проверяет является ли @var{object} членом  @var{list}. Для
+сравнения используется @code{equal}. Если да, возвращается список
+начинающийся с первого вхождения @var{object}, если нет
+возвращается @code{nil}.
 
-Compare this with @code{memq}:
+@c The function @code{member} tests to see whether @var{object} is a member
+@c of @var{list}, comparing members with @var{object} using @code{equal}.
+@c If @var{object} is a member, @code{member} returns a list starting with
+@c its first occurrence in @var{list}.  Otherwise, it returns @code{nil}.
+
+Ниже сравнение с @code{memq}:
+
+@c Compare this with @code{memq}:
 
 @example
 @group
@@ -1313,7 +1824,7 @@ Compare this with @code{memq}:
      @result{} nil
 @end group
 @group
-;; @r{Two strings with the same contents are @code{equal}.}
+;; @r{Две строки с одним и тем же содержимым @code{equal}.}
 (member "foo" '("foo" "bar"))
      @result{} ("foo" "bar")
 @end group
@@ -1321,21 +1832,35 @@ Compare this with @code{memq}:
 @end defun
 
 @defun delete object sequence
-This function removes all elements @code{equal} to @var{object} from
-@var{sequence}, and returns the resulting sequence.
+Функция удаляет все элементы которые @code{equal} @var{object}
+из @var{sequence}, и возвращает полученную последовательность.
 
-If @var{sequence} is a list, @code{delete} is to @code{delq} as
-@code{member} is to @code{memq}: it uses @code{equal} to compare
-elements with @var{object}, like @code{member}; when it finds an
-element that matches, it cuts the element out just as @code{delq}
-would.  As with @code{delq}, you should typically use the return value
-by assigning it to the variable which held the original list.
+@c This function removes all elements @code{equal} to @var{object} from
+@c @var{sequence}, and returns the resulting sequence.
 
-If @code{sequence} is a vector or string, @code{delete} returns a copy
-of @code{sequence} with all elements @code{equal} to @code{object}
-removed.
+Если @var{sequence} список, @code{delete} отличается от @code{delq},
+как @code{member} от @code{memq}, использованием функции сравнения
+@code{equal}. Как и в случае @code{delq}, как правило результат
+выполнения @code{delete} стоит сохранять в переменную, хранящую
+оригинальный список (можно и другую).
 
-For example:
+@c If @var{sequence} is a list, @code{delete} is to @code{delq} as
+@c @code{member} is to @code{memq}: it uses @code{equal} to compare
+@c elements with @var{object}, like @code{member}; when it finds an
+@c element that matches, it cuts the element out just as @code{delq}
+@c would.  As with @code{delq}, you should typically use the return value
+@c by assigning it to the variable which held the original list.
+
+Если @code{sequence} вектор или строка, @code{delete} возвращает копию
+@code{sequence} с удаленными элементами которые @code{equal} @code{object}.
+
+@c If @code{sequence} is a vector or string, @code{delete} returns a copy
+@c of @code{sequence} with all elements @code{equal} to @code{object}
+@c removed.
+
+Например:
+
+@c For example:
 
 @example
 @group
@@ -1344,8 +1869,8 @@ For example:
      @result{} ((1))
 l
      @result{} ((2) (1))
-;; @r{If you want to change @code{l} reliably,}
-;; @r{write @code{(setq l (delete '(2) l))}.}
+;; @r{Если нужно точно сохранить @code{l},}
+;; @r{стоит писать @code{(setq l (delete '(2) l))}.}
 @end group
 @group
 (setq l '((2) (1) (2)))
@@ -1353,8 +1878,8 @@ l
      @result{} ((2) (2))
 l
      @result{} ((2) (2))
-;; @r{In this case, it makes no difference whether you set @code{l},}
-;; @r{but you should do so for the sake of the other case.}
+;; @r{В этом случае, нет нужны сохранять @code{l},}
+;; @r{но стоит это делать из-за предыдущего случая.}
 @end group
 @group
 (delete '(2) [(2) (1) (2)])
@@ -1364,9 +1889,13 @@ l
 @end defun
 
 @defun remove object sequence
-This function is the non-destructive counterpart of @code{delete}.  It
-returns a copy of @code{sequence}, a list, vector, or string, with
-elements @code{equal} to @code{object} removed.  For example:
+Функция является не деструктивной копией @code{delete}. Функция возвращает
+копию @code{sequence}, список, вектор или строку, без элементов которые
+@code{equal} @code{object}. Например:
+
+@c This function is the non-destructive counterpart of @code{delete}.  It
+@c returns a copy of @code{sequence}, a list, vector, or string, with
+@c elements @code{equal} to @code{object} removed.  For example:
 
 @example
 @group
@@ -1381,47 +1910,77 @@ elements @code{equal} to @code{object} removed.  For example:
 @end defun
 
 @quotation
-@b{Common Lisp note:} The functions @code{member}, @code{delete} and
-@code{remove} in GNU Emacs Lisp are derived from Maclisp, not Common
-Lisp.  The Common Lisp versions do not use @code{equal} to compare
-elements.
+
+@b{Common Lisp примечание:} Функции @code{member}, @code{delete} и
+@code{remove} в GNU Emacs Lisp отличаются наследуются от Maclisp, а не от Common
+Lisp.  Common Lisp версии не используют @code{equal} для сравнения элементов.
+
+@c @b{Common Lisp note:} The functions @code{member}, @code{delete} and
+@c @code{remove} in GNU Emacs Lisp are derived from Maclisp, not Common
+@c Lisp.  The Common Lisp versions do not use @code{equal} to compare
+@c elements.
 @end quotation
 
 @defun member-ignore-case object list
-This function is like @code{member}, except that @var{object} should
-be a string and that it ignores differences in letter-case and text
-representation: upper-case and lower-case letters are treated as
-equal, and unibyte strings are converted to multibyte prior to
-comparison.
+Функция аналогична @code{member}, за исключением того, что @var{object}
+должен быть строкой и при сравнении игнорируется регистр.
+Одно-байтовые строки конвертируются в много-байтовые перед сравнением.
+
+@c This function is like @code{member}, except that @var{object} should
+@c be a string and that it ignores differences in letter-case and text
+@c representation: upper-case and lower-case letters are treated as
+@c equal, and unibyte strings are converted to multibyte prior to
+@c comparison.
+
 @end defun
 
 @defun delete-dups list
-This function destructively removes all @code{equal} duplicates from
-@var{list}, stores the result in @var{list} and returns it.  Of
-several @code{equal} occurrences of an element in @var{list},
-@code{delete-dups} keeps the first one.
+Функция деструктивно удаляет все @code{equal} дубликаты из
+@var{list}, сохраняя результат снова в @var{list}.
+Для @code{equal} элементов оставляется первый встреченный.
+
+@c This function destructively removes all @code{equal} duplicates from
+@c @var{list}, stores the result in @var{list} and returns it.  Of
+@c several @code{equal} occurrences of an element in @var{list},
+@c @code{delete-dups} keeps the first one.
 @end defun
 
-  See also the function @code{add-to-list}, in @ref{List Variables},
-for a way to add an element to a list stored in a variable and used as a
-set.
+  См. функцию @code{add-to-list} в @ref{List Variables},
+которая добавляет элемент если его еще нет в списке, и позволяет
+поддерживать абстракцию списка как множества.
+
+@c   See also the function @code{add-to-list}, in @ref{List Variables},
+@c for a way to add an element to a list stored in a variable and used as a
+@c set.
 
 @node Association Lists
 @section Association Lists
 @cindex association list
 @cindex alist
 
-  An @dfn{association list}, or @dfn{alist} for short, records a mapping
-from keys to values.  It is a list of cons cells called
-@dfn{associations}: the @sc{car} of each cons cell is the @dfn{key}, and the
-@sc{cdr} is the @dfn{associated value}.@footnote{This usage of ``key''
-is not related to the term ``key sequence''; it means a value used to
-look up an item in a table.  In this case, the table is the alist, and
-the alist associations are the items.}
+  @dnf{Ассоциативный список} (@dfn{association list}) или @dfn{alist},
+хранит соответствие(отображение) ключей и значений. Список состоит
+из cons ячеек называемых @dfn{ассоциации} (@dfn{associations}):
+@sc{car} cons ячейки @dfn{key}(ключ), а @sc{cdr} @dfn{значение ассоциации}
+(@dfn{associated value}). @footnote{Термин ``key'' не связан с термином
+``key sequence'', оно означает что значение используется для
+поиска элемента в таблице. В данном случае, таблица это alist,
+и ассоциации это элементы таблицы.}
 
-  Here is an example of an alist.  The key @code{pine} is associated with
-the value @code{cones}; the key @code{oak} is associated with
-@code{acorns}; and the key @code{maple} is associated with @code{seeds}.
+@c   An @dfn{association list}, or @dfn{alist} for short, records a mapping
+@c from keys to values.  It is a list of cons cells called
+@c @dfn{associations}: the @sc{car} of each cons cell is the @dfn{key}, and the
+@c @sc{cdr} is the @dfn{associated value}.@footnote{This usage of ``key''
+@c is not related to the term ``key sequence''; it means a value used to
+@c look up an item in a table.  In this case, the table is the alist, and
+@c the alist associations are the items.}
+
+  Ниже приводится пример alist. Ключ @code{pine} связан со значением
+@code{cones}, @code{oak} с @code{acorns}, @code{maple} с @code{seeds}.
+
+@c   Here is an example of an alist.  The key @code{pine} is associated with
+@c the value @code{cones}; the key @code{oak} is associated with
+@c @code{acorns}; and the key @code{maple} is associated with @code{seeds}.
 
 @example
 @group
@@ -1431,59 +1990,97 @@ the value @code{cones}; the key @code{oak} is associated with
 @end group
 @end example
 
-  Both the values and the keys in an alist may be any Lisp objects.
-For example, in the following alist, the symbol @code{a} is
-associated with the number @code{1}, and the string @code{"b"} is
-associated with the @emph{list} @code{(2 3)}, which is the @sc{cdr} of
-the alist element:
+  Как значения, так и ключи в alist могут быть любым Lisp объектом.
+Например, в следующем alist, символ @code{a} связан с
+числом @code{1}, строка @code{"b"} связана со @emph{списком} @code{(2 3)}:
+
+@c   Both the values and the keys in an alist may be any Lisp objects.
+@c For example, in the following alist, the symbol @code{a} is
+@c associated with the number @code{1}, and the string @code{"b"} is
+@c associated with the @emph{list} @code{(2 3)}, which is the @sc{cdr} of
+@c the alist element:
 
 @example
 ((a . 1) ("b" 2 3))
 @end example
 
-  Sometimes it is better to design an alist to store the associated
-value in the @sc{car} of the @sc{cdr} of the element.  Here is an
-example of such an alist:
+  Иногда лучше проектировать alist для хранения связанного значения
+в @sc{car} @sc{cdr} элемента. Например:
+
+@c   Sometimes it is better to design an alist to store the associated
+@c value in the @sc{car} of the @sc{cdr} of the element.  Here is an
+@c example of such an alist:
 
 @example
 ((rose red) (lily white) (buttercup yellow))
 @end example
 
 @noindent
-Here we regard @code{red} as the value associated with @code{rose}.  One
-advantage of this kind of alist is that you can store other related
-information---even a list of other items---in the @sc{cdr} of the
-@sc{cdr}.  One disadvantage is that you cannot use @code{rassq} (see
-below) to find the element containing a given value.  When neither of
-these considerations is important, the choice is a matter of taste, as
-long as you are consistent about it for any given alist.
+Здесь @code{red} связано с @code{rose}. Преимуществом такого подхода
+является то, что можно сохранять дополнительную информацию -- в том числе
+список со значениями -- в @sc{cdr} такой @sc{cdr} ячейки.
+(То есть ассоциации имеют вид из @code{(key . (value . nil)))}).
+При этом нельзя использовать @code{rassq} (см. ниже), для поиска
+элемента по значению. Если не один из факторов не является важным,
+выбор является делом вкуса.
 
-  The same alist shown above could be regarded as having the
-associated value in the @sc{cdr} of the element; the value associated
-with @code{rose} would be the list @code{(red)}.
 
-  Association lists are often used to record information that you might
-otherwise keep on a stack, since new associations may be added easily to
-the front of the list.  When searching an association list for an
-association with a given key, the first one found is returned, if there
-is more than one.
+@c Here we regard @code{red} as the value associated with @code{rose}.  One
+@c advantage of this kind of alist is that you can store other related
+@c information---even a list of other items---in the @sc{cdr} of the
+@c @sc{cdr}.  One disadvantage is that you cannot use @code{rassq} (see
+@c below) to find the element containing a given value.  When neither of
+@c these considerations is important, the choice is a matter of taste, as
+@c long as you are consistent about it for any given alist.
 
-  In Emacs Lisp, it is @emph{not} an error if an element of an
-association list is not a cons cell.  The alist search functions simply
-ignore such elements.  Many other versions of Lisp signal errors in such
-cases.
+  
+@c   The same alist shown above could be regarded as having the
+@c associated value in the @sc{cdr} of the element; the value associated
+@c with @code{rose} would be the list @code{(red)}.
 
-  Note that property lists are similar to association lists in several
-respects.  A property list behaves like an association list in which
-each key can occur only once.  @xref{Property Lists}, for a comparison
-of property lists and association lists.
+  Ассоциативные списки часто используются для хранения информации,
+которую можно было бы держать в стеке, так как новые ассоциации
+могут быть просто добавлены в начало списка. При поиске ассоциации
+для заданного ключа, будет возвращен первый найденный результат,
+если совпадений больше одного.
+
+@c   Association lists are often used to record information that you might
+@c otherwise keep on a stack, since new associations may be added easily to
+@c the front of the list.  When searching an association list for an
+@c association with a given key, the first one found is returned, if there
+@c is more than one.
+
+  В Emacs Lisp, @emph{не} является ошибкой если элемент ассоциативного
+списка не cons ячейка. Функции поиска в alist просто будут игнорировать такой
+элемент. Многие другие версии Lisp сообщают об ошибке в этом случае.
+
+@c   In Emacs Lisp, it is @emph{not} an error if an element of an
+@c association list is not a cons cell.  The alist search functions simply
+@c ignore such elements.  Many other versions of Lisp signal errors in such
+@c cases.
+
+  Список свойств(property list) похож на ассоциативный список в некотором роде.
+Список свойств ведет себя как ассоциативный список в котором каждый ключ может
+встречаться только один раз. @xref{Property Lists}, по сравнению списка свойств
+и ассоциативного списка.
+
+@c   Note that property lists are similar to association lists in several
+@c respects.  A property list behaves like an association list in which
+@c each key can occur only once.  @xref{Property Lists}, for a comparison
+@c of property lists and association lists.
 
 @defun assoc key alist
-This function returns the first association for @var{key} in
-@var{alist}, comparing @var{key} against the alist elements using
-@code{equal} (@pxref{Equality Predicates}).  It returns @code{nil} if no
-association in @var{alist} has a @sc{car} @code{equal} to @var{key}.
-For example:
+Функция возвращает первый найденный элемент связанный с ключом
+@var{key} в @var{alist}. Для сравнения с ключом используется функция
+@code{equal} (@pxref{Equality Predicates}). Функция возвращает @code{nil},
+если не одной ассоциации для ключа не найдено.
+Например:
+
+@c This function returns the first association for @var{key} in
+@c @var{alist}, comparing @var{key} against the alist elements using
+@c @code{equal} (@pxref{Equality Predicates}).  It returns @code{nil} if no
+@c association in @var{alist} has a @sc{car} @code{equal} to @var{key}.
+@c For example:
 
 @smallexample
 (setq trees '((pine . cones) (oak . acorns) (maple . seeds)))
@@ -1496,7 +2093,8 @@ For example:
      @result{} nil
 @end smallexample
 
-Here is another example, in which the keys and values are not symbols:
+Ниже еще один пример, в котором ключи и значения не символы:
+@c Here is another example, in which the keys and values are not symbols:
 
 @smallexample
 (setq needles-per-cluster
@@ -1511,28 +2109,46 @@ Here is another example, in which the keys and values are not symbols:
 @end smallexample
 @end defun
 
-  The function @code{assoc-string} is much like @code{assoc} except
-that it ignores certain differences between strings.  @xref{Text
-Comparison}.
+  Функция @code{assoc-string} практически такая же как @code{assoc},
+за исключением того, что она игнорирует некоторые отличия между строками
+@xref{Text Comparison}.
+
+@c   The function @code{assoc-string} is much like @code{assoc} except
+@c that it ignores certain differences between strings.  @xref{Text
+@c Comparison}.
 
 @defun rassoc value alist
-This function returns the first association with value @var{value} in
-@var{alist}.  It returns @code{nil} if no association in @var{alist} has
-a @sc{cdr} @code{equal} to @var{value}.
+Функция возвращает первую ассоциацию связанную со значением @var{value}
+в @var{alist}. Функция возвращает @code{nil}, если ассоциации нет.
 
-@code{rassoc} is like @code{assoc} except that it compares the @sc{cdr} of
-each @var{alist} association instead of the @sc{car}.  You can think of
-this as reverse @code{assoc}, finding the key for a given value.
+@c This function returns the first association with value @var{value} in
+@c @var{alist}.  It returns @code{nil} if no association in @var{alist} has
+@c a @sc{cdr} @code{equal} to @var{value}.
+
+@code{rassoc} как @code{assoc}, но сравнивает @sc{cdr} для каждой
+ассоциации вместо @sc{car}. Можно считать эту функцию обратной
+@code{assoc}, которая ищет ключ по значению.
+
+@c @code{rassoc} is like @code{assoc} except that it compares the @sc{cdr} of
+@c each @var{alist} association instead of the @sc{car}.  You can think of
+@c this as reverse @code{assoc}, finding the key for a given value.
 @end defun
 
 @defun assq key alist
-This function is like @code{assoc} in that it returns the first
-association for @var{key} in @var{alist}, but it makes the comparison
-using @code{eq} instead of @code{equal}.  @code{assq} returns @code{nil}
-if no association in @var{alist} has a @sc{car} @code{eq} to @var{key}.
-This function is used more often than @code{assoc}, since @code{eq} is
-faster than @code{equal} and most alists use symbols as keys.
+Функция как @code{assoc}, но она использует для сравнения @code{eq}
+вместо @code{equal}. @code{assq} возвращает @code{nil}, если
+ассоциации не найдено. Данная функция используется чаще @code{assoc},
+потому что @code{eq} быстрее @code{equal}, а большинство ассоциативных
+списков использует символы в качестве ключей.
 @xref{Equality Predicates}.
+
+@c This function is like @code{assoc} in that it returns the first
+@c association for @var{key} in @var{alist}, but it makes the comparison
+@c using @code{eq} instead of @code{equal}.  @code{assq} returns @code{nil}
+@c if no association in @var{alist} has a @sc{car} @code{eq} to @var{key}.
+@c This function is used more often than @code{assoc}, since @code{eq} is
+@c faster than @code{equal} and most alists use symbols as keys.
+@c @xref{Equality Predicates}.
 
 @smallexample
 (setq trees '((pine . cones) (oak . acorns) (maple . seeds)))
@@ -1541,8 +2157,11 @@ faster than @code{equal} and most alists use symbols as keys.
      @result{} (pine . cones)
 @end smallexample
 
-On the other hand, @code{assq} is not usually useful in alists where the
-keys may not be symbols:
+С другой стороны, @code{assq} не стоит использовать с alist, где
+ключи могут быть не символами.
+
+@c On the other hand, @code{assq} is not usually useful in alists where the
+@c keys may not be symbols:
 
 @smallexample
 (setq leaves
@@ -1557,27 +2176,45 @@ keys may not be symbols:
 @end defun
 
 @defun alist-get key alist &optional default remove
-This function is like @code{assq}, but instead of returning the entire
-association for @var{key} in @var{alist},
-@w{@code{(@var{key} . @var{value})}}, it returns just the @var{value}.
-If @var{key} is not found in @var{alist}, it returns @var{default}.
+Функция похожа на @code{assq}, но возвращает только значение из
+ассоциации для ключа (для ассоциации @w{@code{(@var{key} . @var{value})}}
+возвращается только @var{value}).
+Если совпадение по ключу не найдено, возвращается @var{default}.
 
-This is a generalized variable (@pxref{Generalized Variables}) that
-can be used to change a value with @code{setf}.  When using it to set
-a value, optional argument @var{remove} non-@code{nil} means to remove
-@var{key} from @var{alist} if the new value is @code{eql} to @var{default}.
+Есть обобщенная переменная (@pxref{Generalized Variables}), которая
+может использоваться для изменения значения @code{setf}. Когда
+она используется для установки значения, значение
+не обязательного аргумента @var{remove} не-@code{nil}, будет
+означать, что нужно удалить @var{key} из @var{alist}, если
+новое значение будет @code{eql} @var{default}.
+
+@c This function is like @code{assq}, but instead of returning the entire
+@c association for @var{key} in @var{alist},
+@c @w{@code{(@var{key} . @var{value})}}, it returns just the @var{value}.
+@c If @var{key} is not found in @var{alist}, it returns @var{default}.
+
+@c This is a generalized variable (@pxref{Generalized Variables}) that
+@c can be used to change a value with @code{setf}.  When using it to set
+@c a value, optional argument @var{remove} non-@code{nil} means to remove
+@c @var{key} from @var{alist} if the new value is @code{eql} to @var{default}.
 @end defun
 
 @defun rassq value alist
-This function returns the first association with value @var{value} in
-@var{alist}.  It returns @code{nil} if no association in @var{alist} has
-a @sc{cdr} @code{eq} to @var{value}.
+Функция возвращает первую найденную ассоциацию со значением @var{value}
+в @var{alist}. Для сравнения используется @code{eq}. Если ассоциации
+не найдено возвращается @code{nil}.
+То есть функция ищет по значению, а не по ключу.
+Например:
 
-@code{rassq} is like @code{assq} except that it compares the @sc{cdr} of
-each @var{alist} association instead of the @sc{car}.  You can think of
-this as reverse @code{assq}, finding the key for a given value.
+@c This function returns the first association with value @var{value} in
+@c @var{alist}.  It returns @code{nil} if no association in @var{alist} has
+@c a @sc{cdr} @code{eq} to @var{value}.
 
-For example:
+@c @code{rassq} is like @code{assq} except that it compares the @sc{cdr} of
+@c each @var{alist} association instead of the @sc{car}.  You can think of
+@c this as reverse @code{assq}, finding the key for a given value.
+
+@c For example:
 
 @smallexample
 (setq trees '((pine . cones) (oak . acorns) (maple . seeds)))
@@ -1588,8 +2225,8 @@ For example:
      @result{} nil
 @end smallexample
 
-@code{rassq} cannot search for a value stored in the @sc{car}
-of the @sc{cdr} of an element:
+@code{rassq} не сможет найти ассоциацию если значение сохранено в @sc{car}
+ @sc{cdr} ассоциации (то есть если ассоциация не ссылка на объект, а например список):
 
 @smallexample
 (setq colors '((rose red) (lily white) (buttercup yellow)))
@@ -1598,9 +2235,13 @@ of the @sc{cdr} of an element:
      @result{} nil
 @end smallexample
 
-In this case, the @sc{cdr} of the association @code{(lily white)} is not
-the symbol @code{white}, but rather the list @code{(white)}.  This
-becomes clearer if the association is written in dotted pair notation:
+В этом случае @sc{cdr} в ассоциации @code{(lily white)} не символ
+@code{white}, а список @code{(white)}. Такое поведение становится
+более понятным, если записать ассоциации в точечной нотации:
+
+@c In this case, the @sc{cdr} of the association @code{(lily white)} is not
+@c the symbol @code{white}, but rather the list @code{(white)}.  This
+@c becomes clearer if the association is written in dotted pair notation:
 
 @smallexample
 (lily white) @equiv{} (lily . (white))
@@ -1608,29 +2249,44 @@ becomes clearer if the association is written in dotted pair notation:
 @end defun
 
 @defun assoc-default key alist &optional test default
-This function searches @var{alist} for a match for @var{key}.  For each
-element of @var{alist}, it compares the element (if it is an atom) or
-the element's @sc{car} (if it is a cons) against @var{key}, by calling
-@var{test} with two arguments: the element or its @sc{car}, and
-@var{key}.  The arguments are passed in that order so that you can get
-useful results using @code{string-match} with an alist that contains
-regular expressions (@pxref{Regexp Search}).  If @var{test} is omitted
-or @code{nil}, @code{equal} is used for comparison.
+Функция ищет в @var{alist} по ключу @var{key}. Для сравнения
+используется функция @var{test} либо @code{equal}.
+Например можно использовать @code{string-match}, если
+ключи являются регулярными выражениями. Ассоциации не обязаны
+быть cons ячейками, в этом случае в функцию @var{test} передается
+элемент списка. Если совпадение найдено, то если ассоциация
+это cons ячейка возвращается ее @sc{cdr}, иначе возвращается
+@var{default}.
 
-If an alist element matches @var{key} by this criterion,
-then @code{assoc-default} returns a value based on this element.
-If the element is a cons, then the value is the element's @sc{cdr}.
-Otherwise, the return value is @var{default}.
+Если не одного совпадения не найдено, возвращается @code{nil}.
 
-If no alist element matches @var{key}, @code{assoc-default} returns
-@code{nil}.
+@c This function searches @var{alist} for a match for @var{key}.  For each
+@c element of @var{alist}, it compares the element (if it is an atom) or
+@c the element's @sc{car} (if it is a cons) against @var{key}, by calling
+@c @var{test} with two arguments: the element or its @sc{car}, and
+@c @var{key}.  The arguments are passed in that order so that you can get
+@c useful results using @code{string-match} with an alist that contains
+@c regular expressions (@pxref{Regexp Search}).  If @var{test} is omitted
+@c or @code{nil}, @code{equal} is used for comparison.
+
+@c If an alist element matches @var{key} by this criterion,
+@c then @code{assoc-default} returns a value based on this element.
+@c If the element is a cons, then the value is the element's @sc{cdr}.
+@c Otherwise, the return value is @var{default}.
+
+@c If no alist element matches @var{key}, @code{assoc-default} returns
+@c @code{nil}.
 @end defun
 
 @defun copy-alist alist
 @cindex copying alists
-This function returns a two-level deep copy of @var{alist}: it creates a
-new copy of each association, so that you can alter the associations of
-the new alist without changing the old one.
+Функция возвращает копию второго уровня @var{alist}. Создается копия
+каждой ассоциации, в результате чего изменение ассоциаций из копии,
+не изменит ассоциации в оригинальном списке.
+
+@c This function returns a two-level deep copy of @var{alist}: it creates a
+@c new copy of each association, so that you can alter the associations of
+@c the new alist without changing the old one.
 
 @smallexample
 @group
@@ -1665,8 +2321,11 @@ the new alist without changing the old one.
 @end group
 @end smallexample
 
-  This example shows how @code{copy-alist} makes it possible to change
-the associations of one copy without affecting the other:
+  Пример ниже показывает, что изменения результата @code{copy-alist}
+не влияют на оригинальный список:
+
+@c   This example shows how @code{copy-alist} makes it possible to change
+@c the associations of one copy without affecting the other:
 
 @smallexample
 @group
@@ -1678,12 +2337,19 @@ the associations of one copy without affecting the other:
 @end defun
 
 @defun assq-delete-all key alist
-This function deletes from @var{alist} all the elements whose @sc{car}
-is @code{eq} to @var{key}, much as if you used @code{delq} to delete
-each such element one by one.  It returns the shortened alist, and
-often modifies the original list structure of @var{alist}.  For
-correct results, use the return value of @code{assq-delete-all} rather
-than looking at the saved value of @var{alist}.
+Функция удаляет из @var{alist} все элементы для которых @sc{car}
+@code{eq} @var{key}, как если использовать @code{delq} для
+удаления всех элементов по одному. Функция возвращает укороченный
+alist. Стоит сохранить результат @code{assq-delete-all}, так как
+он может отличаться от сохраненного @var{alist} (если было удаление
+в начале списка).
+
+@c This function deletes from @var{alist} all the elements whose @sc{car}
+@c is @code{eq} to @var{key}, much as if you used @code{delq} to delete
+@c each such element one by one.  It returns the shortened alist, and
+@c often modifies the original list structure of @var{alist}.  For
+@c correct results, use the return value of @code{assq-delete-all} rather
+@c than looking at the saved value of @var{alist}.
 
 @example
 (setq alist '((foo 1) (bar 2) (foo 3) (lose 4)))
@@ -1696,12 +2362,19 @@ alist
 @end defun
 
 @defun rassq-delete-all value alist
-This function deletes from @var{alist} all the elements whose @sc{cdr}
-is @code{eq} to @var{value}.  It returns the shortened alist, and
-often modifies the original list structure of @var{alist}.
-@code{rassq-delete-all} is like @code{assq-delete-all} except that it
-compares the @sc{cdr} of each @var{alist} association instead of the
-@sc{car}.
+Функция удаляет из @var{alist} все элементы у которых @sc{cdr}
+@code{eq} @var{value}. Функция возвращает укороченный
+alist. Стоит сохранить результат @code{assq-delete-all}, так как
+он может отличаться от сохраненного @var{alist} (если было удаление
+в начале списка). @code{rassq-delete-all} такая же как @code{assq-delete-all},
+но сравниваются @sc{cdr}, а не @sc{car} ассоциаций.
+
+@c This function deletes from @var{alist} all the elements whose @sc{cdr}
+@c is @code{eq} to @var{value}.  It returns the shortened alist, and
+@c often modifies the original list structure of @var{alist}.
+@c @code{rassq-delete-all} is like @code{assq-delete-all} except that it
+@c compares the @sc{cdr} of each @var{alist} association instead of the
+@c @sc{car}.
 @end defun
 
 @node Property Lists
@@ -1709,86 +2382,141 @@ compares the @sc{cdr} of each @var{alist} association instead of the
 @cindex property list
 @cindex plist
 
-  A @dfn{property list} (@dfn{plist} for short) is a list of paired
-elements.  Each of the pairs associates a property name (usually a
-symbol) with a property or value.  Here is an example of a property
-list:
+  @dfn{Список свойств} (@dfn{property list}) сокращенно @dfn{plist}
+это список пар элементов. Каждая пара связывает имя свойства
+(обычно символ) со свойством или значением. Ниже пример списка свойств:
+
+@c   A @dfn{property list} (@dfn{plist} for short) is a list of paired
+@c elements.  Each of the pairs associates a property name (usually a
+@c symbol) with a property or value.  Here is an example of a property
+@c list:
 
 @example
 (pine cones numbers (1 2 3) color "blue")
 @end example
 
 @noindent
-This property list associates @code{pine} with @code{cones},
-@code{numbers} with @code{(1 2 3)}, and @code{color} with
-@code{"blue"}.  The property names and values can be any Lisp objects,
-but the names are usually symbols (as they are in this example).
+Данный список свойств связывает @code{pine} с @code{cones},
+@code{numbers} c @code{(1 2 3)}, и @code{color} с @code{"blue"}.
+Имена свойств и значения могут быть любыми Lisp объектами,
+но имена как правило символы (как в примере).
 
-  Property lists are used in several contexts.  For instance, the
-function @code{put-text-property} takes an argument which is a
-property list, specifying text properties and associated values which
-are to be applied to text in a string or buffer.  @xref{Text
-Properties}.
+@c This property list associates @code{pine} with @code{cones},
+@c @code{numbers} with @code{(1 2 3)}, and @code{color} with
+@c @code{"blue"}.  The property names and values can be any Lisp objects,
+@c but the names are usually symbols (as they are in this example).
 
-  Another prominent use of property lists is for storing symbol
-properties.  Every symbol possesses a list of properties, used to
-record miscellaneous information about the symbol; these properties
-are stored in the form of a property list.  @xref{Symbol Properties}.
+  Списки свойств используются в нескольких ситуациях. Например,
+функция  @code{put-text-property} получает аргумент, который
+является списком свойств, определяющий свойства текста и значения,
+которые должны быть применены к тексту в строке или буфере.
+@xref{Text Properties}.
+
+@c   Property lists are used in several contexts.  For instance, the
+@c function @code{put-text-property} takes an argument which is a
+@c property list, specifying text properties and associated values which
+@c are to be applied to text in a string or buffer.  @xref{Text
+@c Properties}.
+
+  Другое известное использование списка свойств хранение свойств
+символа. Каждый символ имеет список свойств, используемых
+для хранения разнообразной информации о символе, эти свойства
+хранятся в виде списка свойств. @xref{Symbol Properties}.
+
+@c   Another prominent use of property lists is for storing symbol
+@c properties.  Every symbol possesses a list of properties, used to
+@c record miscellaneous information about the symbol; these properties
+@c are stored in the form of a property list. @xref{Symbol Properties}.
 
 @menu
-* Plists and Alists::           Comparison of the advantages of property
-                                  lists and association lists.
-* Plist Access::                Accessing property lists stored elsewhere.
+* Plists and Alists::           Сравнение преимуществ и недостатков списков свойств
+                                и ассоциативных списков. 
+* Plist Access::                Доступ к спискам свойств хранящимся в разных местах.
 @end menu
 
 @node Plists and Alists
-@subsection Property Lists and Association Lists
+@subsection Списки свойств и Ассоциативные списки
 @cindex plist vs. alist
 @cindex alist vs. plist
 
 @cindex property lists vs association lists
-  Association lists (@pxref{Association Lists}) are very similar to
-property lists.  In contrast to association lists, the order of the
-pairs in the property list is not significant, since the property
-names must be distinct.
+  Ассоциативные списки (@pxref{Association Lists}) очень похожи
+на списки свойств. Но в отличие от ассоциативных списков, порядок пар
+в списках свойств не важен, потому что имена свойств должны быть разными.
 
-  Property lists are better than association lists for attaching
-information to various Lisp function names or variables.  If your
-program keeps all such information in one association list, it will
-typically need to search that entire list each time it checks for an
-association for a particular Lisp function name or variable, which
-could be slow.  By contrast, if you keep the same information in the
-property lists of the function names or variables themselves, each
-search will scan only the length of one property list, which is
-usually short.  This is why the documentation for a variable is
-recorded in a property named @code{variable-documentation}.  The byte
-compiler likewise uses properties to record those functions needing
-special treatment.
+@c   Association lists (@pxref{Association Lists}) are very similar to
+@c property lists.  In contrast to association lists, the order of the
+@c pairs in the property list is not significant, since the property
+@c names must be distinct.
 
-  However, association lists have their own advantages.  Depending on
-your application, it may be faster to add an association to the front of
-an association list than to update a property.  All properties for a
-symbol are stored in the same property list, so there is a possibility
-of a conflict between different uses of a property name.  (For this
-reason, it is a good idea to choose property names that are probably
-unique, such as by beginning the property name with the program's usual
-name-prefix for variables and functions.)  An association list may be
-used like a stack where associations are pushed on the front of the list
-and later discarded; this is not possible with a property list.
+  Список свойств лучше чем ассоциативный список подходит для
+добавления информации к разным именам Lisp функций или переменных.
+Если программа хранит такую информацию в одном ассоциативном списке,
+нужно будет делать в нем поиск для конкретных Lisp функций или переменных,
+что может быть медленно. В тоже время если хранить эту информацию
+непосредственно в символе, то списки свойств будут короткими и поиск
+в них будет быстрый. Поэтому документация хранится в свойстве
+@code{variable-documentation}. Кроме того байт компилятор
+использует свойства для хранения информации в функциях требующих
+специальной обработки.
+(Прим. Не очень понятно правда почему нельзя использовать множество
+ассоциативных списков, каждый для какой-то функции или переменной.
+Но видимо имеется ввиду, что есть отработанный механизм добавления
+дополнительной информации для символов.)
+
+@c   Property lists are better than association lists for attaching
+@c information to various Lisp function names or variables.  If your
+@c program keeps all such information in one association list, it will
+@c typically need to search that entire list each time it checks for an
+@c association for a particular Lisp function name or variable, which
+@c could be slow.  By contrast, if you keep the same information in the
+@c property lists of the function names or variables themselves, each
+@c search will scan only the length of one property list, which is
+@c usually short.  This is why the documentation for a variable is
+@c recorded in a property named @code{variable-documentation}.  The byte
+@c compiler likewise uses properties to record those functions needing
+@c special treatment.
+
+  Но у ассоциативных списков есть свои преимущества. Иногда добавить
+ассоциацию в начало списка быстрее чем обновлять значение свойства.
+Все свойств для символа хранятся в одном списке свойств, поэтому
+возможны конфликты при различном использовании одного имени свойства.
+(Поэтому стоит использовать уникальные имена свойств, для чего
+можно использовать стандартные префиксы для имен.) Кроме того, ассоциативный
+список может использоваться как стек, где ассоциации кладутся в начало
+стека и потом оттуда извлекаются, что не возможно со списком свойств.
+
+@c   However, association lists have their own advantages.  Depending on
+@c your application, it may be faster to add an association to the front of
+@c an association list than to update a property.  All properties for a
+@c symbol are stored in the same property list, so there is a possibility
+@c of a conflict between different uses of a property name.  (For this
+@c reason, it is a good idea to choose property names that are probably
+@c unique, such as by beginning the property name with the program's usual
+@c name-prefix for variables and functions.)  An association list may be
+@c used like a stack where associations are pushed on the front of the list
+@c and later discarded; this is not possible with a property list.
 
 @node Plist Access
 @subsection Property Lists Outside Symbols
 @cindex plist access
 @cindex accessing plist properties
 
-  The following functions can be used to manipulate property lists.
-They all compare property names using @code{eq}.
+  Ниже приводятся функции для работы со списками свойств.
+Все эти функции используют @code{eq} для сравнения имен свойств.
+
+@c   The following functions can be used to manipulate property lists.
+@c They all compare property names using @code{eq}.
 
 @defun plist-get plist property
-This returns the value of the @var{property} property stored in the
-property list @var{plist}.  It accepts a malformed @var{plist}
-argument.  If @var{property} is not found in the @var{plist}, it
-returns @code{nil}.  For example,
+Функция возвращает значение свойства @var{property} из списка
+свойств @var{plist}. Если свойство не найдено возвращается @code{nil}.
+Например:
+
+@c This returns the value of the @var{property} property stored in the
+@c property list @var{plist}.  It accepts a malformed @var{plist}
+@c argument.  If @var{property} is not found in the @var{plist}, it
+@c returns @code{nil}.  For example,
 
 @example
 (plist-get '(foo 4) 'foo)
@@ -1803,11 +2531,17 @@ returns @code{nil}.  For example,
 @end defun
 
 @defun plist-put plist property value
-This stores @var{value} as the value of the @var{property} property in
-the property list @var{plist}.  It may modify @var{plist} destructively,
-or it may construct a new list structure without altering the old.  The
-function returns the modified property list, so you can store that back
-in the place where you got @var{plist}.  For example,
+Функция сохраняет @var{value} как значение свойства @var{property} в
+списке свойств @var{plist}. Функция может изменить списочную структуру
+или создать новую. Функция возвращает измененный список свойств, который
+нужно сохранить туда откуда был взят @var{plist}.
+Например:
+
+@c This stores @var{value} as the value of the @var{property} property in
+@c the property list @var{plist}.  It may modify @var{plist} destructively,
+@c or it may construct a new list structure without altering the old.  The
+@c function returns the modified property list, so you can store that back
+@c in the place where you got @var{plist}.  For example,
 
 @example
 (setq my-plist '(bar t foo 4))
@@ -1820,19 +2554,31 @@ in the place where you got @var{plist}.  For example,
 @end defun
 
 @defun lax-plist-get plist property
-Like @code{plist-get} except that it compares properties
-using @code{equal} instead of @code{eq}.
+Как @code{plist-get}, но свойства сравниваются при помощи
+@code{equal}, а не @code{eq}.
+
+@c Like @code{plist-get} except that it compares properties
+@c using @code{equal} instead of @code{eq}.
 @end defun
 
 @defun lax-plist-put plist property value
-Like @code{plist-put} except that it compares properties
-using @code{equal} instead of @code{eq}.
+Как @code{plist-put}, но свойства сравниваются при помощи
+@code{equal}, а не @code{eq}.
+
+@c Like @code{plist-put} except that it compares properties
+@c using @code{equal} instead of @code{eq}.
 @end defun
 
 @defun plist-member plist property
-This returns non-@code{nil} if @var{plist} contains the given
-@var{property}.  Unlike @code{plist-get}, this allows you to distinguish
-between a missing property and a property with the value @code{nil}.
-The value is actually the tail of @var{plist} whose @code{car} is
-@var{property}.
+Функция возвращает не-@code{nil} если @var{plist} содержит
+свойство @var{property}. В отличие от @code{plist-get}, эта функция
+позволяет различить отсутствие свойства и свойство со значением
+@code{nil}. Значение обычно является хвостом @var{plist}, чей
+@code{car} @var{property}.
+
+@c This returns non-@code{nil} if @var{plist} contains the given
+@c @var{property}.  Unlike @code{plist-get}, this allows you to distinguish
+@c between a missing property and a property with the value @code{nil}.
+@c The value is actually the tail of @var{plist} whose @code{car} is
+@c @var{property}.
 @end defun
