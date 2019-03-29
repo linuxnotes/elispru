@@ -1778,7 +1778,7 @@ width можно использовать для задания минималь
 @c are assigned to the word constituent syntax class in the current syntax
 @c table (@pxref{Syntax Class Table}).
 
-Если @var{string-or-char}, функция делает то же, что и @code{upcase}.
+Если @var{string-or-char} символ, функция делает то же, что и @code{upcase}.
 
 @c When @var{string-or-char} is a character, this function does the same
 @c thing as @code{upcase}.
