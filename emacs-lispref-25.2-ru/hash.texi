@@ -3,287 +3,500 @@
 @c Copyright (C) 1999, 2001-2017 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Hash Tables
-@chapter Hash Tables
+@chapter Хеш таблицы
 @cindex hash tables
 @cindex lookup tables
 
-  A hash table is a very fast kind of lookup table, somewhat like an
-alist (@pxref{Association Lists}) in that it maps keys to
-corresponding values.  It differs from an alist in these ways:
+  Хеш таблицы (hash table) представляют собой очень быстрые таблицы поиска,
+похожие на ассоциативные списки (@pxref{Association Lists}) тем, что
+хранят соответствие ключей и значений. Они отличаются от ассоциативныех
+списков тремя вещами:
+
+@c   A hash table is a very fast kind of lookup table, somewhat like an
+@c alist (@pxref{Association Lists}) in that it maps keys to
+@c corresponding values.  It differs from an alist in these ways:
 
 @itemize @bullet
 @item
-Lookup in a hash table is extremely fast for large tables---in fact, the
-time required is essentially @emph{independent} of how many elements are
-stored in the table.  For smaller tables (a few tens of elements)
-alists may still be faster because hash tables have a more-or-less
-constant overhead.
+Поиск в хеш таблицах очень быстр для больших таблиц---фактически,
+время доступа существенно @emph{не зависит} от количества элементов
+в таблице. Для маленьких таблиц (несколько десятков элементов)
+ассоциативные списки могут быть быстрее, потому что хеш таблицы
+имеют более менее постоянные накладные расходы.
+
+@c Lookup in a hash table is extremely fast for large tables---in fact, the
+@c time required is essentially @emph{independent} of how many elements are
+@c stored in the table.  For smaller tables (a few tens of elements)
+@c alists may still be faster because hash tables have a more-or-less
+@c constant overhead.
 
 @item
-The correspondences in a hash table are in no particular order.
+Соответствия в хеш таблице не упорядочены.
+
+@c The correspondences in a hash table are in no particular order.
 
 @item
-There is no way to share structure between two hash tables,
-the way two alists can share a common tail.
+Нет способа разделять данные между двумя хеш таблицами,
+в то время как два ассоциативных списка могут иметь общий хвост.
+(имеются ввиду часть структуры таблицы).
+
+@c There is no way to share structure between two hash tables,
+@c the way two alists can share a common tail.
 @end itemize
 
-  Emacs Lisp provides a general-purpose hash table data type, along
-with a series of functions for operating on them.  Hash tables have a
-special printed representation, which consists of @samp{#s} followed
-by a list specifying the hash table properties and contents.
+  Emacs Lisp предоставляет тип общий тип хеш таблиц,
+вместе с набором функций для работы с ними. Хеш таблицы
+имеют специальную печатную форму состоящую из @samp{#s}
+и списка определяющего свойства и значения хеш таблицы.
 @xref{Creating Hash}.
-(Hash notation, the initial @samp{#} character used in the printed
-representations of objects with no read representation, has nothing to
-do with hash tables.  @xref{Printed Representation}.)
+(хеш запись, начинающаяся с @samp{#} используется в печатном
+представлении объектов, которые не имеют синтаксиса чтения, не
+имеет ничего общего с хеш таблицами.)
+
+@c   Emacs Lisp provides a general-purpose hash table data type, along
+@c with a series of functions for operating on them.  Hash tables have a
+@c special printed representation, which consists of @samp{#s} followed
+@c by a list specifying the hash table properties and contents.
+@c @xref{Creating Hash}.
+@c (Hash notation, the initial @samp{#} character used in the printed
+@c representations of objects with no read representation, has nothing to
+@c do with hash tables.  @xref{Printed Representation}.)
+
+  Obarrays является видом хеш таблиц, отличаются они типов объектов
+и используется только для хранения интернированных символов
+(@pxref{Creating Symbols}).
 
   Obarrays are also a kind of hash table, but they are a different type
 of object and are used only for recording interned symbols
-(@pxref{Creating Symbols}).
+@c (@pxref{Creating Symbols}).
 
 @menu
-* Creating Hash::       Functions to create hash tables.
-* Hash Access::         Reading and writing the hash table contents.
-* Defining Hash::       Defining new comparison methods.
-* Other Hash::          Miscellaneous.
+* Creating Hash::       Функции для создания хеш таблиц.
+* Hash Access::         Чтение и запись значений в хеш таблицы.
+* Defining Hash::       Определение нового метода сравнения.
+* Other Hash::          Прочее.
 @end menu
 
 @node Creating Hash
-@section Creating Hash Tables
+@section Создание хеш таблиц
 @cindex creating hash tables
 
-  The principal function for creating a hash table is
-@code{make-hash-table}.
+  Основная функция для создания хеш таблиц @code{make-hash-table}.
+
+@c   The principal function for creating a hash table is
+@c @code{make-hash-table}.
 
 @defun make-hash-table &rest keyword-args
-This function creates a new hash table according to the specified
-arguments.  The arguments should consist of alternating keywords
-(particular symbols recognized specially) and values corresponding to
-them.
+Функция создает новую хеш таблицу в соответствии с заданными аргументами.
+Аргументы должны чередоваться ключевыми словами (определенные
+символы считывающиеся особых образом) и значений соответствующим этим
+словам.
 
-Several keywords make sense in @code{make-hash-table}, but the only two
-that you really need to know about are @code{:test} and @code{:weakness}.
+@c This function creates a new hash table according to the specified
+@c arguments.  The arguments should consist of alternating keywords
+@c (particular symbols recognized specially) and values corresponding to
+@c them.
+
+Некоторые ключевые слова важны в @code{make-hash-table}, но реально
+важно знать только два @code{:test} и @code{:weakness}.
+
+@c Several keywords make sense in @code{make-hash-table}, but the only two
+@c that you really need to know about are @code{:test} and @code{:weakness}.
 
 @table @code
 @item :test @var{test}
-This specifies the method of key lookup for this hash table.  The
-default is @code{eql}; @code{eq} and @code{equal} are other
-alternatives:
+Определяет метод поиска ключа в хеш таблице. Значение по умолчанию
+@code{eql} (так же можно использовать например @code{eq} и @code{equal}).
+
+@c This specifies the method of key lookup for this hash table.  The
+@c default is @code{eql}; @code{eq} and @code{equal} are other
+@c alternatives:
 
 @table @code
 @item eql
-Keys which are numbers are the same if they are @code{equal}, that
-is, if they are equal in value and either both are integers or both
-are floating point; otherwise, two distinct objects are never
-the same.
+Если ключи числа то они равны, если они @code{equal}, то есть,
+если равны значения и они оба целые или оба с плавающей точкой,
+иначе два разных объекта не равны.
+
+@c Keys which are numbers are the same if they are @code{equal}, that
+@c is, if they are equal in value and either both are integers or both
+@c are floating point; otherwise, two distinct objects are never
+@c the same.
 
 @item eq
-Any two distinct Lisp objects are different as keys.
+Два разных объекта не равны.
+
+@c Any two distinct Lisp objects are different as keys.
 
 @item equal
-Two Lisp objects are the same, as keys, if they are equal
-according to @code{equal}.
+Два объекта равны как ключи, если они @code{equal}.
+
+@c Two Lisp objects are the same, as keys, if they are equal
+@c according to @code{equal}.
 @end table
 
-You can use @code{define-hash-table-test} (@pxref{Defining Hash}) to
-define additional possibilities for @var{test}.
+Можно использовать @code{define-hash-table-test} (@pxref{Defining Hash})
+для определения дополнительных возможных @var{test} значений.
+
+@c You can use @code{define-hash-table-test} (@pxref{Defining Hash}) to
+@c define additional possibilities for @var{test}.
 
 @item :weakness @var{weak}
-The weakness of a hash table specifies whether the presence of a key or
-value in the hash table preserves it from garbage collection.
+Слабость хеш таблицы определяет наличие ключа или значения в хеш таблице
+сохранятся от сборщика мусора.
 
-The value, @var{weak}, must be one of @code{nil}, @code{key},
-@code{value}, @code{key-or-value}, @code{key-and-value}, or @code{t}
-which is an alias for @code{key-and-value}.  If @var{weak} is @code{key}
-then the hash table does not prevent its keys from being collected as
-garbage (if they are not referenced anywhere else); if a particular key
-does get collected, the corresponding association is removed from the
-hash table.
+@c The weakness of a hash table specifies whether the presence of a key or
+@c value in the hash table preserves it from garbage collection.
 
-If @var{weak} is @code{value}, then the hash table does not prevent
-values from being collected as garbage (if they are not referenced
-anywhere else); if a particular value does get collected, the
-corresponding association is removed from the hash table.
+Значение, @var{weak}, должно быть одним из значений
+@code{nil}, @code{key}, @code{value}, @code{key-or-value}, @code{key-and-value},
+или @code{t} -- синоним для @code{key-and-value}. Если
+@var{weak} @code{key}, тогда хеш таблицы не препятствует тому, чтобы
+ключи были собраны как мусор (если на них больше никто не ссылается),
+если определенный ключ был удален сборщиком, соответствующая ассоциация будет
+удалена из хеш таблицы.
 
-If @var{weak} is @code{key-and-value} or @code{t}, both the key and
-the value must be live in order to preserve the association.  Thus,
-the hash table does not protect either keys or values from garbage
-collection; if either one is collected as garbage, that removes the
-association.
+@c The value, @var{weak}, must be one of @code{nil}, @code{key},
+@c @code{value}, @code{key-or-value}, @code{key-and-value}, or @code{t}
+@c which is an alias for @code{key-and-value}.  If @var{weak} is @code{key}
+@c then the hash table does not prevent its keys from being collected as
+@c garbage (if they are not referenced anywhere else); if a particular key
+@c does get collected, the corresponding association is removed from the
+@c hash table.
 
-If @var{weak} is @code{key-or-value}, either the key or
-the value can preserve the association.  Thus, associations are
-removed from the hash table when both their key and value would be
-collected as garbage (if not for references from weak hash tables).
+Если @var{weak} @code{value}, тогда хеш таблица разрешат сборщику мусора
+собирать значения (если на них больше нигде нет ссылок), если определенное
+значение будет удалено сборщиком, соответствующая ассоциация будет
+удалена из хеш таблицы.
 
-The default for @var{weak} is @code{nil}, so that all keys and values
-referenced in the hash table are preserved from garbage collection.
+@c If @var{weak} is @code{value}, then the hash table does not prevent
+@c values from being collected as garbage (if they are not referenced
+@c anywhere else); if a particular value does get collected, the
+@c corresponding association is removed from the hash table.
+
+Если @var{weak} @code{key-and-value} или @code{t}, ключи и значения
+могут иметь связи, чтобы сохранять ассоциацию. Таким образом, хеш
+таблица не защищает ключи и значения от сборщика мусора, если ключ
+или значение были удалены сборщиком, ассоциация удаляется из
+хеш таблицы.
+
+@c If @var{weak} is @code{key-and-value} or @code{t}, both the key and
+@c the value must be live in order to preserve the association.  Thus,
+@c the hash table does not protect either keys or values from garbage
+@c collection; if either one is collected as garbage, that removes the
+@c association.
+
+Если @var{weak} @code{key-or-value}, ключ или значение будет
+сохранять ассоциацию, то есть если есть ссылка хотя на одного из них.
+Таким образом, ассоциация будет удалена, если и ключ и значение
+будет удалены сборщиком мусора (в случае если на них не будет
+ссылок вне хеш таблицы).
+
+@c If @var{weak} is @code{key-or-value}, either the key or
+@c the value can preserve the association.  Thus, associations are
+@c removed from the hash table when both their key and value would be
+@c collected as garbage (if not for references from weak hash tables).
+
+Если @var{weak} @code{nil}, ключи и значения хранящиеся в хеш таблицы
+защищены от сборщика мусора.
+
+@c The default for @var{weak} is @code{nil}, so that all keys and values
+@c referenced in the hash table are preserved from garbage collection.
 
 @item :size @var{size}
-This specifies a hint for how many associations you plan to store in the
-hash table.  If you know the approximate number, you can make things a
-little more efficient by specifying it this way.  If you specify too
-small a size, the hash table will grow automatically when necessary, but
-doing that takes some extra time.
+Данное значение является подсказкой о том сколько значений планируется хранить
+в хеш таблице. Если известно приблизительное число, можно сделать
+работу таблицу немного более эффективной задав это значение. Если задать
+слишком маленький размер, хеш таблица автоматически расширится когда
+в этом возникнет необходимость, но это займет дополнительное время.
 
-The default size is 65.
+@c This specifies a hint for how many associations you plan to store in the
+@c hash table.  If you know the approximate number, you can make things a
+@c little more efficient by specifying it this way.  If you specify too
+@c small a size, the hash table will grow automatically when necessary, but
+@c doing that takes some extra time.
+
+Значение по умолчанию 65.
+@c The default size is 65.
 
 @item :rehash-size @var{rehash-size}
-When you add an association to a hash table and the table is full,
-it grows automatically.  This value specifies how to make the hash table
-larger, at that time.
+При добавлении ассоциаций в хеш таблицу и таблица полная, она автоматически
+расширяется. Данное значение определяет, как таблица будет расширяться.
 
-If @var{rehash-size} is an integer, it should be positive, and the hash
-table grows by adding that much to the nominal size.  If
-@var{rehash-size} is floating point, it had better be greater
-than 1, and the hash table grows by multiplying the old size by that
-number.
+@c When you add an association to a hash table and the table is full,
+@c it grows automatically.  This value specifies how to make the hash table
+@c larger, at that time.
 
-The default value is 1.5.
+Если @var{rehash-size} целое число, оно должно быть положительным,
+тогда хеш таблица будет расширена на это количество элементов.
+Если @var{rehash-size} число с плавающей точкой, оно должно быть
+больше 1, и размер хеш таблицы будет увеличен до размера равного
+произведению текущего размера на это число.
+
+@c If @var{rehash-size} is an integer, it should be positive, and the hash
+@c table grows by adding that much to the nominal size.  If
+@c @var{rehash-size} is floating point, it had better be greater
+@c than 1, and the hash table grows by multiplying the old size by that
+@c number.
+
+Значение по умолчанию 1.5.
+
+@c The default value is 1.5.
 
 @item :rehash-threshold @var{threshold}
-This specifies the criterion for when the hash table is full (so
-it should be made larger).  The value, @var{threshold}, should be a
-positive floating-point number, no greater than 1.  The hash table is
-full whenever the actual number of entries exceeds this fraction
-of the nominal size.  The default for @var{threshold} is 0.8.
+Данный параметр определяет критерий того, что хеш таблица заполнена (и
+ее нужно увеличить). Значение @var{threshold} должно быть числом
+с плавающей точкой не больше 1. Хеш таблица считается полной когда,
+количество элементов превысит данное значения относительно всего размера
+таблицы. (прим. current-size/full-size > threshold).
+Значение @var{threshold} по умолчанию 0.8.
+
+@c This specifies the criterion for when the hash table is full (so
+@c it should be made larger).  The value, @var{threshold}, should be a
+@c positive floating-point number, no greater than 1.  The hash table is
+@c full whenever the actual number of entries exceeds this fraction
+@c of the nominal size.  The default for @var{threshold} is 0.8.
 @end table
 @end defun
 
-You can also create a new hash table using the printed representation
-for hash tables.  The Lisp reader can read this printed
-representation, provided each element in the specified hash table has
-a valid read syntax (@pxref{Printed Representation}).  For instance,
-the following specifies a new hash table containing the keys
-@code{key1} and @code{key2} (both symbols) associated with @code{val1}
-(a symbol) and @code{300} (a number) respectively.
+Можно так же создать новую хеш таблицу используя печатное представление
+хеш таблиц. Lisp считыватель может считать такое представление,
+при условии, что каждый элемент в хеш таблице имеет корректный
+синтаксис чтения (@pxref{Printed Representation}). Например,
+ниже определяется хеш таблица с ключами @code{key1} и @code{key2}
+(обои символы) и значениями @code{val1} (символ) и @code{300} (число)
+соответственно.
+
+@c You can also create a new hash table using the printed representation
+@c for hash tables.  The Lisp reader can read this printed
+@c representation, provided each element in the specified hash table has
+@c a valid read syntax (@pxref{Printed Representation}).  For instance,
+@c the following specifies a new hash table containing the keys
+@c @code{key1} and @code{key2} (both symbols) associated with @code{val1}
+@c (a symbol) and @code{300} (a number) respectively.
 
 @example
 #s(hash-table size 30 data (key1 val1 key2 300))
 @end example
 
 @noindent
-The printed representation for a hash table consists of @samp{#s}
-followed by a list beginning with @samp{hash-table}.  The rest of the
-list should consist of zero or more property-value pairs specifying
-the hash table's properties and initial contents.  The properties and
-values are read literally.  Valid property names are @code{size},
+Печатное представление хеш таблиц состоит из @samp{#s} и
+списком начинающимся с @samp{hash-table}. Остальная часть
+списка должна состоять и нуля или более пар свойство-значение
+определяющих свойства и значения хеш таблицы. Свойства и значения
+считываются буквально. Корректные имена свойств
+@code{size},
 @code{test}, @code{weakness}, @code{rehash-size},
-@code{rehash-threshold}, and @code{data}.  The @code{data} property
-should be a list of key-value pairs for the initial contents; the
-other properties have the same meanings as the matching
-@code{make-hash-table} keywords (@code{:size}, @code{:test}, etc.),
-described above.
+@code{rehash-threshold}, и @code{data}. Свойство @code{data} должно
+быть списком пар ключ-значение, остальные свойства имеют те же значения
+что ключевые слова @code{make-hash-table}  (@code{:size}, @code{:test} и т.д.),
+описанные выше.
 
-Note that you cannot specify a hash table whose initial contents
-include objects that have no read syntax, such as buffers and frames.
-Such objects may be added to the hash table after it is created.
+@c The printed representation for a hash table consists of @samp{#s}
+@c followed by a list beginning with @samp{hash-table}.  The rest of the
+@c list should consist of zero or more property-value pairs specifying
+@c the hash table's properties and initial contents.  The properties and
+@c values are read literally.  Valid property names are @code{size},
+@c @code{test}, @code{weakness}, @code{rehash-size},
+@c @code{rehash-threshold}, and @code{data}.  The @code{data} property
+@c should be a list of key-value pairs for the initial contents; the
+@c other properties have the same meanings as the matching
+@c @code{make-hash-table} keywords (@code{:size}, @code{:test}, etc.),
+@c described above.
+
+Стоит отметить, что не получится определить хеш таблицу в которой
+в качестве начальных значений есть объекты не имеющие синтаксиса чтения,
+такие как например буферы или фреймы. Такие объекты могут быть
+добавлены в хеш таблицу только после создания хеш таблицы.
+
+@c Note that you cannot specify a hash table whose initial contents
+@c include objects that have no read syntax, such as buffers and frames.
+@c Such objects may be added to the hash table after it is created.
 
 @node Hash Access
-@section Hash Table Access
+@section Доступ к элементами хеш таблицы
 @cindex accessing hash tables
 @cindex hash table access
 
-  This section describes the functions for accessing and storing
-associations in a hash table.  In general, any Lisp object can be used
-as a hash key, unless the comparison method imposes limits.  Any Lisp
-object can also be used as the value.
+  Данный раздел описывает функции для получения доступа к элементам
+хеш таблиц или сохранения в них ассоциаций. В общем, любой Lisp объект
+может быть использован как ключ, если метод сравнения позволяет.
+Любой Lisp объект так же может быть значением в хеш таблице.
+
+@c   This section describes the functions for accessing and storing
+@c associations in a hash table.  In general, any Lisp object can be used
+@c as a hash key, unless the comparison method imposes limits.  Any Lisp
+@c object can also be used as the value.
 
 @defun gethash key table &optional default
-This function looks up @var{key} in @var{table}, and returns its
-associated @var{value}---or @var{default}, if @var{key} has no
-association in @var{table}.
+Функция ищет @var{key} в @var{table} и возвращает его ассоциацию
+@var{value} --- или @var{default}, если @var{key} не имеет
+ассоциации в @var{table}.
+
+@c This function looks up @var{key} in @var{table}, and returns its
+@c associated @var{value}---or @var{default}, if @var{key} has no
+@c association in @var{table}.
 @end defun
 
 @defun puthash key value table
-This function enters an association for @var{key} in @var{table}, with
-value @var{value}.  If @var{key} already has an association in
-@var{table}, @var{value} replaces the old associated value.
+Данная функция задает ассоциацию для ключа @var{key} и значения @var{value}
+в @var{table}. Если @var{key} уже есть в @var{table}, @var{value}
+заменяет старое значение.
+
+@c This function enters an association for @var{key} in @var{table}, with
+@c value @var{value}.  If @var{key} already has an association in
+@c @var{table}, @var{value} replaces the old associated value.
 @end defun
 
 @defun remhash key table
-This function removes the association for @var{key} from @var{table}, if
-there is one.  If @var{key} has no association, @code{remhash} does
-nothing.
+Данная функция удаляет ассоциацию связанную с @var{key} из @var{table},
+если она есть. Если ассоциации для @var{key} нет, ничего не делается.
 
-@b{Common Lisp note:} In Common Lisp, @code{remhash} returns
-non-@code{nil} if it actually removed an association and @code{nil}
-otherwise.  In Emacs Lisp, @code{remhash} always returns @code{nil}.
+@c This function removes the association for @var{key} from @var{table}, if
+@c there is one.  If @var{key} has no association, @code{remhash} does
+@c nothing.
+
+@b{Common Lisp note:} В Common Lisp @code{remhash} возвращает
+не-@code{nil}, если ассоциация была удалена и @code{nil}
+если нет. В Emacs Lisp данная функция всегда возвращает @code{nil}.
+
+@c @b{Common Lisp note:} In Common Lisp, @code{remhash} returns
+@c non-@code{nil} if it actually removed an association and @code{nil}
+@c otherwise.  In Emacs Lisp, @code{remhash} always returns @code{nil}.
 @end defun
 
 @defun clrhash table
-This function removes all the associations from hash table @var{table},
-so that it becomes empty.  This is also called @dfn{clearing} the hash
-table.
+Функция удаляет все ассоциации из хеш таблицы @var{table}, и она становится
+пустой. Это называется @dfn{очисткой} (@dfn{clearing}) хеш таблицы.
 
-@b{Common Lisp note:} In Common Lisp, @code{clrhash} returns the empty
-@var{table}.  In Emacs Lisp, it returns @code{nil}.
+@c This function removes all the associations from hash table @var{table},
+@c so that it becomes empty.  This is also called @dfn{clearing} the hash
+@c table.
+@b{Common Lisp note:} В Comon Lisp, @code{clrhash} возвращает пустую
+таблицу @var{table}. В Emacs Lisp, функция возвращает @code{nil}.
+
+@c @b{Common Lisp note:} In Common Lisp, @code{clrhash} returns the empty
+@c @var{table}.  In Emacs Lisp, it returns @code{nil}.
 @end defun
 
 @defun maphash function table
 @anchor{Definition of maphash}
-This function calls @var{function} once for each of the associations in
-@var{table}.  The function @var{function} should accept two
-arguments---a @var{key} listed in @var{table}, and its associated
-@var{value}.  @code{maphash} returns @code{nil}.
+Функция вызывает @var{function} для каждой ассоциации в @var{table}.
+Функция @var{function} должна принимать два аргумента---@var{key} и @var{value}
+ассоциации. @code{maphash} возвращает @code{nil}.
+
+@c This function calls @var{function} once for each of the associations in
+@c @var{table}.  The function @var{function} should accept two
+@c arguments---a @var{key} listed in @var{table}, and its associated
+@c @var{value}.  @code{maphash} returns @code{nil}.
 @end defun
 
 @node Defining Hash
-@section Defining Hash Comparisons
+@section Определение хеш сравнения
 @cindex hash code
 @cindex define hash comparisons
 
-  You can define new methods of key lookup by means of
-@code{define-hash-table-test}.  In order to use this feature, you need
-to understand how hash tables work, and what a @dfn{hash code} means.
+  Можно задать новые методы сравнения ключей
+используя @code{define-hash-table-test}. Чтобы использовать
+эту возможность нужно, понимать как хеш таблицы работают и что
+означает @dfn{хеш код} (@dfn{hash code}).
+ 
+@c   You can define new methods of key lookup by means of
+@c @code{define-hash-table-test}.  In order to use this feature, you need
+@c to understand how hash tables work, and what a @dfn{hash code} means.
 
-  You can think of a hash table conceptually as a large array of many
-slots, each capable of holding one association.  To look up a key,
-@code{gethash} first computes an integer, the hash code, from the key.
-It reduces this integer modulo the length of the array, to produce an
-index in the array.  Then it looks in that slot, and if necessary in
-other nearby slots, to see if it has found the key being sought.
+  Можно представить хеш таблицу как большой массив со слотами, каждый
+из которых может хранить одну ассоциацию. Для поиска ключа, @code{gethash}
+сначала вычисляет целое число, хеш код, для ключа. Значение берется по
+модулю длины массива, и таким образом определяется индекс в массиве.
+Затем смотрится найденный слот и возможно в соседних слотах, чтобы
+понять что найден требуемый ключ.
 
-  Thus, to define a new method of key lookup, you need to specify both a
-function to compute the hash code from a key, and a function to compare
-two keys directly.
+@c   You can think of a hash table conceptually as a large array of many
+@c slots, each capable of holding one association.  To look up a key,
+@c @code{gethash} first computes an integer, the hash code, from the key.
+@c It reduces this integer modulo the length of the array, to produce an
+@c index in the array.  Then it looks in that slot, and if necessary in
+@c other nearby slots, to see if it has found the key being sought.
+
+  Таким образом, чтобы определить новый метод поиска, нужно определить
+функцию вычисления хеш кода для ключа, и функцию сравнения двух ключей напрямую.
+
+@c   Thus, to define a new method of key lookup, you need to specify both a
+@c function to compute the hash code from a key, and a function to compare
+@c two keys directly.
 
 @defun define-hash-table-test name test-fn hash-fn
-This function defines a new hash table test, named @var{name}.
+Данная функция определят новую метод поиска в хеш таблице с именем
+@var{name}.
 
-After defining @var{name} in this way, you can use it as the @var{test}
-argument in @code{make-hash-table}.  When you do that, the hash table
-will use @var{test-fn} to compare key values, and @var{hash-fn} to compute
-a hash code from a key value.
+@c This function defines a new hash table test, named @var{name}.
 
-The function @var{test-fn} should accept two arguments, two keys, and
-return non-@code{nil} if they are considered the same.
+После определения  @var{name}, можно использовать его в качестве значения
+ключа @var{test} в @code{make-hash-table}. В этом случае хеш таблица
+будет использовать @var{test-fn} для сравнения ключей, и @var{hash-fn} для
+вычисления хеш кода для ключа.
 
-The function @var{hash-fn} should accept one argument, a key, and return
-an integer that is the hash code of that key.  For good results, the
-function should use the whole range of integers for hash codes,
-including negative integers.
+@c After defining @var{name} in this way, you can use it as the @var{test}
+@c argument in @code{make-hash-table}.  When you do that, the hash table
+@c will use @var{test-fn} to compare key values, and @var{hash-fn} to compute
+@c a hash code from a key value.
 
-The specified functions are stored in the property list of @var{name}
-under the property @code{hash-table-test}; the property value's form is
-@code{(@var{test-fn} @var{hash-fn})}.
+Функция @var{test-fn} должна принимать два аргумента, два ключа, и возвращать
+не-@code{nil} если они считаются равными.
+
+@c The function @var{test-fn} should accept two arguments, two keys, and
+@c return non-@code{nil} if they are considered the same.
+
+Функция @var{hash-fn} должна принимать один аргумент, ключ, и возвращать
+целое число, являющееся хеш кодом этого ключа. Для хороших
+результатов, функция должна использовать весь диапазон целых для
+хеш кодов, в том числе и отрицательные.
+
+@c The function @var{hash-fn} should accept one argument, a key, and return
+@c an integer that is the hash code of that key.  For good results, the
+@c function should use the whole range of integers for hash codes,
+@c including negative integers.
+
+Указанные функции сохраняются в список свойств @var{name} для свойства
+@code{hash-table-test}; значение свойства имеет форму @code{(@var{test-fn} @var{hash-fn})}.
+
+@c The specified functions are stored in the property list of @var{name}
+@c under the property @code{hash-table-test}; the property value's form is
+@c @code{(@var{test-fn} @var{hash-fn})}.
 @end defun
 
 @defun sxhash obj
-This function returns a hash code for Lisp object @var{obj}.
-This is an integer which reflects the contents of @var{obj}
-and the other Lisp objects it points to.
+Функция возвращает хеш код Lisp объекта @var{obj}.
+Это целое число отражающее содержимое @var{obj} и объектов
+на которые он ссылается.
 
-If two objects @var{obj1} and @var{obj2} are equal, then @code{(sxhash
-@var{obj1})} and @code{(sxhash @var{obj2})} are the same integer.
+@c This function returns a hash code for Lisp object @var{obj}.
+@c This is an integer which reflects the contents of @var{obj}
+@c and the other Lisp objects it points to.
 
-If the two objects are not equal, the values returned by @code{sxhash}
-are usually different, but not always; once in a rare while, by luck,
-you will encounter two distinct-looking objects that give the same
-result from @code{sxhash}.
+Если два объекта @var{obj1} и @var{obj2} равны, тогда
+@code{(sxhash @var{obj1})} и @code{(sxhash @var{obj2})} одно и
+тоже число.
+
+@c If two objects @var{obj1} and @var{obj2} are equal, then @code{(sxhash
+@c @var{obj1})} and @code{(sxhash @var{obj2})} are the same integer.
+
+Если два объекта не равны, значение возвращаемые @code{sxhash}
+обычно разные, но не всегда; время от времени, можно встретить
+два разных объекта для которых значения @code{sxhash} равны.
+
+@c If the two objects are not equal, the values returned by @code{sxhash}
+@c are usually different, but not always; once in a rare while, by luck,
+@c you will encounter two distinct-looking objects that give the same
+@c result from @code{sxhash}.
 @end defun
 
-  This example creates a hash table whose keys are strings that are
-compared case-insensitively.
+  Данный пример, создает хеш таблицу, со строковыми ключами, которые
+сравниваются без учета регистра.
+
+@c   This example creates a hash table whose keys are strings that are
+@c compared case-insensitively.
 
 @example
 (defun case-fold-string= (a b)
@@ -297,9 +510,14 @@ compared case-insensitively.
 (make-hash-table :test 'case-fold)
 @end example
 
-  Here is how you could define a hash table test equivalent to the
-predefined test value @code{equal}.  The keys can be any Lisp object,
-and equal-looking objects are considered the same key.
+  Ниже пример определения метода тестирования для хеш
+таблицы, эквивалентный предопределенному методу @code{equal}.
+Ключами могут быть любые Lisp объекты, и выглядящие одинаково
+объекты будут рассматриваться равными ключами.
+
+@c   Here is how you could define a hash table test equivalent to the
+@c predefined test value @code{equal}.  The keys can be any Lisp object,
+@c and equal-looking objects are considered the same key.
 
 @example
 (define-hash-table-test 'contents-hash 'equal 'sxhash)
@@ -308,42 +526,61 @@ and equal-looking objects are considered the same key.
 @end example
 
 @node Other Hash
-@section Other Hash Table Functions
+@section Разные функции для работы с хеш таблицами
 
-  Here are some other functions for working with hash tables.
+
+  Еще несколько функций для работы с хеш таблицами.
+  @c Here are some other functions for working with hash tables.
 
 @defun hash-table-p table
-This returns non-@code{nil} if @var{table} is a hash table object.
+Функция возвращает не-@code{nil} если @var{table} является хеш таблицей.
+
+@c This returns non-@code{nil} if @var{table} is a hash table object.
 @end defun
 
 @defun copy-hash-table table
-This function creates and returns a copy of @var{table}.  Only the table
-itself is copied---the keys and values are shared.
+Функция создает и возвращает копию @var{table}. Копируется только
+таблица---ключи и значения будут общими.
+
+@c This function creates and returns a copy of @var{table}.  Only the table
+@c itself is copied---the keys and values are shared.
 @end defun
 
 @defun hash-table-count table
-This function returns the actual number of entries in @var{table}.
+Функция возвращает текущее количество элементов в @var{table}.
+@c This function returns the actual number of entries in @var{table}.
 @end defun
 
 @defun hash-table-test table
-This returns the @var{test} value that was given when @var{table} was
-created, to specify how to hash and compare keys.  See
-@code{make-hash-table} (@pxref{Creating Hash}).
+Функция возвращает значение @var{test}, которое было задано при
+создании @var{table}. См. @code{make-hash-table}(@pxref{Creating Hash}).
+
+@c This returns the @var{test} value that was given when @var{table} was
+@c created, to specify how to hash and compare keys.  See
+@c @code{make-hash-table} (@pxref{Creating Hash}).
 @end defun
 
 @defun hash-table-weakness table
-This function returns the @var{weak} value that was specified for hash
-table @var{table}.
+Функция возвращает значение @var{weak}, определенное при создании.
+
+@c This function returns the @var{weak} value that was specified for hash
+@c table @var{table}.
 @end defun
 
 @defun hash-table-rehash-size table
-This returns the rehash size of @var{table}.
+Функция возвращает rehash size хеш таблицы @var{table}.
+
+@c This returns the rehash size of @var{table}.
 @end defun
 
 @defun hash-table-rehash-threshold table
-This returns the rehash threshold of @var{table}.
+Функция возвращает rehash threshold хеш таблицы @var{table}.
+
+@c This returns the rehash threshold of @var{table}.
 @end defun
 
 @defun hash-table-size table
-This returns the current nominal size of @var{table}.
+Функция возвращает текущий размер(size) хеш таблицы @var{table}.
+ 
+@c This returns the current nominal size of @var{table}.
 @end defun
