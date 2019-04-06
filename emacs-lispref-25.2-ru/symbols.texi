@@ -4,107 +4,174 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Symbols
-@chapter Symbols
+@chapter Символы
 @cindex symbol
 
-  A @dfn{symbol} is an object with a unique name.  This chapter
-describes symbols, their components, their property lists, and how they
-are created and interned.  Separate chapters describe the use of symbols
-as variables and as function names; see @ref{Variables}, and
-@ref{Functions}.  For the precise read syntax for symbols, see
-@ref{Symbol Type}.
+  @dfn{Символ} (@dfn{symbol}) это объект с уникальным именем. Данная
+глава описывает символы, их компоненты, списки свойств, создание и
+интернирование символов. Отдельные главы описывают использование
+символов в качестве переменных и функций, см. @ref{Variables} и
+@ref{Functions}. Определение синтаксиса чтения см. в @ref{Symbol Type}.
 
-  You can test whether an arbitrary Lisp object is a symbol with
-@code{symbolp}:
+@c   A @dfn{symbol} is an object with a unique name.  This chapter
+@c describes symbols, their components, their property lists, and how they
+@c are created and interned.  Separate chapters describe the use of symbols
+@c as variables and as function names; see @ref{Variables}, and
+@c @ref{Functions}.  For the precise read syntax for symbols, see
+@c @ref{Symbol Type}.
+
+  Можно проверить является ли произвольный Lisp объект символом
+с помощью @code{symbolp}:
+
+@c   You can test whether an arbitrary Lisp object is a symbol with
+@c @code{symbolp}:
 
 @defun symbolp object
-This function returns @code{t} if @var{object} is a symbol, @code{nil}
-otherwise.
+Функция возвращает @code{t}, если @var{object} символ, и @code{nil}
+если нет.
+
+@c This function returns @code{t} if @var{object} is a symbol, @code{nil}
+@c otherwise.
 @end defun
 
 @menu
-* Symbol Components::        Symbols have names, values, function definitions
-                               and property lists.
-* Definitions::              A definition says how a symbol will be used.
-* Creating Symbols::         How symbols are kept unique.
-* Symbol Properties::        Each symbol has a property list
-                               for recording miscellaneous information.
+* Symbol Components::        Символы имеют имя, значения, определение функции,
+                             и список свойств.
+* Definitions::              Определение задает то, как будет использоваться символ.
+* Creating Symbols::         Как символы сохраняют уникальность.
+* Symbol Properties::        Каждый символ имеет список свойств для различной информации.
 @end menu
 
 @node Symbol Components
-@section Symbol Components
+@section Компоненты символа
 @cindex symbol components
 
-  Each symbol has four components (or ``cells''), each of which
-references another object:
+  Каждый символ состоит из четырех компонентов (или ``ячеек'' ``cells''),
+ссылающиеся на разные объекты:
+
+@c   Each symbol has four components (or ``cells''), each of which
+@c references another object:
 
 @table @asis
 @item Print name
 @cindex print name cell
-The symbol's name.
+Имя символа.
+@c The symbol's name.
 
 @item Value
 @cindex value cell
-The symbol's current value as a variable.
+Текущее значение символа как переменной.
+
+@c The symbol's current value as a variable.
 
 @item Function
 @cindex function cell
-The symbol's function definition.  It can also hold a symbol, a
-keymap, or a keyboard macro.
+Определение функции символа. Так же здесь может хранится
+символ, keymap (раскладка), или клавиатурных макрос.
+
+@c The symbol's function definition.  It can also hold a symbol, a
+@c keymap, or a keyboard macro.
 
 @item Property list
 @cindex property list cell
-The symbol's property list.
+Список свойств символа.
+@c The symbol's property list.
 @end table
 
 @noindent
-The print name cell always holds a string, and cannot be changed.
-Each of the other three cells can be set to any Lisp object.
+Ячейка с печатным именем всегда содержит строку и не может быть изменена.
+Другие три ячейки могут хранить любой Lisp объект.
 
-  The print name cell holds the string that is the name of a symbol.
-Since symbols are represented textually by their names, it is
-important not to have two symbols with the same name.  The Lisp reader
-ensures this: every time it reads a symbol, it looks for an existing
-symbol with the specified name before it creates a new one.  To get a
-symbol's name, use the function @code{symbol-name} (@pxref{Creating
-Symbols}).
+@c The print name cell always holds a string, and cannot be changed.
+@c Each of the other three cells can be set to any Lisp object.
 
-  The value cell holds a symbol's value as a variable, which is what
-you get if the symbol itself is evaluated as a Lisp expression.
-@xref{Variables}, for details about how values are set and retrieved,
-including complications such as @dfn{local bindings} and @dfn{scoping
-rules}.  Most symbols can have any Lisp object as a value, but certain
-special symbols have values that cannot be changed; these include
-@code{nil} and @code{t}, and any symbol whose name starts with
-@samp{:} (those are called @dfn{keywords}).  @xref{Constant
-Variables}.
+  Ячейка с печатным именем хранит строку, которая является именем символа.
+Так как символы в текстовом виде представляются по имени, важно чтобы
+не было двух символов с одинаковым именем. Данное требование
+гарантируется Lisp reader (считыватель): всегда когда считывается символ
+сначала делается проверка, что такого символа еще нет перед тем как
+создать новый. Для получения имени символа используется
+функция @code{symbol-name} (@pxref{Creating Symbols}).
 
-  The function cell holds a symbol's function definition.  Often, we
-refer to ``the function @code{foo}'' when we really mean the function
-stored in the function cell of @code{foo}; we make the distinction
-explicit only when necessary.  Typically, the function cell is used to
-hold a function (@pxref{Functions}) or a macro (@pxref{Macros}).
-However, it can also be used to hold a symbol (@pxref{Function
-Indirection}), keyboard macro (@pxref{Keyboard Macros}), keymap
-(@pxref{Keymaps}), or autoload object (@pxref{Autoloading}).  To get
-the contents of a symbol's function cell, use the function
-@code{symbol-function} (@pxref{Function Cells}).
+@c   The print name cell holds the string that is the name of a symbol.
+@c Since symbols are represented textually by their names, it is
+@c important not to have two symbols with the same name.  The Lisp reader
+@c ensures this: every time it reads a symbol, it looks for an existing
+@c symbol with the specified name before it creates a new one.  To get a
+@c symbol's name, use the function @code{symbol-name} (@pxref{Creating
+@c Symbols}).
 
-  The property list cell normally should hold a correctly formatted
-property list.  To get a symbol's property list, use the function
-@code{symbol-plist}.  @xref{Symbol Properties}.
+  Ячейка со значением хранить значение символа как переменной, которое
+представляет то, что будет получено если использовать(вычислить) символ в Lisp выражении.
+Для получения информации о получении и установки переменных, @dfn{локальных
+переменных} (@dfn{local binding}) и @dfn{правилам области видимости} (@dfn{sciping rules})
+@xref{Variables}. Большинство символов могут иметь любой Lisp объект в
+качестве значений, но некоторые специальные символы имеют значения,
+которые не могут быть изменены, такие как @code{nil}, @code{t} и любой
+символ чье имя начинается на @samp{:} (такие символы называются
+ключевыми словами). @xref{Constant Variables}.
 
-  The function cell or the value cell may be @dfn{void}, which means
-that the cell does not reference any object.  (This is not the same
-thing as holding the symbol @code{void}, nor the same as holding the
-symbol @code{nil}.)  Examining a function or value cell that is void
-results in an error, such as @samp{Symbol's value as variable is void}.
+@c   The value cell holds a symbol's value as a variable, which is what
+@c you get if the symbol itself is evaluated as a Lisp expression.
+@c @xref{Variables}, for details about how values are set and retrieved,
+@c including complications such as @dfn{local bindings} and @dfn{scoping
+@c rules}.  Most symbols can have any Lisp object as a value, but certain
+@c special symbols have values that cannot be changed; these include
+@c @code{nil} and @code{t}, and any symbol whose name starts with
+@c @samp{:} (those are called @dfn{keywords}).  @xref{Constant
+@c  Variables}.
 
-  Because each symbol has separate value and function cells, variables
-names and function names do not conflict.  For example, the symbol
-@code{buffer-file-name} has a value (the name of the file being
-visited in the current buffer) as well as a function definition (a
-primitive function that returns the name of the file):
+  Ячейка функции хранить определение функции. Как правило
+указывая ``функция @code{foo}'' подразумевает функция хранящаяся в
+ячейки функции символа @code{foo}, различие показывается, только
+если необходимо (прим. в данном тексте). Обычно, ячейка функции используется
+для хранения функции (@pxref{Functions}) или макроса (@pxref{Macros}).
+Но она может использоваться и для хранения символа (@pxref{Function
+Indirection}), объекта автозагрузки (@pxref{Autoloading}). Для получения
+содержимого ячейки функции используется функция @code{symbol-function}
+(@pxref{Function Cells}).
+
+@c   The function cell holds a symbol's function definition.  Often, we
+@c refer to ``the function @code{foo}'' when we really mean the function
+@c stored in the function cell of @code{foo}; we make the distinction
+@c explicit only when necessary.  Typically, the function cell is used to
+@c hold a function (@pxref{Functions}) or a macro (@pxref{Macros}).
+@c However, it can also be used to hold a symbol (@pxref{Function
+@c Indirection}), keyboard macro (@pxref{Keyboard Macros}), keymap
+@c (@pxref{Keymaps}), or autoload object (@pxref{Autoloading}).  To get
+@c the contents of a symbol's function cell, use the function
+@c @code{symbol-function} (@pxref{Function Cells}).
+
+  Ячейка со списком свойств должна хранить правильно отформатированный
+список свойств. Для получения списка свойств символа используется
+функция @code{symbol-plist}.  @xref{Symbol Properties}.
+
+@c   The property list cell normally should hold a correctly formatted
+@c property list.  To get a symbol's property list, use the function
+@c @code{symbol-plist}.  @xref{Symbol Properties}.
+
+  Ячейки функции и значения могут быть @dfn{void}, что означает, что
+ячейка ни на что не ссылается. (Это не одно и тоже, что хранить
+символ @code{void}, и не тоже что хранить символ @code{nil}.) Обращение
+к ячейки функции или значения которые void приводит к ошибке,
+такой как @samp{Symbol's value as variable is void}.
+
+@c   The function cell or the value cell may be @dfn{void}, which means
+@c that the cell does not reference any object.  (This is not the same
+@c thing as holding the symbol @code{void}, nor the same as holding the
+@c symbol @code{nil}.)  Examining a function or value cell that is void
+@c results in an error, such as @samp{Symbol's value as variable is void}.
+
+  Имена функций и переменных не конфликтуют потому, что каждый символ
+имеет ячейки значения и функции. Например, символ @code{buffer-file-name}
+имеет значение (имя файла с которым работает текущий буфер) и определение
+функции (базовая (primitive) функция которая возвращает имя файла):
+
+@c   Because each symbol has separate value and function cells, variables
+@c names and function names do not conflict.  For example, the symbol
+@c @code{buffer-file-name} has a value (the name of the file being
+@c visited in the current buffer) as well as a function definition (a
+@c primitive function that returns the name of the file):
 
 @example
 buffer-file-name
@@ -117,134 +184,254 @@ buffer-file-name
 @section Defining Symbols
 @cindex definitions of symbols
 
-  A @dfn{definition} is a special kind of Lisp expression that
-announces your intention to use a symbol in a particular way.  It
-typically specifies a value or meaning for the symbol for one kind of
-use, plus documentation for its meaning when used in this way.  Thus,
-when you define a symbol as a variable, you can supply an initial
-value for the variable, plus documentation for the variable.
+  @dfn{определение} (@dfn{definition}) это особый вид Lisp выражений
+в которых объявляется намерение использовать символ определенным образом.
+Обычно определяется значение или намерение использовать символ каким-то
+способом и документация описывающая смысл при использовании символа таким образом.
+Таким образом при определении символа как переменной, можно
+задать начальное значение для переменной, и документацию.
 
-  @code{defvar} and @code{defconst} are special forms that define a
-symbol as a @dfn{global variable}---a variable that can be accessed at
-any point in a Lisp program.  @xref{Variables}, for details about
-variables.  To define a customizable variable, use the
-@code{defcustom} macro, which also calls @code{defvar} as a subroutine
-(@pxref{Customization}).
+@c   A @dfn{definition} is a special kind of Lisp expression that
+@c announces your intention to use a symbol in a particular way.  It
+@c typically specifies a value or meaning for the symbol for one kind of
+@c use, plus documentation for its meaning when used in this way.  Thus,
+@c when you define a symbol as a variable, you can supply an initial
+@c value for the variable, plus documentation for the variable.
 
-  In principle, you can assign a variable value to any symbol with
-@code{setq}, whether not it has first been defined as a variable.
-However, you ought to write a variable definition for each global
-variable that you want to use; otherwise, your Lisp program may not
-act correctly if it is evaluated with lexical scoping enabled
+  @code{defvar} и @code{defconst} специальные формы которые
+определяют символы как @dfn{глобальные переменные} (@dfn{global variable})---
+переменные к которым есть доступ из любого места Lisp программы.
+Подробности по переменным, @xref{Variables}. Для определения
+настраиваемой переменной стоит использовать макрос @code{defcustom},
+который вызывает @code{defvar} (@pxref{Customization}).
+
+@c   @code{defvar} and @code{defconst} are special forms that define a
+@c symbol as a @dfn{global variable}---a variable that can be accessed at
+@c any point in a Lisp program.  @xref{Variables}, for details about
+@c variables.  To define a customizable variable, use the
+@c @code{defcustom} macro, which also calls @code{defvar} as a subroutine
+@c (@pxref{Customization}).
+
+  В принципе, можно присвоить значение любому символу используя
+@code{setq}, даже если он не был ранее объявлен. Но стоит
+писать определения глобальных переменных, так как иначе
+Lisp программа может не корректно работать если она будет
+вычисляться с режимом лексической области видимости
 (@pxref{Variable Scoping}).
 
-  @code{defun} defines a symbol as a function, creating a lambda
-expression and storing it in the function cell of the symbol.  This
-lambda expression thus becomes the function definition of the symbol.
-(The term ``function definition'', meaning the contents of the function
-cell, is derived from the idea that @code{defun} gives the symbol its
-definition as a function.)  @code{defsubst} and @code{defalias} are two
-other ways of defining a function.  @xref{Functions}.
+@c   In principle, you can assign a variable value to any symbol with
+@c @code{setq}, whether not it has first been defined as a variable.
+@c However, you ought to write a variable definition for each global
+@c variable that you want to use; otherwise, your Lisp program may not
+@c act correctly if it is evaluated with lexical scoping enabled
+@c (@pxref{Variable Scoping}).
 
-  @code{defmacro} defines a symbol as a macro.  It creates a macro
-object and stores it in the function cell of the symbol.  Note that a
-given symbol can be a macro or a function, but not both at once, because
-both macro and function definitions are kept in the function cell, and
-that cell can hold only one Lisp object at any given time.
+  @code{defun} определяет символ как функцию, создает лямбда (lambda)
+выражение и сохраняет его в ячейку функции символа. Данное лямбда
+выражение становится определением функции (символа). (Термин
+``определение функции'' ``function definition'' означает содержимое
+ячейки функции, что отличается от идеи, что @code{defun} определяет
+символ как функцию.) @code{defsubst} и @code{defalias} другие
+способы определения функции. @xref{Functions}.
+
+@c   @code{defun} defines a symbol as a function, creating a lambda
+@c expression and storing it in the function cell of the symbol.  This
+@c lambda expression thus becomes the function definition of the symbol.
+@c (The term ``function definition'', meaning the contents of the function
+@c cell, is derived from the idea that @code{defun} gives the symbol its
+@c definition as a function.)  @code{defsubst} and @code{defalias} are two
+@c other ways of defining a function.  @xref{Functions}.
+
+  @code{defmacro} определяет символ как макрос. При этом создается
+макрос и сохраняется в ячейку функции символа. Стоит отметить, что
+символ может быть макросом или функции, и не и тем и другим вместе,
+так как они хранятся в ячейке функции символа, которая одна.
+
+@c   @code{defmacro} defines a symbol as a macro.  It creates a macro
+@c object and stores it in the function cell of the symbol.  Note that a
+@c given symbol can be a macro or a function, but not both at once, because
+@c both macro and function definitions are kept in the function cell, and
+@c that cell can hold only one Lisp object at any given time.
 @xref{Macros}.
 
-  As previously noted, Emacs Lisp allows the same symbol to be defined
-both as a variable (e.g., with @code{defvar}) and as a function or
-macro (e.g., with @code{defun}).  Such definitions do not conflict.
+  Как уже было отмечено, Emacs Lisp позволяет одному символу быть
+определенным как символ (например с использованием @code{defvar}) и как
+функция или макрос (например с использованием @code{defun}). Такие
+определения не конфликтуют.
 
-  These definitions also act as guides for programming tools.  For
-example, the @kbd{C-h f} and @kbd{C-h v} commands create help buffers
-containing links to the relevant variable, function, or macro
-definitions.  @xref{Name Help,,, emacs, The GNU Emacs Manual}.
+@c   As previously noted, Emacs Lisp allows the same symbol to be defined
+@c both as a variable (e.g., with @code{defvar}) and as a function or
+@c macro (e.g., with @code{defun}).  Such definitions do not conflict.
+
+  Определения выполняют роль документации для инструментов
+программирования, например команды @kbd{C-h f} и @kbd{C-h v}
+создают буферы с описанием и ссылками на переменные, функции или макросы.
+@xref{Name Help,,, emacs, The GNU Emacs Manual}.
+
+@c   These definitions also act as guides for programming tools.  For
+@c example, the @kbd{C-h f} and @kbd{C-h v} commands create help buffers
+@c containing links to the relevant variable, function, or macro
+@c definitions.  @xref{Name Help,,, emacs, The GNU Emacs Manual}.
 
 @node Creating Symbols
-@section Creating and Interning Symbols
+@section Создание и Интернирование символов
 @cindex reading symbols
 
-  To understand how symbols are created in GNU Emacs Lisp, you must know
-how Lisp reads them.  Lisp must ensure that it finds the same symbol
-every time it reads the same set of characters.  Failure to do so would
-cause complete confusion.
+  Чтобы понять, как создаются символы в GNU Emacs Lisp нужно
+знать как Lisp их считывает. Lisp должен гарантировать, что
+находит один и тот же символ для одного того набора символов (знаков)
+(прим. имеются ввиду имена.) Невыполнение этого может
+привести к полной путанице.
+
+@c   To understand how symbols are created in GNU Emacs Lisp, you must know
+@c how Lisp reads them.  Lisp must ensure that it finds the same symbol
+@c every time it reads the same set of characters.  Failure to do so would
+@c cause complete confusion.
 
 @cindex symbol name hashing
 @cindex hashing
 @cindex obarray
 @cindex bucket (in obarray)
-  When the Lisp reader encounters a symbol, it reads all the characters
-of the name.  Then it hashes those characters to find an index in a
-table called an @dfn{obarray}.  Hashing is an efficient method of
-looking something up.  For example, instead of searching a telephone
-book cover to cover when looking up Jan Jones, you start with the J's
-and go from there.  That is a simple version of hashing.  Each element
-of the obarray is a @dfn{bucket} which holds all the symbols with a
-given hash code; to look for a given name, it is sufficient to look
-through all the symbols in the bucket for that name's hash code.  (The
-same idea is used for general Emacs hash tables, but they are a
-different data type; see @ref{Hash Tables}.)
+
+  Когда Lisp считыватель встречает символ, считываются все символы имени.
+После этого вычисляется хеш имени для поиска индекса
+в таблице называемой @dfn{obarray}. (Прим. видимо сокращение object array
+(массив объектов)).
+Каждый элемент obarray является @dfn{группой} (@dfn{bucket}) которая
+хранит все символы с данным хеш кодом, для поиска нужного
+имени достаточно проверить все символы из группы.
+(Эта же идея используется для хеш таблиц в Emacs, но они
+являются другим типом данных см. @ref{Hash Tables}).
+
+@c   When the Lisp reader encounters a symbol, it reads all the characters
+@c of the name.  Then it hashes those characters to find an index in a
+@c table called an @dfn{obarray}.  Hashing is an efficient method of
+@c looking something up.  For example, instead of searching a telephone
+@c book cover to cover when looking up Jan Jones, you start with the J's
+@c and go from there.  That is a simple version of hashing.  Each element
+@c of the obarray is a @dfn{bucket} which holds all the symbols with a
+@c given hash code; to look for a given name, it is sufficient to look
+@c through all the symbols in the bucket for that name's hash code.  (The
+@c same idea is used for general Emacs hash tables, but they are a
+@c different data type; see @ref{Hash Tables}.)
 
 @cindex interning
-  If a symbol with the desired name is found, the reader uses that
-symbol.  If the obarray does not contain a symbol with that name, the
-reader makes a new symbol and adds it to the obarray.  Finding or adding
-a symbol with a certain name is called @dfn{interning} it, and the
-symbol is then called an @dfn{interned symbol}.
+  Если символ с желаемым именем найден, считыватель (reader) использует
+этот символ. Если obarray не содержит символа с таким именем,
+считыватель создает новый символ и добавляет его в obarray. Поиск
+или добавление символа с определенным именем называется
+@dfn{интернированием} (@dfn{interning}), после чего символ
+называется @dfn{интернированным символом} (@dfn{interned symbol}).
 
-  Interning ensures that each obarray has just one symbol with any
-particular name.  Other like-named symbols may exist, but not in the
-same obarray.  Thus, the reader gets the same symbols for the same
-names, as long as you keep reading with the same obarray.
+@c   If a symbol with the desired name is found, the reader uses that
+@c symbol.  If the obarray does not contain a symbol with that name, the
+@c reader makes a new symbol and adds it to the obarray.  Finding or adding
+@c a symbol with a certain name is called @dfn{interning} it, and the
+@c symbol is then called an @dfn{interned symbol}.
 
-  Interning usually happens automatically in the reader, but sometimes
-other programs need to do it.  For example, after the @kbd{M-x} command
-obtains the command name as a string using the minibuffer, it then
-interns the string, to get the interned symbol with that name.
+  Интернирование гарантирует, что каждый obarray имеет только
+один символ с заданным именем. Могут быть другие символы
+с тем же именем, но не в том же obarray. Таким образом считыватель
+получает один и тот же символ по имени.
+
+@c   Interning ensures that each obarray has just one symbol with any
+@c particular name.  Other like-named symbols may exist, but not in the
+@c same obarray.  Thus, the reader gets the same symbols for the same
+@c names, as long as you keep reading with the same obarray.
+
+  Интернирование выполняется автоматически в считывателе, но иногда
+другим программам требуется его выполнить. Например, после
+@kbd{M-x} команда получает имя как строку с использованием
+мини-буфера, затем она интернирует строку, для получения
+интернированного символа с таким именем.
+
+@c   Interning usually happens automatically in the reader, but sometimes
+@c other programs need to do it.  For example, after the @kbd{M-x} command
+@c obtains the command name as a string using the minibuffer, it then
+@c interns the string, to get the interned symbol with that name.
 
 @cindex symbol equality
 @cindex uninterned symbol
-  No obarray contains all symbols; in fact, some symbols are not in any
-obarray.  They are called @dfn{uninterned symbols}.  An uninterned
-symbol has the same four cells as other symbols; however, the only way
-to gain access to it is by finding it in some other object or as the
-value of a variable.
+  Ни один obarray не содержит все символы, фактически, некоторые
+символы не находятся ни в каком obarray. Такие символы называются
+@dfn{не интернируемые символы}. Не интернируемые символы содержат
+те же четыре ячейки, что и другие символы, но, единственный способ
+обратится к ним это найти их в каком-то другом объекте
+или как значение переменной.
 
-  Creating an uninterned symbol is useful in generating Lisp code,
-because an uninterned symbol used as a variable in the code you generate
-cannot clash with any variables used in other Lisp programs.
+@c   No obarray contains all symbols; in fact, some symbols are not in any
+@c obarray.  They are called @dfn{uninterned symbols}.  An uninterned
+@c symbol has the same four cells as other symbols; however, the only way
+@c to gain access to it is by finding it in some other object or as the
+@c value of a variable.
 
-  In Emacs Lisp, an obarray is actually a vector.  Each element of the
-vector is a bucket; its value is either an interned symbol whose name
-hashes to that bucket, or 0 if the bucket is empty.  Each interned
-symbol has an internal link (invisible to the user) to the next symbol
-in the bucket.  Because these links are invisible, there is no way to
-find all the symbols in an obarray except using @code{mapatoms} (below).
-The order of symbols in a bucket is not significant.
+  Создание не интернируемых символов полезно при генерации Lisp
+кода, потому что не интернируемые символы используемые как переменные в
+генеруемом коде не могут конфликтовать с другими переменными
+используемым в Lisp программе.
 
-  In an empty obarray, every element is 0, so you can create an obarray
-with @code{(make-vector @var{length} 0)}.  @strong{This is the only
-valid way to create an obarray.}  Prime numbers as lengths tend
-to result in good hashing; lengths one less than a power of two are also
-good.
+@c   Creating an uninterned symbol is useful in generating Lisp code,
+@c because an uninterned symbol used as a variable in the code you generate
+@c cannot clash with any variables used in other Lisp programs.
 
-  @strong{Do not try to put symbols in an obarray yourself.}  This does
-not work---only @code{intern} can enter a symbol in an obarray properly.
+  В Emacs Lisp, obarray в реальности является вектором. Каждый
+элемент вектора группа, значением которой является интернированный
+символ хем имени которого принадлежит этой группе или 0 если группа
+пустая. Каждый интернированный символ имеет внутреннюю ссылку (не видимую)
+для пользователя на следующий символ в группе. Так как данная
+ссылка не видна, нет способа найти все символы в obarray кроме
+как использовать @code{mapatoms} (см. ниже).
+Порядок символов в группе не имеет значения.
+
+@c   In Emacs Lisp, an obarray is actually a vector.  Each element of the
+@c vector is a bucket; its value is either an interned symbol whose name
+@c hashes to that bucket, or 0 if the bucket is empty.  Each interned
+@c symbol has an internal link (invisible to the user) to the next symbol
+@c in the bucket.  Because these links are invisible, there is no way to
+@c find all the symbols in an obarray except using @code{mapatoms} (below).
+@c The order of symbols in a bucket is not significant.
+
+  В пустом obarray все элементы 0, поэтому obarray можно создать
+вызовов @code{(make-vector @var{length} 0)}. @strong{Это единственный
+корректный способ создать obarray.} Целые числа в качестве длины приводят
+к хорошим результатам хеширования, длины на 1 меньше степени двойки
+тоже дают хорошие результаты.
+
+@c   In an empty obarray, every element is 0, so you can create an obarray
+@c with @code{(make-vector @var{length} 0)}.  @strong{This is the only
+@c valid way to create an obarray .}  Prime numbers as lengths tend
+@c to result in good hashing; lengths one less than a power of two are also
+@c good.
+
+  @strong{Не нужно пытать поместить символ в obarray самостоятельно.}
+Это не будет работать---только @code{intern} может корректно добавить
+символ в obarray.
+
+@c   @strong{Do not try to put symbols in an obarray yourself.}  This does
+@c not work---only @code{intern} can enter a symbol in an obarray properly.
 
 @cindex CL note---symbol in obarrays
 @quotation
-@b{Common Lisp note:} Unlike Common Lisp, Emacs Lisp does not provide
-for interning a single symbol in several obarrays.
+@b{Common Lisp note:} В отличие от Commont Lisp, Emacs Lisp не
+предусматривает интернирование одного символа в нескольких
+obarrays.
+
+@c @b{Common Lisp note:} Unlike Common Lisp, Emacs Lisp does not provide
+@c for interning a single symbol in several obarrays.
 @end quotation
 
-  Most of the functions below take a name and sometimes an obarray as
-arguments.  A @code{wrong-type-argument} error is signaled if the name
-is not a string, or if the obarray is not a vector.
+  Большинство функции ниже получают имя и некоторые obarray в качестве
+аргументов. Ошибка @code{wrong-type-argument} сигнализирует о том, что
+имя не строка или obarray не вектор. 
+
+@c   Most of the functions below take a name and sometimes an obarray as
+@c arguments.  A @code{wrong-type-argument} error is signaled if the name
+@c is not a string, or if the obarray is not a vector.
 
 @defun symbol-name symbol
-This function returns the string that is @var{symbol}'s name.  For example:
+Функция возвращает строку которая является именем @var{symbol}. Например:
+
+@c This function returns the string that is @var{symbol}'s name.  For example:
 
 @example
 @group
@@ -253,17 +440,27 @@ This function returns the string that is @var{symbol}'s name.  For example:
 @end group
 @end example
 
-@strong{Warning:} Changing the string by substituting characters does
-change the name of the symbol, but fails to update the obarray, so don't
-do it!
+@strong{Внимание:} Изменение строки путем замены символов не изменяет
+имя символа, но приводит к ошибкам обновления obarray, поэтому
+не стоит так делать!
+
+@c @strong{Warning:} Changing the string by substituting characters does
+@c change the name of the symbol, but fails to update the obarray, so don't
+@c do it!
 @end defun
 
 @defun make-symbol name
-This function returns a newly-allocated, uninterned symbol whose name is
-@var{name} (which must be a string).  Its value and function definition
-are void, and its property list is @code{nil}.  In the example below,
-the value of @code{sym} is not @code{eq} to @code{foo} because it is a
-distinct uninterned symbol whose name is also @samp{foo}.
+Данная функция возвращает новый, не интернированный символ, имя которого
+@var{name} (должно быть строкой). Значение и определение функции у этого
+символа void, и список свойств @code{nil}. В примере ниже,
+значение @code{sym} не @code{eq} @code{foo}, потому что это разные
+не интернированные символы с именем @samp{foo}.
+
+@c This function returns a newly-allocated, uninterned symbol whose name is
+@c @var{name} (which must be a string).  Its value and function definition
+@c are void, and its property list is @code{nil}.  In the example below,
+@c the value of @code{sym} is not @code{eq} to @code{foo} because it is a
+@c distinct uninterned symbol whose name is also @samp{foo}.
 
 @example
 (setq sym (make-symbol "foo"))
@@ -274,11 +471,17 @@ distinct uninterned symbol whose name is also @samp{foo}.
 @end defun
 
 @defun intern name &optional obarray
-This function returns the interned symbol whose name is @var{name}.  If
-there is no such symbol in the obarray @var{obarray}, @code{intern}
-creates a new one, adds it to the obarray, and returns it.  If
-@var{obarray} is omitted, the value of the global variable
-@code{obarray} is used.
+Функция возвращает интернированный символ имя которого @var{name}. Если
+такого символа еще нет в obarray @var{obarray}, @code{intern}
+создает новый символ, добавляет его в obarray, и возвращает его.
+Если @var{obarray} не задано, используется значение глобальной переменной
+@code{obarray}.
+
+@c This function returns the interned symbol whose name is @var{name}.  If
+@c there is no such symbol in the obarray @var{obarray}, @code{intern}
+@c creates a new one, adds it to the obarray, and returns it.  If
+@c @var{obarray} is omitted, the value of the global variable
+@c @code{obarray} is used.
 
 @example
 (setq sym (intern "foo"))
@@ -295,21 +498,35 @@ creates a new one, adds it to the obarray, and returns it.  If
 
 @cindex CL note---interning existing symbol
 @quotation
-@b{Common Lisp note:} In Common Lisp, you can intern an existing symbol
-in an obarray.  In Emacs Lisp, you cannot do this, because the argument
-to @code{intern} must be a string, not a symbol.
+@b{Common Lisp note:} В Common Lisp, можно интернировать существующий
+символ в obarray. В Emacs Lisp, так сделать нельзя, потому что
+аргумент @code{intern} должен быть строкой, а не символом.
+
+@c @b{Common Lisp note:} In Common Lisp, you can intern an existing symbol
+@c in an obarray.  In Emacs Lisp, you cannot do this, because the argument
+@c to @code{intern} must be a string, not a symbol.
 @end quotation
 
 @defun intern-soft name &optional obarray
-This function returns the symbol in @var{obarray} whose name is
-@var{name}, or @code{nil} if @var{obarray} has no symbol with that name.
-Therefore, you can use @code{intern-soft} to test whether a symbol with
-a given name is already interned.  If @var{obarray} is omitted, the
-value of the global variable @code{obarray} is used.
+Функция возвращает символ из @var{obarray}, имя которого @var{name}
+или @code{nil} если символа с таким именем нет. Таким образом, можно
+использовать @code{intern-soft} для проверки того, что символ
+с заданным именем уже интернирован. Если @var{obarray} не задано, будет
+использована глобальная переменная @var{obarray}.
 
-The argument @var{name} may also be a symbol; in that case,
-the function returns @var{name} if @var{name} is interned
-in the specified obarray, and otherwise @code{nil}.
+@c This function returns the symbol in @var{obarray} whose name is
+@c @var{name}, or @code{nil} if @var{obarray} has no symbol with that name.
+@c Therefore, you can use @code{intern-soft} to test whether a symbol with
+@c a given name is already interned.  If @var{obarray} is omitted, the
+@c value of the global variable @code{obarray} is used.
+
+Аргумент @var{name} может быть символом; в этом случае,
+функция возвращает @var{name} если @var{name} интернировано
+с заданной obarray, иначе @code{nil}.
+
+@c The argument @var{name} may also be a symbol; in that case,
+@c the function returns @var{name} if @var{name} is interned
+@c in the specified obarray, and otherwise @code{nil}.
 
 @example
 (intern-soft "frazzle")        ; @r{No such symbol exists.}
@@ -336,16 +553,23 @@ in the specified obarray, and otherwise @code{nil}.
 @end defun
 
 @defvar obarray
-This variable is the standard obarray for use by @code{intern} and
-@code{read}.
+Переменная является стандартным obarray для использования @code{intern}
+и @code{read}.
+
+@c This variable is the standard obarray for use by @code{intern} and
+@c @code{read}.
 @end defvar
 
 @defun mapatoms function &optional obarray
 @anchor{Definition of mapatoms}
-This function calls @var{function} once with each symbol in the obarray
-@var{obarray}.  Then it returns @code{nil}.  If @var{obarray} is
-omitted, it defaults to the value of @code{obarray}, the standard
-obarray for ordinary symbols.
+Функция вызывает @var{function} для каждого символа из obarray @var{obarray}.
+Функция возвращает @code{nil}. Если @var{obarray} не задано,
+используется глобальная переменная @code{obarray}.
+
+@c This function calls @var{function} once with each symbol in the obarray
+@c @var{obarray}.  Then it returns @code{nil}.  If @var{obarray} is
+@c omitted, it defaults to the value of @code{obarray}, the standard
+@c obarray for ordinary symbols.
 
 @example
 (setq count 0)
@@ -359,64 +583,102 @@ count
      @result{} 1871
 @end example
 
-See @code{documentation} in @ref{Accessing Documentation}, for another
-example using @code{mapatoms}.
+См. @code{documentation} в @ref{Accessing Documentation}, где описаны
+другие примеры использования @code{mapatoms}.
+
+@c See @code{documentation} in @ref{Accessing Documentation}, for another
+@c example using @code{mapatoms}.
 @end defun
 
 @defun unintern symbol obarray
-This function deletes @var{symbol} from the obarray @var{obarray}.  If
-@code{symbol} is not actually in the obarray, @code{unintern} does
-nothing.  If @var{obarray} is @code{nil}, the current obarray is used.
+Функция удаляет @var{symbol} из obarray @var{obarray}. Если
+@code{symbol} не obarray, @code{unintern} ничего не делает.
+Если @var{obarray} @code{nil}, используется текущий obarray.
 
-If you provide a string instead of a symbol as @var{symbol}, it stands
-for a symbol name.  Then @code{unintern} deletes the symbol (if any) in
-the obarray which has that name.  If there is no such symbol,
-@code{unintern} does nothing.
+@c This function deletes @var{symbol} from the obarray @var{obarray}.  If
+@c @code{symbol} is not actually in the obarray, @code{unintern} does
+@c nothing.  If @var{obarray} is @code{nil}, the current obarray is used.
 
-If @code{unintern} does delete a symbol, it returns @code{t}.  Otherwise
-it returns @code{nil}.
+Если предоставить строку вместо символа в качестве параметра @var{symbol},
+используется имя символа. Если такого символа в obarray нет, ничего не
+делается.
+
+@c If you provide a string instead of a symbol as @var{symbol}, it stands
+@c for a symbol name.  Then @code{unintern} deletes the symbol (if any) in
+@c the obarray which has that name.  If there is no such symbol,
+@c @code{unintern} does nothing.
+
+Если  @code{unintern} выполняет удаление символа, возвращается @code{t}.
+Если удаления не было возвращается @code{nil}.
+
+@c If @code{unintern} does delete a symbol, it returns @code{t}.  Otherwise
+@c it returns @code{nil}.
 @end defun
 
 @node Symbol Properties
-@section Symbol Properties
+@section Свойства символов
 @cindex symbol property
 
-  A symbol may possess any number of @dfn{symbol properties}, which
-can be used to record miscellaneous information about the symbol.  For
-example, when a symbol has a @code{risky-local-variable} property with
-a non-@code{nil} value, that means the variable which the symbol names
-is a risky file-local variable (@pxref{File Local Variables}).
+  Символ может иметь любое число @dfn{свойств} (@dfn{symbol properties}),
+которые могут хранить дополнительную информацию о символе.
+Например, если свойство @code{risky-local-variable} символа не-@code{nil},
+переменная будет file-local (локальной для файла). (@pxref{File Local Variables}).
 
-  Each symbol's properties and property values are stored in the
-symbol's property list cell (@pxref{Symbol Components}), in the form
-of a property list (@pxref{Property Lists}).
+@c   A symbol may possess any number of @dfn{symbol properties}, which
+@c can be used to record miscellaneous information about the symbol.  For
+@c example, when a symbol has a @code{risky-local-variable} property with
+@c a non-@code{nil} value, that means the variable which the symbol names
+@c is a risky file-local variable (@pxref{File Local Variables}).
+
+  Все свойства и значения хранятся в ячейке списка свойств (@pxref{Symbol Components}),
+в виде списка свойств (@pxref{Property Lists}).
+
+@c   Each symbol's properties and property values are stored in the
+@c symbol's property list cell (@pxref{Symbol Components}), in the form
+@c of a property list (@pxref{Property Lists}).
 
 @menu
-* Symbol Plists::        Accessing symbol properties.
-* Standard Properties::  Standard meanings of symbol properties.
+* Symbol Plists::        Доступ к свойствам символа.
+* Standard Properties::  Стандартные свойства символов.
 @end menu
 
 @node Symbol Plists
-@subsection Accessing Symbol Properties
+@subsection Доступ к свойствам символов.
 
-  The following functions can be used to access symbol properties.
+  Функции ниже могут использоваться для доступа к свойствам символов.
+
+  @c The following functions can be used to access symbol properties.
 
 @defun get symbol property
-This function returns the value of the property named @var{property}
-in @var{symbol}'s property list.  If there is no such property, it
-returns @code{nil}.  Thus, there is no distinction between a value of
-@code{nil} and the absence of the property.
+Функция возвращает значение свойства с именем @var{property}
+из списка свойств @var{symbol}. Если такого свойства нет, возвращается
+@code{nil}. Таким образом, отсутствие значения и значение @code{nil}
+не различаются.
 
-The name @var{property} is compared with the existing property names
-using @code{eq}, so any object is a legitimate property.
+@c This function returns the value of the property named @var{property}
+@c in @var{symbol}'s property list.  If there is no such property, it
+@c returns @code{nil}.  Thus, there is no distinction between a value of
+@c @code{nil} and the absence of the property.
 
-See @code{put} for an example.
+Имя @var{property} сравнивается с существующими при помощи
+@code{eq}, поэтому любой объект является корректным свойством.
+
+@c The name @var{property} is compared with the existing property names
+@c using @code{eq}, so any object is a legitimate property.
+
+Примеры с @code{put}.
+
+@c See @code{put} for an example.
 @end defun
 
 @defun put symbol property value
-This function puts @var{value} onto @var{symbol}'s property list under
-the property name @var{property}, replacing any previous property value.
-The @code{put} function returns @var{value}.
+Функция устанавливает значение свойства @var{property} в @var{value}
+в списке свойств символа @var{symbol}, заменяя предыдущее значение если
+оно было. @code{put} возвращает @var{value}.
+
+@c This function puts @var{value} onto @var{symbol}'s property list under
+@c the property name @var{property}, replacing any previous property value.
+@c The @code{put} function returns @var{value}.
 
 @example
 (put 'fly 'verb 'transitive)
@@ -431,13 +693,20 @@ The @code{put} function returns @var{value}.
 @end defun
 
 @defun symbol-plist symbol
-This function returns the property list of @var{symbol}.
+Функция возвращает список свойств символа @var{symbol}.
+
+@c This function returns the property list of @var{symbol}.
 @end defun
 
 @defun setplist symbol plist
-This function sets @var{symbol}'s property list to @var{plist}.
-Normally, @var{plist} should be a well-formed property list, but this is
-not enforced.  The return value is @var{plist}.
+Функция устанавливает список свойств символа @var{symbol} в @var{plist}.
+По хорошему, @var{plist} должен быть правильно сформированным
+списком свойств, но это не требуется. Возвращается значение
+@var{plist}.
+
+@c This function sets @var{symbol}'s property list to @var{plist}.
+@c Normally, @var{plist} should be a well-formed property list, but this is
+@c not enforced.  The return value is @var{plist}.
 
 @example
 (setplist 'foo '(a 1 b (2 3) c nil))
@@ -446,13 +715,21 @@ not enforced.  The return value is @var{plist}.
      @result{} (a 1 b (2 3) c nil)
 @end example
 
-For symbols in special obarrays, which are not used for ordinary
-purposes, it may make sense to use the property list cell in a
-nonstandard fashion; in fact, the abbrev mechanism does so
+Для символа в заданных obarrays, которые используются не обычным
+образом, может быть оправдано использовать ячейку со списком свойств
+не стандартно, и на практике механизм аббревиатур (abbrev) так и делает.
 (@pxref{Abbrevs}).
 
-You could define @code{put} in terms of @code{setplist} and
-@code{plist-put}, as follows:
+@c For symbols in special obarrays, which are not used for ordinary
+@c purposes, it may make sense to use the property list cell in a
+@c nonstandard fashion; in fact, the abbrev mechanism does so
+@c (@pxref{Abbrevs}).
+
+Можно определить @code{put} в терминах @code{setplist} и
+@code{plist-put}, следующим образом:
+
+@c You could define @code{put} in terms of @code{setplist} and
+@c @code{plist-put}, as follows:
 
 @example
 (defun put (symbol prop value)
@@ -462,123 +739,214 @@ You could define @code{put} in terms of @code{setplist} and
 @end defun
 
 @defun function-get symbol property &optional autoload
-This function is identical to @code{get}, except that if @var{symbol}
-is the name of a function alias, it looks in the property list of the
-symbol naming the actual function.  @xref{Defining Functions}.  If the
-optional argument @var{autoload} is non-@code{nil}, and @var{symbol}
-is auto-loaded, this function will try to autoload it, since
-autoloading might set @var{property} of @var{symbol}.  If
-@var{autoload} is the symbol @code{macro}, only try autoloading if
-@var{symbol} is an auto-loaded macro.
+Функция идентичная @code{get}, за исключением того, случая когда
+@var{symbol} имя является псевдонимом функции, имя символа ищется для
+оригинальной функции. @xref{Defining Functions}. Если необязательный
+аргумент @var{autoload} не-@code{nil}, и @var{symbol} автоматически загружаемый объект,
+функция постарается выполнить автозагрузку, так как при автозагрузке может
+быть установлено свойство символа. Если @var{autoload} символ @code{macro},
+попытка автозагрузки будет выполнена только для автозагружаемых макросов.
+
+@c This function is identical to @code{get}, except that if @var{symbol}
+@c is the name of a function alias, it looks in the property list of the
+@c symbol naming the actual function.  @xref{Defining Functions}.  If the
+@c optional argument @var{autoload} is non-@code{nil}, and @var{symbol}
+@c is auto-loaded, this function will try to autoload it, since
+@c autoloading might set @var{property} of @var{symbol}.  If
+@c @var{autoload} is the symbol @code{macro}, only try autoloading if
+@c @var{symbol} is an auto-loaded macro.
 @end defun
 
 @defun function-put function property value
-This function sets @var{property} of @var{function} to @var{value}.
-@var{function} should be a symbol.  This function is preferred to
-calling @code{put} for setting properties of a function, because it
-will allow us some day to implement remapping of old properties to new
-ones.
+Функция устанавливает свойства @var{property} функции @var{function}
+равным @var{value}. @var{function} должно быть символом. Функция
+является более предпочтительной чем @code{put} для установки свойств,
+поскольку когда-то позволит выполнить переназначение старых свойств в
+новые.
+
+@c This function sets @var{property} of @var{function} to @var{value}.
+@c @var{function} should be a symbol.  This function is preferred to
+@c calling @code{put} for setting properties of a function, because it
+@c will allow us some day to implement remapping of old properties to new
+@c ones.
 @end defun
 
 @node Standard Properties
-@subsection Standard Symbol Properties
+@subsection Стандартные свойства символов
 
-  Here, we list the symbol properties which are used for special
-purposes in Emacs.  In the following table, whenever we say ``the
-named function'', that means the function whose name is the relevant
-symbol; similarly for ``the named variable'' etc.
+  Ниже приводится список свойств используемых для определенных
+целей в Emacs. В следующей таблице, ``именованная функция'' (``the named function''),
+подразумевается функция хранящаяся в соответствующем символе, аналогично
+с ``именованной переменной''(``the named variable'').
+
+@c   Here, we list the symbol properties which are used for special
+@c purposes in Emacs.  In the following table, whenever we say ``the
+@c named function'', that means the function whose name is the relevant
+@c symbol; similarly for ``the named variable'' etc.
 
 @table @code
 @item :advertised-binding
-This property value specifies the preferred key binding, when showing
-documentation, for the named function.  @xref{Keys in Documentation}.
+Данное свойство определяет предпочтительную комбинацию клавиш для данной
+функции, отображаемую в документации,
+для именованной функции. @xref{Keys in Documentation}.
+
+@c This property value specifies the preferred key binding, when showing
+@c documentation, for the named function.  @xref{Keys in Documentation}.
 
 @item char-table-extra-slots
-The value, if non-@code{nil}, specifies the number of extra slots in
-the named char-table type.  @xref{Char-Tables}.
+Если значение не-@code{nil}, то оно определяет количество
+дополнительных слотов в тип символьных таблиц с именем символа.
+@xref{Char-Tables}.
+
+@c The value, if non-@code{nil}, specifies the number of extra slots in
+@c the named char-table type.  @xref{Char-Tables}.
 
 @item customized-face
 @itemx face-defface-spec
 @itemx saved-face
 @itemx theme-face
-These properties are used to record a face's standard, saved,
-customized, and themed face specs.  Do not set them directly; they are
-managed by @code{defface} and related functions.  @xref{Defining
-Faces}.
+Свойства используются для хранения базового, сохраненного,
+настраиваемого и тематических характеристик шрифта. Не стоит устанавливать
+это свойство напрямую. Свойство определяется с использованием
+@code{defface} и связанных функций. @xref{Defining  Faces}.
+
+@c These properties are used to record a face's standard, saved,
+@c customized, and themed face specs.  Do not set them directly; they are
+@c managed by @code{defface} and related functions.  @xref{Defining  Faces}.
 
 @item customized-value
 @itemx saved-value
 @itemx standard-value
 @itemx theme-value
-These properties are used to record a customizable variable's standard
-value, saved value, customized-but-unsaved value, and themed values.
-Do not set them directly; they are managed by @code{defcustom} and
-related functions.  @xref{Variable Definitions}.
+Свойства используются для хранения базового значения, сохраненного значения,
+настроенного и не сохранного, и тематического значение для настраиваемой
+переменной (customizable variable). Для установки стоит использовать
+@code{defcustom} и связанные функции. Не стоит устанавливать вручную.
+@xref{Variable Definitions}.
+
+@c These properties are used to record a customizable variable's standard
+@c value, saved value, customized-but-unsaved value, and themed values.
+@c Do not set them directly; they are managed by @code{defcustom} and
+@c related functions.  @xref{Variable Definitions}.
 
 @item disabled
-If the value is non-@code{nil}, the named function is disabled as a
-command.  @xref{Disabling Commands}.
+Если значение не-@code{nil}, именованная функция не активна как команда.
+@xref{Disabling Commands}.
+
+@c If the value is non-@code{nil}, the named function is disabled as a
+@c command.  @xref{Disabling Commands}.
 
 @item face-documentation
-The value stores the documentation string of the named face.  This is
-set automatically by @code{defface}.  @xref{Defining Faces}.
+Значение хранит строку документации для именованного шрифта. Значение
+автоматически устанавливается @code{defface}. @xref{Defining Faces}.
+
+@c The value stores the documentation string of the named face.  This is
+@c set automatically by @code{defface}.  @xref{Defining Faces}.
 
 @item history-length
-The value, if non-@code{nil}, specifies the maximum minibuffer history
-length for the named history list variable.  @xref{Minibuffer
-History}.
+Значение не-@code{nil} определяет максимальную длину истории минибуфера,
+для именованной переменной со списком истории. @xref{Minibuffer History}.
+
+@c The value, if non-@code{nil}, specifies the maximum minibuffer history
+@c length for the named history list variable.  @xref{Minibuffer
+@c  History}.
 
 @item interactive-form
-The value is an interactive form for the named function.  Normally,
-you should not set this directly; use the @code{interactive} special
-form instead.  @xref{Interactive Call}.
+Значение хранит интерактивную форму именованной функции. Как правило,
+не стоит задавать значение вручную, стоит использовать специальную
+форму @code{interactive}. @xref{Interactive Call}.
+
+@c The value is an interactive form for the named function.  Normally,
+@c you should not set this directly; use the @code{interactive} special
+@c form instead.  @xref{Interactive Call}.
 
 @item menu-enable
-The value is an expression for determining whether the named menu item
-should be enabled in menus.  @xref{Simple Menu Items}.
+Значением является выражение определяющее должен ли именованный пункт
+меню быть доступен в меню. @xref{Simple Menu Items}.
+
+@c The value is an expression for determining whether the named menu item
+@c should be enabled in menus.  @xref{Simple Menu Items}.
 
 @item mode-class
-If the value is @code{special}, the named major mode is special.
+Если значение @code{special}, именованный основной режим является
+специальным.
 @xref{Major Mode Conventions}.
 
+@c If the value is @code{special}, the named major mode is special.
+@c @xref{Major Mode Conventions}.
+
 @item permanent-local
-If the value is non-@code{nil}, the named variable is a buffer-local
-variable whose value should not be reset when changing major modes.
+Если значение не-@code{nil}, именованная переменная локальная для буфера
+и ее значение не должно пере-устанавливаться при смене основного режима.
 @xref{Creating Buffer-Local}.
 
+@c If the value is non-@code{nil}, the named variable is a buffer-local
+@c variable whose value should not be reset when changing major modes.
+@c @xref{Creating Buffer-Local}.
+
 @item permanent-local-hook
-If the value is non-@code{nil}, the named function should not be
-deleted from the local value of a hook variable when changing major
-modes.  @xref{Setting Hooks}.
+Если значение не-@code{nil}, именованная функция не должна удаляться
+из локальной переменной перехватчиков при смене основного режима.
+@xref{Setting Hooks}.
+(Прим. То есть функция остается в перехватчиках при смене режима.)
+
+@c If the value is non-@code{nil}, the named function should not be
+@c deleted from the local value of a hook variable when changing major
+@c modes.  @xref{Setting Hooks}.
 
 @item pure
-If the value is non-@code{nil}, the named function is considered to be
-side-effect free.  Calls with constant arguments can be evaluated at
-compile time.  This may shift run time errors to compile time.
+Если значение не-@code{nil}, именованная функция считается чистой, то есть
+без побочных эффектов. Вызов с константными аргументами может быть
+вычислен при компиляции. В результате чего ошибки выполнения данной
+функции могут произойти при компиляции.
+
+@c If the value is non-@code{nil}, the named function is considered to be
+@c side-effect free.  Calls with constant arguments can be evaluated at
+@c compile time.  This may shift run time errors to compile time.
 
 @item risky-local-variable
-If the value is non-@code{nil}, the named variable is considered risky
-as a file-local variable.  @xref{File Local Variables}.
+Если значение не-@code{nil}, именованная переменная рассматривается
+рискованной как локальная для файла. @xref{File Local Variables}.
+
+@c If the value is non-@code{nil}, the named variable is considered risky
+@c as a file-local variable.  @xref{File Local Variables}.
 
 @item safe-function
-If the value is non-@code{nil}, the named function is considered
-generally safe for evaluation.  @xref{Function Safety}.
+Если значение не-@code{nil}, именованная функция считается
+безопасной для вычисления(evaluation). @xref{Function Safety}.
+
+@c If the value is non-@code{nil}, the named function is considered
+@c generally safe for evaluation.  @xref{Function Safety}.
 
 @item safe-local-eval-function
-If the value is non-@code{nil}, the named function is safe to call in
-file-local evaluation forms.  @xref{File Local Variables}.
+Если значение не-@code{nil}, именованная функция безопасна для вызова
+в вычислениях локальных для файла форм. @xref{File Local Variables}.
+
+@c If the value is non-@code{nil}, the named function is safe to call in
+@c file-local evaluation forms.  @xref{File Local Variables}.
 
 @item safe-local-variable
-The value specifies a function for determining safe file-local values
-for the named variable.  @xref{File Local Variables}.
+Значение определяет функцию для определения безопасных локальных
+для файла значений именованной переменной. @xref{File Local Variables}.
+
+@c The value specifies a function for determining safe file-local values
+@c for the named variable.  @xref{File Local Variables}.
 
 @item side-effect-free
-A non-@code{nil} value indicates that the named function is free of
-side-effects, for determining function safety (@pxref{Function
-Safety}) as well as for byte compiler optimizations.  Do not set it.
+Значение не-@code{nil} указывает что именованная функция не имеет
+побочных эффектов, (@pxref{Function Safety}) и для байтового компилятора.
+Не стоит устанавливать это свойство.
+
+@c A non-@code{nil} value indicates that the named function is free of
+@c side-effects, for determining function safety (@pxref{Function
+@c Safety}) as well as for byte compiler optimizations.  Do not set it.
 
 @item variable-documentation
-If non-@code{nil}, this specifies the named variable's documentation
-string.  This is set automatically by @code{defvar} and related
-functions.  @xref{Defining Faces}.
+Если не-@code{nil}, значение определяет документацию для именованной переменной.
+Значение устанавливается автоматически при вызове @code{defvar} и
+связанных функций. @xref{Defining Faces}.
+
+@c If non-@code{nil}, this specifies the named variable's documentation
+@c string.  This is set automatically by @code{defvar} and related
+@c functions.  @xref{Defining Faces}.
 @end table

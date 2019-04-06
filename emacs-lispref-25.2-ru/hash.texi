@@ -482,7 +482,7 @@ of object and are used only for recording interned symbols
 @c If two objects @var{obj1} and @var{obj2} are equal, then @code{(sxhash
 @c @var{obj1})} and @code{(sxhash @var{obj2})} are the same integer.
 
-Если два объекта не равны, значение возвращаемые @code{sxhash}
+Если два объекта не равны, значения возвращаемые @code{sxhash}
 обычно разные, но не всегда; время от времени, можно встретить
 два разных объекта для которых значения @code{sxhash} равны.
 
