@@ -4,57 +4,90 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Control Structures
-@chapter Control Structures
+@chapter Управляющие структуры
 @cindex special forms for control structures
 @cindex control structures
 
-  A Lisp program consists of a set of @dfn{expressions}, or
-@dfn{forms} (@pxref{Forms}).  We control the order of execution of
-these forms by enclosing them in @dfn{control structures}.  Control
-structures are special forms which control when, whether, or how many
-times to execute the forms they contain.
+  Lisp программа состоит из множества @dfn{выражений} (@dfn{expressions}),
+или @dfn{форм} (@dfn{form} @pxref{Forms}). Порядок выполнения
+форм контролируется @dfn{управляющими структурами} (@dfn{control structures}).
+Управляющие структуры является специальными формами, которые
+задают когда, будет ли вообще выполнено или как много раза
+будет выполнена форма, которую они содержат.
+
+@c   A Lisp program consists of a set of @dfn{expressions}, or
+@c @dfn{forms} (@pxref{Forms}).  We control the order of execution of
+@c these forms by enclosing them in @dfn{control structures}.  Control
+@c structures are special forms which control when, whether, or how many
+@c times to execute the forms they contain.
 
 @cindex textual order
-  The simplest order of execution is sequential execution: first form
-@var{a}, then form @var{b}, and so on.  This is what happens when you
-write several forms in succession in the body of a function, or at top
-level in a file of Lisp code---the forms are executed in the order
-written.  We call this @dfn{textual order}.  For example, if a function
-body consists of two forms @var{a} and @var{b}, evaluation of the
-function evaluates first @var{a} and then @var{b}.  The result of
-evaluating @var{b} becomes the value of the function.
+  Простейший порядок выполнения это последовательное выполнение,
+первая форма @var{a}, затем форма @var{b} и т.д. Так происходит
+выполнение при написании нескольких последовательных формы в теле
+функции или на верхнем уровне файла с Lisp кодом---формы выполняются
+в порядке записи. Такой порядок называется @dfn{буквальный порядок}
+(@dfn{textual order}). Например, если тело функции состоит из двух форм @var{a} и
+@var{b}, при вычислении функции будет сначала вычислено @var{a}, а затем
+@var{b}. Результат вычисления @var{b} будет значением функции.
 
-  Explicit control structures make possible an order of execution other
-than sequential.
+@c   The simplest order of execution is sequential execution: first form
+@c @var{a}, then form @var{b}, and so on.  This is what happens when you
+@c write several forms in succession in the body of a function, or at top
+@c level in a file of Lisp code---the forms are executed in the order
+@c written.  We call this @dfn{textual order}.  For example, if a function
+@c body consists of two forms @var{a} and @var{b}, evaluation of the
+@c function evaluates first @var{a} and then @var{b}.  The result of
+@c evaluating @var{b} becomes the value of the function.
 
-  Emacs Lisp provides several kinds of control structure, including
-other varieties of sequencing, conditionals, iteration, and (controlled)
-jumps---all discussed below.  The built-in control structures are
-special forms since their subforms are not necessarily evaluated or not
-evaluated sequentially.  You can use macros to define your own control
-structure constructs (@pxref{Macros}).
+  Управляющие структуры позволяют выполнять формы в другом порядке.
+
+@c   Explicit control structures make possible an order of execution other
+@c than sequential.
+
+  Emacs Lisp предоставляет ряд управляющих структур, позволяющие
+выполнять формы в разном порядке, по условию, повторять выполнение и
+совершать (управляемые) переходы. Встроенные управляющие структуры
+являются специальными формами, потому, что их под-формы не обязательно
+вычисляются и не обязательно в порядке следования. Можно использовать
+макросы для определения свой управляющих структур (@pxref{Macros}).
+
+@c   Emacs Lisp provides several kinds of control structure, including
+@c other varieties of sequencing, conditionals, iteration, and (controlled)
+@c jumps---all discussed below.  The built-in control structures are
+@c special forms since their subforms are not necessarily evaluated or not
+@c evaluated sequentially.  You can use macros to define your own control
+@c structure constructs (@pxref{Macros}).
 
 @menu
-* Sequencing::             Evaluation in textual order.
+* Sequencing::             Вычисление в буквальном порядке
 * Conditionals::           @code{if}, @code{cond}, @code{when}, @code{unless}.
 * Combining Conditions::   @code{and}, @code{or}, @code{not}.
-* Iteration::              @code{while} loops.
-* Generators::             Generic sequences and coroutines.
-* Nonlocal Exits::         Jumping out of a sequence.
+* Iteration::              @code{while} циклы.
+* Generators::             Генерирование последовательностей и сопрограмм.
+* Nonlocal Exits::         Переходы из последовательности.
 @end menu
 
 @node Sequencing
-@section Sequencing
+@section Последовательное вычисление 
 @cindex sequencing
 @cindex sequential execution
 
-  Evaluating forms in the order they appear is the most common way
-control passes from one form to another.  In some contexts, such as in a
-function body, this happens automatically.  Elsewhere you must use a
-control structure construct to do this: @code{progn}, the simplest
-control construct of Lisp.
+  Вычисление форм в порядке появления наиболее общий способ выполнения.
+В некоторых контекстах, таких как тело функции,
+это происходит автоматически. В других местах
+нужно использовать конструкции управления, @code{progn},
+простейшая управляющая конструкция Lisp.
 
-  A @code{progn} special form looks like this:
+@c   Evaluating forms in the order they appear is the most common way
+@c control passes from one form to another.  In some contexts, such as in a
+@c function body, this happens automatically.  Elsewhere you must use a
+@c control structure construct to do this: @code{progn}, the simplest
+@c control construct of Lisp.
+
+  @code{progn} специальная форма следующего вида:
+  
+  @c A @code{progn} special form looks like this:
 
 @example
 @group
@@ -63,26 +96,45 @@ control construct of Lisp.
 @end example
 
 @noindent
-and it says to execute the forms @var{a}, @var{b}, @var{c}, and so on, in
-that order.  These forms are called the @dfn{body} of the @code{progn} form.
-The value of the last form in the body becomes the value of the entire
-@code{progn}.  @code{(progn)} returns @code{nil}.
+она предписывает выполнить @var{a}, @var{b}, @var{c}, и другие в прямом
+порядке. Эти формы называются @dfn{телом} (@dfn{body}) формы @code{progn}.
+Значение крайней формы становится значением @code{progn}.
+@code{(progn)} возвращает @code{nil}.
+
+@c and it says to execute the forms @var{a}, @var{b}, @var{c}, and so on, in
+@c that order.  These forms are called the @dfn{body} of the @code{progn} form.
+@c The value of the last form in the body becomes the value of the entire
+@c @code{progn}.  @code{(progn)} returns @code{nil}.
 
 @cindex implicit @code{progn}
-  In the early days of Lisp, @code{progn} was the only way to execute
-two or more forms in succession and use the value of the last of them.
-But programmers found they often needed to use a @code{progn} in the
-body of a function, where (at that time) only one form was allowed.  So
-the body of a function was made into an implicit @code{progn}:
-several forms are allowed just as in the body of an actual @code{progn}.
-Many other control structures likewise contain an implicit @code{progn}.
-As a result, @code{progn} is not used as much as it was many years ago.
-It is needed now most often inside an @code{unwind-protect}, @code{and},
-@code{or}, or in the @var{then}-part of an @code{if}.
+  Пока Lisp был молодым языком, @code{progn} был единственным способом
+выполнить две и более последовательных форм и использовать результат их
+вычисления. Но программисты пришли к тому, что @code{progn} часто нужна
+в теле функции, где на то время разрешалась только одна форм. Поэтому
+в теле функции сделали неявный @code{progn}: и теперь в нем разрешается
+несколько форм как в теле @code{progn}. Многие другие управляющие
+структуры тоже содержат неявный @code{progn}.
+В результате, теперь @code{progn} используется не так часто, как раньше.
+Теперь наиболее часто она нужна внутри @code{unwind-protect}, @code{and},
+@code{or} или в @var{then} части @code{if}.
+
+@c   In the early days of Lisp, @code{progn} was the only way to execute
+@c two or more forms in succession and use the value of the last of them.
+@c But programmers found they often needed to use a @code{progn} in the
+@c body of a function, where (at that time) only one form was allowed.  So
+@c the body of a function was made into an implicit @code{progn}:
+@c several forms are allowed just as in the body of an actual @code{progn}.
+@c Many other control structures likewise contain an implicit @code{progn}.
+@c As a result, @code{progn} is not used as much as it was many years ago.
+@c It is needed now most often inside an @code{unwind-protect}, @code{and},
+@c @code{or}, or in the @var{then}-part of an @code{if}.
 
 @defspec progn forms@dots{}
-This special form evaluates all of the @var{forms}, in textual
-order, returning the result of the final form.
+Специальная формы, вычисляет все @var{forms}, в обычном порядке,
+возвращая результат крайней формы.
+
+@c This special form evaluates all of the @var{forms}, in textual
+@c order, returning the result of the final form.
 
 @example
 @group
@@ -97,12 +149,18 @@ order, returning the result of the final form.
 @end example
 @end defspec
 
-  Two other constructs likewise evaluate a series of forms but return
-different values:
+  Две следующих конструкции тоже вычисляют последовательность форм,
+но возвращают другие значения:
+
+@c   Two other constructs likewise evaluate a series of forms but return
+@c different values:
 
 @defspec prog1 form1 forms@dots{}
-This special form evaluates @var{form1} and all of the @var{forms}, in
-textual order, returning the result of @var{form1}.
+Специальная форма вычисляет @var{form1} и все остальные @var{forms}, в
+порядке следования, возвращая результат @var{form1}.
+
+@c This special form evaluates @var{form1} and all of the @var{forms}, in
+@c textual order, returning the result of @var{form1}.
 
 @example
 @group
@@ -116,8 +174,11 @@ textual order, returning the result of @var{form1}.
 @end group
 @end example
 
-Here is a way to remove the first element from a list in the variable
-@code{x}, then return the value of that former element:
+Ниже способ удалить первый элемент из списка в переменной @code{x} и
+вернуть значение удаленного элемента:
+
+@c Here is a way to remove the first element from a list in the variable
+@c @code{x}, then return the value of that former element:
 
 @example
 (prog1 (car x) (setq x (cdr x)))
@@ -125,9 +186,14 @@ Here is a way to remove the first element from a list in the variable
 @end defspec
 
 @defspec prog2 form1 form2 forms@dots{}
-This special form evaluates @var{form1}, @var{form2}, and all of the
-following @var{forms}, in textual order, returning the result of
+Специальная форма вычисляет @var{form1}, @var{form2}, и всех
+следующих @var{forms}, в порядке следования, возвращая результат
 @var{form2}.
+
+
+@c This special form evaluates @var{form1}, @var{form2}, and all of the
+@c following @var{forms}, in textual order, returning the result of
+@c @var{form2}.
 
 @example
 @group
@@ -143,28 +209,49 @@ following @var{forms}, in textual order, returning the result of
 @end defspec
 
 @node Conditionals
-@section Conditionals
+@section Условное выполнение
 @cindex conditional evaluation
 
-  Conditional control structures choose among alternatives.  Emacs Lisp
-has four conditional forms: @code{if}, which is much the same as in
-other languages; @code{when} and @code{unless}, which are variants of
-@code{if}; and @code{cond}, which is a generalized case statement.
+  Условные управляющие структуры выбирают поток управления из
+нескольких альтернатив. Emacs Lisp имеет четыре управляющих
+конструкции: @code{if}, который практически такой же как в других
+языках, @code{when} и @code{unless}, являются вариантами @code{if},
+и @code{cond}, который является case выражением.
+
+@c   Conditional control structures choose among alternatives.  Emacs Lisp
+@c has four conditional forms: @code{if}, which is much the same as in
+@c other languages; @code{when} and @code{unless}, which are variants of
+@c @code{if}; and @code{cond}, which is a generalized case statement.
 
 @defspec if condition then-form else-forms@dots{}
-@code{if} chooses between the @var{then-form} and the @var{else-forms}
-based on the value of @var{condition}.  If the evaluated @var{condition} is
-non-@code{nil}, @var{then-form} is evaluated and the result returned.
-Otherwise, the @var{else-forms} are evaluated in textual order, and the
-value of the last one is returned.  (The @var{else} part of @code{if} is
-an example of an implicit @code{progn}.  @xref{Sequencing}.)
+@code{if} на основе @var{condition} определяет какая из форм
+@var{then-form} и @var{else-forms} будет выполнена.
+Если вычисление @var{condition} не-@code{nil}, будет выполнена
+@var{then-form} и возвращается ее результат. Иначе выполняется
+@var{else-forms} и возвращается ее результат. (@var{else} часть @code{if}
+является примером неявного @code{progn} и может содержать несколько выражений.
+@xref{Sequencing}.)
 
-If @var{condition} has the value @code{nil}, and no @var{else-forms} are
-given, @code{if} returns @code{nil}.
+@c @code{if} chooses between the @var{then-form} and the @var{else-forms}з
+@c based on the value of @var{condition}.  If the evaluated @var{condition} is
+@c non-@code{nil}, @var{then-form} is evaluated and the result returned.
+@c Otherwise, the @var{else-forms} are evaluated in textual order, and the
+@c value of the last one is returned.  (The @var{else} part of @code{if} is
+@c an example of an implicit @code{progn}.  @xref{Sequencing}.)
 
-@code{if} is a special form because the branch that is not selected is
-never evaluated---it is ignored.  Thus, in this example,
-@code{true} is not printed because @code{print} is never called:
+Если @var{condition} @code{nil}, и @var{else-forms} не задано,
+@code{if} вернет @code{nil}.
+
+@c If @var{condition} has the value @code{nil}, and no @var{else-forms} are
+@c given, @code{if} returns @code{nil}.
+
+@code{if} является специальной формой, потому что та ветка вычисления которая,
+не выбрана не вычисляется --- игнорируется. Таким образом, в этом примере
+@code{true} не печатается потому что @code{print} не вызывается:
+
+@c @code{if} is a special form because the branch that is not selected is
+@c never evaluated---it is ignored.  Thus, in this example,
+@c @code{true} is not printed because @code{print} is never called:
 
 @example
 @group
@@ -177,15 +264,20 @@ never evaluated---it is ignored.  Thus, in this example,
 @end defspec
 
 @defmac when condition then-forms@dots{}
-This is a variant of @code{if} where there are no @var{else-forms},
-and possibly several @var{then-forms}.  In particular,
+Данный макрос является вариантом @code{if}, где нет @var{else-forms},
+и возможно несколько @var{then-forms}. В частности,
+
+@c This is a variant of @code{if} where there are no @var{else-forms},
+@c and possibly several @var{then-forms}.  In particular,
 
 @example
 (when @var{condition} @var{a} @var{b} @var{c})
 @end example
 
 @noindent
-is entirely equivalent to
+является эквивалентом для
+
+@c is entirely equivalent to
 
 @example
 (if @var{condition} (progn @var{a} @var{b} @var{c}) nil)
@@ -193,14 +285,17 @@ is entirely equivalent to
 @end defmac
 
 @defmac unless condition forms@dots{}
-This is a variant of @code{if} where there is no @var{then-form}:
+Это вариант @code{if} где нет @var{then-form}:
+
+@c This is a variant of @code{if} where there is no @var{then-form}:
 
 @example
 (unless @var{condition} @var{a} @var{b} @var{c})
 @end example
 
 @noindent
-is entirely equivalent to
+является эквивалентом для
+@c is entirely equivalent to
 
 @example
 (if @var{condition} nil
@@ -209,40 +304,67 @@ is entirely equivalent to
 @end defmac
 
 @defspec cond clause@dots{}
-@code{cond} chooses among an arbitrary number of alternatives.  Each
-@var{clause} in the @code{cond} must be a list.  The @sc{car} of this
-list is the @var{condition}; the remaining elements, if any, the
-@var{body-forms}.  Thus, a clause looks like this:
+@code{cond} делает выбор из произвольного количества альтернатив.
+Каждый @var{clause} в @code{cond} должен быть списком. @sc{car}
+таких списком является @var{condition}, а остальные элементы, если
+есть, @var{body-forms}. Таким образом выражение выглядит следующим
+образом:
+
+@c @code{cond} chooses among an arbitrary number of alternatives.  Each
+@c @var{clause} in the @code{cond} must be a list.  The @sc{car} of this
+@c list is the @var{condition}; the remaining elements, if any, the
+@c @var{body-forms}.  Thus, a clause looks like this:
 
 @example
 (@var{condition} @var{body-forms}@dots{})
 @end example
 
-@code{cond} tries the clauses in textual order, by evaluating the
-@var{condition} of each clause.  If the value of @var{condition} is
-non-@code{nil}, the clause succeeds; then @code{cond} evaluates its
-@var{body-forms}, and returns the value of the last of @var{body-forms}.
-Any remaining clauses are ignored.
+@code{cond} проверяет clauses (выражения) по порядку путем вычисления
+@var{condition} для каждого выражения. Если значение @var{condition}
+не-@code{nil}, выполняется остальная часть @var{body-forms} этого clause,
+и возвращается значение крайнего выражения @var{body-forms}.
+Остальные выражения @code{cond} игнорируются.
+ 
+@c @code{cond} tries the clauses in textual order, by evaluating the
+@c @var{condition} of each clause.  If the value of @var{condition} is
+@c non-@code{nil}, the clause succeeds; then @code{cond} evaluates its
+@c @var{body-forms}, and returns the value of the last of @var{body-forms}.
+@c Any remaining clauses are ignored.
 
-If the value of @var{condition} is @code{nil}, the clause fails, so
-the @code{cond} moves on to the following clause, trying its @var{condition}.
+Если значение @var{condition} @code{nil}, выражение проверка считается
+не пройденной, и @code{cond} переходит к следующему clause(выражению),
+проверяя его @var{condition}.
 
-A clause may also look like this:
+@c If the value of @var{condition} is @code{nil}, the clause fails, so
+@c the @code{cond} moves on to the following clause, trying its @var{condition}.
+
+Выражение может выглядеть так:
+@c A clause may also look like this:
 
 @example
 (@var{condition})
 @end example
 
 @noindent
-Then, if @var{condition} is non-@code{nil} when tested, the @code{cond}
-form returns the value of @var{condition}.
+Тогда если @var{condition} не-@code{nil}, при проверке, @code{cond}
+форма возвращает значение @var{condition}.
 
-If every @var{condition} evaluates to @code{nil}, so that every clause
-fails, @code{cond} returns @code{nil}.
+@c Then, if @var{condition} is non-@code{nil} when tested, the @code{cond}
+@c form returns the value of @var{condition}.
 
-The following example has four clauses, which test for the cases where
-the value of @code{x} is a number, string, buffer and symbol,
-respectively:
+Если все @var{condition} вычисляются в @code{nil}, @code{code}
+возвращает @code{nil}.
+
+@c If every @var{condition} evaluates to @code{nil}, so that every clause
+@c fails, @code{cond} returns @code{nil}.
+
+Следующий пример содержит четыре выражения, в которых проверяется
+является ли @code{x} числом, строкой, буфером и символом,
+соответственно:
+
+@c The following example has four clauses, which test for the cases where
+@c the value of @code{x} is a number, string, buffer and symbol,
+@c respectively:
 
 @example
 @group
@@ -255,12 +377,18 @@ respectively:
 @end group
 @end example
 
-Often we want to execute the last clause whenever none of the previous
-clauses was successful.  To do this, we use @code{t} as the
-@var{condition} of the last clause, like this: @code{(t
-@var{body-forms})}.  The form @code{t} evaluates to @code{t}, which is
-never @code{nil}, so this clause never fails, provided the @code{cond}
-gets to it at all.  For example:
+Часто нужно выполнить крайнее выражение, если ни одно из предыдущих
+не прошло проверку. Для этого стоит использовать @code{t},
+в качестве @var{condition} для крайнего выражения:
+@code{(t @var{body-forms})}. Форма @code{t} вычисляется в @code{t},
+поэтому выражение всегда выполняется.
+
+@c Often we want to execute the last clause whenever none of the previous
+@c clauses was successful.  To do this, we use @code{t} as the
+@c @var{condition} of the last clause, like this: @code{(t
+@c @var{body-forms})}.  The form @code{t} evaluates to @code{t}, which is
+@c never @code{nil}, so this clause never fails, provided the @code{cond}
+@c gets to it at all.  For example:
 
 @example
 @group
@@ -272,13 +400,21 @@ gets to it at all.  For example:
 @end example
 
 @noindent
-This @code{cond} expression returns @code{foo} if the value of @code{a}
-is @code{hack}, and returns the string @code{"default"} otherwise.
+Данное @code{cond} возвращает @code{foo} если значение @code{a}
+равно @code{hack}, и возвращает @code{"default"} в остальных
+случаях.
+
+@c This @code{cond} expression returns @code{foo} if the value of @code{a}
+@c is @code{hack}, and returns the string @code{"default"} otherwise.
 @end defspec
 
-Any conditional construct can be expressed with @code{cond} or with
-@code{if}.  Therefore, the choice between them is a matter of style.
-For example:
+Условная конструкция может быть выражена с использованием
+@code{cond} или @code{if}. Выбор между ними дело стиля.
+Например:
+
+@c Any conditional construct can be expressed with @code{cond} or with
+@c @code{if}.  Therefore, the choice between them is a matter of style.
+@c For example:
 
 @example
 @group
@@ -293,110 +429,206 @@ For example:
 @end menu
 
 @node Pattern matching case statement
-@subsection Pattern matching case statement
+@subsection Соответствие шаблону в case выражении
 @cindex pcase
 @cindex pattern matching
 
-The @code{cond} form lets you choose between alternatives using
-predicate conditions that compare values of expressions against
-specific values known and written in advance.  However, sometimes it
-is useful to select alternatives based on more general conditions that
-distinguish between broad classes of values.  The @code{pcase} macro
-allows you to choose between alternatives based on matching the value
-of an expression against a series of patterns.  A pattern can be a
-literal value (for comparisons to literal values you'd use
-@code{cond}), or it can be a more general description of the expected
-structure of the expression's value.
+Форма @code{cond} поддерживает две альтернативы: использование
+предикатов для проверки значений или продвинутый способ.  Но,
+иногда полезно иметь возможность выбора с более общими условиями
+чем классы значений. Макрос @code{pcase} позволяет сделать
+выбор основываясь на соответствии значения выражения шаблонам.
+Шаблон может быть литеральным значением (literal value) (
+для таких сравнений подходить @code{cond}), или более общим
+описанием структуры значения выражения.
+
+@c The @code{cond} form lets you choose between alternatives using
+@c predicate conditions that compare values of expressions against
+@c specific values known and written in advance.  However, sometimes it
+@c is useful to select alternatives based on more general conditions that
+@c distinguish between broad classes of values.  The @code{pcase} macro
+@c allows you to choose between alternatives based on matching the value
+@c of an expression against a series of patterns.  A pattern can be a
+@c literal value (for comparisons to literal values you'd use
+@c @code{cond}), or it can be a more general description of the expected
+@c structure of the expression's value.
 
 @defmac pcase expression &rest clauses
-Evaluate @var{expression} and choose among an arbitrary number of
-alternatives based on the value of @var{expression}.  The possible
-alternatives are specified by @var{clauses}, each of which must be a
-list of the form @code{(@var{pattern} @var{body-forms}@dots{})}.
-@code{pcase} tries to match the value of @var{expression} to the
-@var{pattern} of each clause, in textual order.  If the value matches,
-the clause succeeds; @code{pcase} then evaluates its @var{body-forms},
-and returns the value of the last of @var{body-forms}.  Any remaining
-@var{clauses} are ignored.
+Выполняет вычисление @var{expression} и делает выбор из
+заданного набора альтернатив основываясь на значении @var{expression}.
+Альтернативы задаются @var{clauses}, каждая из которых должна быть
+списком вида @code{(@var{pattern} @var{body-forms}@dots{})}.
+@code{pcase} пытается сопоставить значения 
+@var{expression} с @var{pattern} из каждого clause (предложения).
+Если было найдено соответствие, @code{pcase} вычисления @var{body-forms}
+из clause и возвращает значение крайнего выражения в @var{body-forms}.
+Оставшиеся не проверенными @var{clauses} игнорируются.
 
-The @var{pattern} part of a clause can be of one of two types:
-@dfn{QPattern}, a pattern quoted with a backquote; or a
-@dfn{UPattern}, which is not quoted.  UPatterns are simpler, so we
-describe them first.
+@c Evaluate @var{expression} and choose among an arbitrary number of
+@c alternatives based on the value of @var{expression}.  The possible
+@c alternatives are specified by @var{clauses}, each of which must be a
+@c list of the form @code{(@var{pattern} @var{body-forms}@dots{})}.
+@c @code{pcase} tries to match the value of @var{expression} to the
+@c @var{pattern} of each clause, in textual order.  If the value matches,
+@c the clause succeeds; @code{pcase} then evaluates its @var{body-forms},
+@c and returns the value of the last of @var{body-forms}.  Any remaining
+@c @var{clauses} are ignored.
 
-Note: In the description of the patterns below, we use ``the value
-being matched'' to refer to the value of the @var{expression} that is
-the first argument of @code{pcase}.
+@var{pattern} может быть одного из следующих типов:
+@dfn{QPattern}, шаблон квотированный обратной кавычкой,
+или @dfn{UPattern}, не квотированный шаблон. @dfn{UPattern}
+проще, поэтому будет описан первым.
 
-A UPattern can have the following forms:
+@c The @var{pattern} part of a clause can be of one of two types:
+@c @dfn{QPattern}, a pattern quoted with a backquote; or a
+@c @dfn{UPattern}, which is not quoted.  UPatterns are simpler, so we
+@c describe them first.
+
+Примечение: в описании шаблонов ниже, будет использовать
+``проверяемое значение'' для описания значения @var{expression},
+являющегося первым аргументом @code{pcase}.
+
+@c Note: In the description of the patterns below, we use ``the value
+@c being matched'' to refer to the value of the @var{expression} that is
+@c the first argument of @code{pcase}.
+
+UPatter может быть одной из следующих форм:
+
+@c A UPattern can have the following forms:
 
 @table @code
 
 @item '@var{val}
-Matches if the value being matched is @code{equal} to @var{val}.
+Соответствует если проверяемое значение  @code{equal} @var{val}.
+
+@c Matches if the value being matched is @code{equal} to @var{val}.
 @item @var{atom}
-Matches any @var{atom}, which can be a keyword, a number, or a string.
-(These are self-quoting, so this kind of UPattern is actually a
-shorthand for @code{'@var{atom}}.)  Note that a string or a float
-matches any string or float with the same contents/value.
+Проверяется соответствие @var{atom} с проверяемым значением.
+@var{atom} может быть ключевым словом,
+числом или строкой. (Так как квотированный @var{atom} равен самому
+атому, то это по сути сокращение для @code{'@var{atom}}.)  Стоит
+отметить, что строка или число с плавающей точкой соответствуют любой
+строки или числу с плавающей точкой с тем же содержимым.
+
+@c Matches any @var{atom}, which can be a keyword, a number, or a string.
+@c (These are self-quoting, so this kind of UPattern is actually a
+@c shorthand for @code{'@var{atom}}.)  Note that a string or a float
+@c matches any string or float with the same contents/value.
 @item _
-Matches any value.  This is known as @dfn{don't care} or @dfn{wildcard}.
+Соответствует любому значению. Данный шаблон известен как @dfn{don't care}
+или @dfn{wildcard}.
+
+@c Matches any value.  This is known as @dfn{don't care} or @dfn{wildcard}.
 @item @var{symbol}
-Matches any value, and additionally let-binds @var{symbol} to the
-value it matched, so that you can later refer to it, either in the
-@var{body-forms} or also later in the pattern.
+Соответствует любому значению, и в дополнение выполняет let-привязку
+значения к @var{symbol}, в результате чего @var{symbol} можно использовать
+в @var{body-forms} или позднее в шаблоне.
+
+@c Matches any value, and additionally let-binds @var{symbol} to the
+@c value it matched, so that you can later refer to it, either in the
+@c @var{body-forms} or also later in the pattern.
 @item (pred @var{predfun})
-Matches if the predicate function @var{predfun} returns non-@code{nil}
-when called with the value being matched as its argument.
-@var{predfun} can be one of the possible forms described below.
+Соответствует если функция предикат @var{predfun} возвращает не-@code{nil}
+при вызове с проверяемым значением в качестве аргумента.
+@var{predfun} может быть одной из форм описанных ниже.
+
+@c Matches if the predicate function @var{predfun} returns non-@code{nil}
+@c when called with the value being matched as its argument.
+@c @var{predfun} can be one of the possible forms described below.
+
 @item (guard @var{boolean-expression})
-Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
-allows you to include in a UPattern boolean conditions that refer to
-symbols bound to values (including the value being matched) by
-previous UPatterns.  Typically used inside an @code{and} UPattern, see
-below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
-which matches any number smaller than 10 and let-binds the variable
-@code{x} to that number.
+Соответствует если @var{boolean-expression} вычисляется в не-@code{nil}.
+Данное правило позволяет включить в UPattern булево условие
+которое использует связывание символов (в том числе проверяемого значения)
+предыдущими UPatterns. Как правило используется внутри @code{and} UPattern,
+см. ниже.
+Например, @w{@code{(and x (guard (< x 10)))}} шаблон, который
+соответствует любому числу меньше чем 10 и связывает переменную
+@code{х} с этим числом.
+
+@c Matches if @var{boolean-expression} evaluates to non-@code{nil}.  This
+@c allows you to include in a UPattern boolean conditions that refer to
+@c symbols bound to values (including the value being matched) by
+@c previous UPatterns.  Typically used inside an @code{and} UPattern, see
+@c below.  For example, @w{@code{(and x (guard (< x 10)))}} is a pattern
+@c which matches any number smaller than 10 and let-binds the variable
+@c @code{x} to that number.
 @item (let @var{upattern} @var{expression})
-Matches if the specified @var{expression} matches the specified
-@var{upattern}.  This allows matching a pattern against the value of
-an @emph{arbitrary} expression, not just the expression that is the
-first argument to @code{pcase}.  (It is called @code{let} because
-@var{upattern} can bind symbols to values using the @var{symbol}
-UPattern.  For example:
+Соответствует если @var{expression} соответствует @var{upattern}.
+Данное правило позволяет делать сопоставление шаблона
+и @emph{произвольного} выражения, а не только выражения являющегося
+первым аргументом @code{pcase}. (Тут вызывается @code{let}, потому
+что @var{upattern}, может задавать значения символам используя
+@var{symbol} UPattern).
+Например:
 @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
+
+@c Matches if the specified @var{expression} matches the specified
+@c @var{upattern}.  This allows matching a pattern against the value of
+@c an @emph{arbitrary} expression, not just the expression that is the
+@c first argument to @code{pcase}.  (It is called @code{let} because
+@c @var{upattern} can bind symbols to values using the @var{symbol}
+@c UPattern.  For example:
+@c @w{@code{((or `(key . ,val) (let val 5)) val)}}.)
 @item (app @var{function} @var{upattern})
-Matches if @var{function} applied to the value being matched returns a
-value that matches @var{upattern}.  This is like the @code{pred}
-UPattern, except that it tests the result against @var{upattern},
-rather than against a boolean truth value.  The @var{function} call can
-use one of the forms described below.
+Соответствует если @var{function} примененная к проверяемому значению
+вернет значение которое соответствует @var{upattern}.
+Данный пункт аналогичен @code{pred} UPattern, за исключением того что
+проверяется соответствие @var{upattern}, а не просто проверка на истинность.
+Вызов @var{function} может использовать одну из следующих форм, описанных ниже.
+
+@c Matches if @var{function} applied to the value being matched returns a
+@c value that matches @var{upattern}.  This is like the @code{pred}
+@c UPattern, except that it tests the result against @var{upattern},
+@c rather than against a boolean truth value.  The @var{function} call can
+@c use one of the forms described below.
 @item (or @var{upattern1} @var{upattern2}@dots{})
-Matches if one the argument UPatterns matches.  As soon as the first
-matching UPattern is found, the rest are not tested.  For this reason,
-if any of the UPatterns let-bind symbols to the matched value, they
-should all bind the same symbols.
+Соответствует если один из UPattern соответствует. Если первое
+соответствие найдено, оставшиеся UPattern не проверяются. По этой
+причине, если какие-то UPatterns задают символов через let они
+должны задавать значения одним и тем же символам.
+ 
+@c Matches if one the argument UPatterns matches.  As soon as the first
+@c matching UPattern is found, the rest are not tested.  For this reason,
+@c if any of the UPatterns let-bind symbols to the matched value, they
+@c should all bind the same symbols.
 @item (and @var{upattern1} @var{upattern2}@dots{})
-Matches if all the argument UPatterns match.
+Соответствует если все аргументы UPattern соответствуют.
+@c Matches if all the argument UPatterns match.
 @end table
 
-The function calls used in the @code{pred} and @code{app} UPatterns
-can have one of the following forms:
+При вызовах функции используемые в @code{pred} и @code{app} UPatterns
+могут иметь одну из следующих форм:
+
+@c The function calls used in the @code{pred} and @code{app} UPatterns
+@c can have one of the following forms:
 
 @table @asis
 @item function symbol, like @code{integerp}
-In this case, the named function is applied to the value being
-matched.
+В данном случае, именованная функция применяется к проверяемому
+значению.
+
+@c In this case, the named function is applied to the value being
+@c matched.
 @item lambda-function @code{(lambda (@var{arg}) @var{body})}
-In this case, the lambda-function is called with one argument, the
-value being matched.
+В этом случае, лямда функция вызывается с одним аргументом,
+проверяемым значением.
+
+@c In this case, the lambda-function is called with one argument, the
+@c value being matched.
 @item @code{(@var{func} @var{args}@dots{})}
-This is a function call with @var{n} specified arguments; the function
-is called with these @var{n} arguments and an additional @var{n}+1-th
-argument that is the value being matched.
+Вызов функции с @var{n} аргументами, функция вызывается с этими
+@var{n} аргументами и дополнительным @var{n}+1-ым аргументом
+проверяемым значением.
+
+@c This is a function call with @var{n} specified arguments; the function
+@c is called with these @var{n} arguments and an additional @var{n}+1-th
+@c argument that is the value being matched.
 @end table
 
-Here's an illustrative example of using UPatterns:
+Ниже показательный пример использования UPatterns:
+
+@c Here's an illustrative example of using UPatterns:
 
 @c FIXME: This example should use every one of the UPatterns described
 @c above at least once.
@@ -409,47 +641,84 @@ Here's an illustrative example of using UPatterns:
   (code           (message "Unknown return code %S" code)))
 @end example
 
-In addition, you can use backquoted patterns that are more powerful.
-They allow matching the value of the @var{expression} that is the
-first argument of @code{pcase} against specifications of its
-@emph{structure}.  For example, you can specify that the value must be
-a list of 2 elements whose first element is a specific string and the
-second element is any value with a backquoted pattern like
-@code{`("first" ,second-elem)}.
+Дополнительно можно использовать шаблоны с обратной кавычкой, которые
+более мощные. Они позволяют определять соответствие выражения
+@var{expression} являющегося первым аргументом @code{pcase} со
+спецификациями его @emph{структуры}. Например, можно задать, что
+значение должно быть списком из 2 элементов, первый элемент которого
+заданная строка, а второй элемент любое значение удовлетворяющее
+шаблону @code{`("first" ,second-elem)}.
 
-Backquoted patterns have the form @code{`@var{qpattern}} where
-@var{qpattern} can have the following forms:
+@c In addition, you can use backquoted patterns that are more powerful.
+@c They allow matching the value of the @var{expression} that is the
+@c first argument of @code{pcase} against specifications of its
+@c @emph{structure}.  For example, you can specify that the value must be
+@c a list of 2 elements whose first element is a specific string and the
+@c second element is any value with a backquoted pattern like
+@c @code{`("first" ,second-elem)}.
+
+Шаблоны с обратной кавычкой имеют форму @code{`@var{qpattern}}, где
+@var{qpattern} может иметь одну из следующих форм:
+
+@c Backquoted patterns have the form @code{`@var{qpattern}} where
+@c @var{qpattern} can have the following forms:
 
 @table @code
 @item (@var{qpattern1} . @var{qpattern2})
-Matches if the value being matched is a cons cell whose @code{car}
-matches @var{qpattern1} and whose @code{cdr} matches @var{qpattern2}.
-This readily generalizes to backquoted lists as in
-@w{@code{(@var{qpattern1} @var{qpattern2} @dots{})}}.
+Соответствует если проверяемое значение cons ячейка чей @code{car}
+соответствует @var{qpattern1} и @code{cdr} соответствует @var{qpattern2}.
+Данное правило может быть обобщено до списков с обратной
+кавычкой @w{@code{(@var{qpattern1} @var{qpattern2} @dots{})}}.
+ 
+@c Matches if the value being matched is a cons cell whose @code{car}
+@c matches @var{qpattern1} and whose @code{cdr} matches @var{qpattern2}.
+@c This readily generalizes to backquoted lists as in
+@c @w{@code{(@var{qpattern1} @var{qpattern2} @dots{})}}.
 @item [@var{qpattern1} @var{qpattern2} @dots{} @var{qpatternm}]
-Matches if the value being matched is a vector of length @var{m} whose
-@code{0}..@code{(@var{m}-1)}th elements match @var{qpattern1},
-@var{qpattern2} @dots{} @var{qpatternm}, respectively.
+Соответствует если проверяемое значение вектор длины @var{m}, чьи
+@code{0}..@code{(@var{m}-1)} элементы, соответствуют
+@var{qpattern1},
+@var{qpattern2} @dots{} @var{qpatternm}, соответственно.
+
+@c Matches if the value being matched is a vector of length @var{m} whose
+@c @code{0}..@code{(@var{m}-1)}th elements match @var{qpattern1},
+@c @var{qpattern2} @dots{} @var{qpatternm}, respectively.
 @item @var{atom}
-Matches if corresponding element of the value being matched is
-@code{equal} to the specified @var{atom}.
+Соответствует если рассматриваемый элемент проверяемого значения
+@code{equal} заданному @var{atom}.
+ 
+@c Matches if corresponding element of the value being matched is
+@c @code{equal} to the specified @var{atom}.
 @item ,@var{upattern}
-Matches if the corresponding element of the value being matched
-matches the specified @var{upattern}.
+Соответствует если соответствующий элемент проверяемого значения
+соответствует заданному @var{upattern}.
+
+@c Matches if the corresponding element of the value being matched
+@c matches the specified @var{upattern}.
 @end table
 
-Note that uses of QPatterns can be expressed using only UPatterns, as
-QPatterns are implemented on top of UPatterns using
-@code{pcase-defmacro}, described below.  However, using QPatterns will
-in many cases lead to a more readable code.
+Стоит отметить, что QPatterns могут быть выражены через UPatterns,
+так как QPatterns определяются поверх UPatterns с использованием
+@code{pcase-defmacro}, описанного ниже. Но, использование QPatterns
+во многих случаях позволяет писать более читаемый код.
+
+@c Note that uses of QPatterns can be expressed using only UPatterns, as
+@c QPatterns are implemented on top of UPatterns using
+@c @code{pcase-defmacro}, described below.  However, using QPatterns will
+@c in many cases lead to a more readable code.
+
 @c FIXME: There should be an example here showing how a 'pcase' that
 @c uses QPatterns can be rewritten using UPatterns.
 
 @end defmac
 
-Here is an example of using @code{pcase} to implement a simple
-interpreter for a little expression language (note that this example
-requires lexical binding, @pxref{Lexical Binding}):
+Ниже пример использования @code{pcase} для реализации простого
+интерпретатора для простого языка. (данный пример требует
+лексической области видимости, @pxref{Lexical Binding}).
+
+@c Here is an example of using @code{pcase} to implement a simple
+@c interpreter for a little expression language (note that this example
+@c requires lexical binding, @pxref{Lexical Binding}):
 
 @example
 (defun evaluate (exp env)
@@ -463,19 +732,33 @@ requires lexical binding, @pxref{Lexical Binding}):
     (_                  (error "Unknown expression %S" exp))))
 @end example
 
-Here @code{`(add ,x ,y)} is a pattern that checks that @code{exp} is a
-three-element list starting with the literal symbol @code{add}, then
-extracts the second and third elements and binds them to the variables
-@code{x} and @code{y}.  Then it evaluates @code{x} and @code{y} and
-adds the results.  The @code{call} and @code{fn} patterns similarly
-implement two flavors of function calls.  @code{(pred numberp)} is a
-pattern that simply checks that @code{exp} is a number and if so,
-evaluates it.  @code{(pred symbolp)} matches symbols, and returns
-their association.  Finally, @code{_} is the catch-all pattern that
-matches anything, so it's suitable for reporting syntax errors.
+В примере @code{`(add ,x ,y)} шаблон который проверяет, что @code{exp}
+список из 3 элементов, начинающийся с символа @code{add}, а затем
+получает второй и третий элементы списка и сохраняет их в
+@code{x} и @code{y}. Затем вычисляется @code{x} и @code{y} и складываются
+результаты. @code{call} и @code{fn} шаблоны похожим образом реализуют два
+вида вызова функций. @code{(pred numberp)} шаблон который просто проверяет,
+что @code{exp} число. @code{(pred symbolp)} соответствует символам, и возвращает
+ассоциацию из окружения для этого символа. Крайний @code{_}, шаблон который
+соответствует всем остальным значениям, и используется для сообщения
+о синтаксической ошибке.
 
-Here are some sample programs in this small language, including their
-evaluation results:
+@c Here @code{`(add ,x ,y)} is a pattern that checks that @code{exp} is a
+@c three-element list starting with the literal symbol @code{add}, then
+@c extracts the second and third elements and binds them to the variables
+@c @code{x} and @code{y}.  Then it evaluates @code{x} and @code{y} and
+@c adds the results.  The @code{call} and @code{fn} patterns similarly
+@c implement two flavors of function calls.  @code{(pred numberp)} is a
+@c pattern that simply checks that @code{exp} is a number and if so,
+@c evaluates it.  @code{(pred symbolp)} matches symbols, and returns
+@c their association.  Finally, @code{_} is the catch-all pattern that
+@c matches anything, so it's suitable for reporting syntax errors.
+
+Ниже примеры программ, для данного простейшего языка, включающие
+результаты их вычислений:
+
+@c Here are some sample programs in this small language, including their
+@c evaluation results:
 
 @example
 (evaluate '(add 1 2) nil)                 ;=> 3
@@ -484,53 +767,90 @@ evaluation results:
 (evaluate '(sub 1 2) nil)                 ;=> error
 @end example
 
-Additional UPatterns can be defined using the @code{pcase-defmacro}
-macro.
+Дополнительные UPatterns могут быть определены
+с использованием макроса @code{pcase-defmacro}.
+
+@c Additional UPatterns can be defined using the @code{pcase-defmacro}
+@c macro.
 
 @defmac pcase-defmacro name args &rest body
-Define a new kind of UPattern for @code{pcase}.  The new UPattern will
-be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
-should describe how to rewrite the UPattern @var{name} into some other
-UPattern.  The rewriting will be the result of evaluating @var{body}
-in an environment where @var{args} are bound to @var{actual-args}.
+Макрос определяет новый вид UPattern для @code{pcase}. Новый UPattern
+можно будет вызвать @code{(@var{name} @var{actual-args})}. @var{body}
+должно описывать как должен выглядеть UPattern @var{name} в терминах
+других UPattern. Получаемый вид является результатом вычисления @var{body}
+в окружении, где @var{args} связано с @var{actual-args}.
+
+@c Define a new kind of UPattern for @code{pcase}.  The new UPattern will
+@c be invoked as @code{(@var{name} @var{actual-args})}.  The @var{body}
+@c should describe how to rewrite the UPattern @var{name} into some other
+@c UPattern.  The rewriting will be the result of evaluating @var{body}
+@c in an environment where @var{args} are bound to @var{actual-args}.
 @end defmac
 
 @node Combining Conditions
-@section Constructs for Combining Conditions
+@section Конструкции для комбинации условий
 @cindex combining conditions
 
-  This section describes three constructs that are often used together
-with @code{if} and @code{cond} to express complicated conditions.  The
-constructs @code{and} and @code{or} can also be used individually as
-kinds of multiple conditional constructs.
+  Данный раздел описывает три конструкции которые часто используются
+вместе с @code{if} и @code{cond}, для выражения сложных условий.
+Конструкции @code{and} и @code{or} могут так же использоваться
+независимо как вид конструкций с несколькими условиями.
+
+@c   This section describes three constructs that are often used together
+@c with @code{if} and @code{cond} to express complicated conditions.  The
+@c constructs @code{and} and @code{or} can also be used individually as
+@c kinds of multiple conditional constructs.
 
 @defun not condition
-This function tests for the falsehood of @var{condition}.  It returns
-@code{t} if @var{condition} is @code{nil}, and @code{nil} otherwise.
-The function @code{not} is identical to @code{null}, and we recommend
-using the name @code{null} if you are testing for an empty list.
+Функция проверки на ложь условия @var{condition}. Функция возвращает
+@code{t} если @var{condition} @code{nil}, и @code{nil} если нет.
+Функция @code{not} идентичная @code{null}. Рекомендуется использовать
+@code{null} для проверки того, что список пуст.
+
+@c This function tests for the falsehood of @var{condition}.  It returns
+@c @code{t} if @var{condition} is @code{nil}, and @code{nil} otherwise.
+@c The function @code{not} is identical to @code{null}, and we recommend
+@c using the name @code{null} if you are testing for an empty list.
 @end defun
 
 @defspec and conditions@dots{}
-The @code{and} special form tests whether all the @var{conditions} are
-true.  It works by evaluating the @var{conditions} one by one in the
-order written.
+Специальная форма @code{and} проверяет, что все условия @var{conditions}
+верны. Форма работает путем вычисления условий @var{conditions} по
+одно в порядке записи.
 
-If any of the @var{conditions} evaluates to @code{nil}, then the result
-of the @code{and} must be @code{nil} regardless of the remaining
-@var{conditions}; so @code{and} returns @code{nil} right away, ignoring
-the remaining @var{conditions}.
+@c The @code{and} special form tests whether all the @var{conditions} are
+@c true.  It works by evaluating the @var{conditions} one by one in the
+@c order written.
 
-If all the @var{conditions} turn out non-@code{nil}, then the value of
-the last of them becomes the value of the @code{and} form.  Just
-@code{(and)}, with no @var{conditions}, returns @code{t}, appropriate
-because all the @var{conditions} turned out non-@code{nil}.  (Think
-about it; which one did not?)
+Если какое-то из @var{conditions} вычисляется в @code{nil}, тогда
+результат @code{and} будет @code{nil} в не зависимости от значений
+оставшихся @var{conditions}, поэтому @code{and} возвращает @code{nil}
+сразу, игнорируя оставшиеся @var{conditions}.
 
-Here is an example.  The first condition returns the integer 1, which is
-not @code{nil}.  Similarly, the second condition returns the integer 2,
-which is not @code{nil}.  The third condition is @code{nil}, so the
-remaining condition is never evaluated.
+@c If any of the @var{conditions} evaluates to @code{nil}, then the result
+@c of the @code{and} must be @code{nil} regardless of the remaining
+@c @var{conditions}; so @code{and} returns @code{nil} right away, ignoring
+@c the remaining @var{conditions}.
+
+Если все @var{conditions} возвращают не-@code{nil}, тогда
+значение крайнего условия становится значением формы @code{and}.
+Просто @code{(and)} без условий возвращает @code{t}, потому что,
+все условия не @code{nil}.
+
+@c If all the @var{conditions} turn out non-@code{nil}, then the value of
+@c the last of them becomes the value of the @code{and} form.  Just
+@c @code{(and)}, with no @var{conditions}, returns @code{t}, appropriate
+@c because all the @var{conditions} turned out non-@code{nil}.  (Think
+@c about it; which one did not?)
+
+Ниже пример. Первое условие возвращает 1, что не @code{nil}. Аналогично
+второе условие возвращает 2, что тоже не @code{nil}. Третье условие
+возвращает @code{nil}, поэтому оставшиеся условия не вычисляются.
+
+@c Here is an example.  The first condition returns the integer 1, which is
+@c not @code{nil}.  Similarly, the second condition returns the integer 2,
+@c which is not @code{nil}.  The third condition is @code{nil}, so the
+@c remaining condition is never evaluated.
 
 @example
 @group
@@ -541,7 +861,8 @@ remaining condition is never evaluated.
 @end group
 @end example
 
-Here is a more realistic example of using @code{and}:
+Ниже более реальный пример использования @code{and}:
+@c Here is a more realistic example of using @code{and}:
 
 @example
 @group
@@ -551,11 +872,17 @@ Here is a more realistic example of using @code{and}:
 @end example
 
 @noindent
-Note that @code{(car foo)} is not executed if @code{(consp foo)} returns
-@code{nil}, thus avoiding an error.
+@code{(car foo)} не вычисляется если @code{(consp foo)} вернет
+@code{nil}, таким образом ошибки не будет.
 
-@code{and} expressions can also be written using either @code{if} or
-@code{cond}.  Here's how:
+@c Note that @code{(car foo)} is not executed if @code{(consp foo)} returns
+@c @code{nil}, thus avoiding an error.
+
+@code{and} выражение может быть записано с использованием @code{if}
+или @code{cond}. Например:
+
+@c @code{and} expressions can also be written using either @code{if} or
+@c @code{cond}.  Here's how:
 
 @example
 @group
@@ -569,30 +896,48 @@ Note that @code{(car foo)} is not executed if @code{(consp foo)} returns
 @end defspec
 
 @defspec or conditions@dots{}
-The @code{or} special form tests whether at least one of the
-@var{conditions} is true.  It works by evaluating all the
-@var{conditions} one by one in the order written.
+Специальная форма @code{or} проверяет, что хотя бы одно
+из условий @var{conditions} истинно. Форма вычисляет все
+@var{conditions} по одному в порядке записи.
 
-If any of the @var{conditions} evaluates to a non-@code{nil} value, then
-the result of the @code{or} must be non-@code{nil}; so @code{or} returns
-right away, ignoring the remaining @var{conditions}.  The value it
-returns is the non-@code{nil} value of the condition just evaluated.
+@c The @code{or} special form tests whether at least one of the
+@c @var{conditions} is true.  It works by evaluating all the
+@c @var{conditions} one by one in the order written.
 
-If all the @var{conditions} turn out @code{nil}, then the @code{or}
-expression returns @code{nil}.  Just @code{(or)}, with no
-@var{conditions}, returns @code{nil}, appropriate because all the
-@var{conditions} turned out @code{nil}.  (Think about it; which one
-did not?)
+Если какое-то условие @var{conditions} вычисляется в не-@code{nil},
+тогда результат @code{or} будет не-@code{nil}, поэтому @code{or}
+возвращает результат сразу, не вычисляя оставшиеся @var{conditions}.
+@code{or} возвращает значение вычисленного в не-@code{nil} условия.
 
-For example, this expression tests whether @code{x} is either
-@code{nil} or the integer zero:
+@c If any of the @var{conditions} evaluates to a non-@code{nil} value, then
+@c the result of the @code{or} must be non-@code{nil}; so @code{or} returns
+@c right away, ignoring the remaining @var{conditions}.  The value it
+@c returns is the non-@code{nil} value of the condition just evaluated.
+
+Если все @var{conditions} @code{nil}, тогда @code{or} возвращает
+@code{nil}. Просто @code{(or)} без условий возвращает @code{nil}, потому
+что все условия @code{nil}.
+
+@c If all the @var{conditions} turn out @code{nil}, then the @code{or}
+@c expression returns @code{nil}.  Just @code{(or)}, with no
+@c @var{conditions}, returns @code{nil}, appropriate because all the
+@c @var{conditions} turned out @code{nil}.  (Think about it; which one
+@c did not?)
+
+Например, выражение проверяющее что @code{x} @code{nil} или
+число ноль:
+@c For example, this expression tests whether @code{x} is either
+@c @code{nil} or the integer zero:
 
 @example
 (or (eq x nil) (eq x 0))
 @end example
 
-Like the @code{and} construct, @code{or} can be written in terms of
-@code{cond}.  For example:
+Как и @code{and}, @code{or} может быть записана с использованием
+@code{cond}. Например:
+
+@c Like the @code{and} construct, @code{or} can be written in terms of
+@c @code{cond}.  For example:
 
 @example
 @group
@@ -604,7 +949,9 @@ Like the @code{and} construct, @code{or} can be written in terms of
 @end group
 @end example
 
-You could almost write @code{or} in terms of @code{if}, but not quite:
+@code{or} часто можно записать через @code{if}, но всегда это будет корректно:
+
+@c You could almost write @code{or} in terms of @code{if}, but not quite:
 
 @example
 @group
@@ -615,33 +962,56 @@ You could almost write @code{or} in terms of @code{if}, but not quite:
 @end example
 
 @noindent
-This is not completely equivalent because it can evaluate @var{arg1} or
-@var{arg2} twice.  By contrast, @code{(or @var{arg1} @var{arg2}
-@var{arg3})} never evaluates any argument more than once.
+Данный пример не полностью эквивалентен, потому что @var{arg1}
+и @var{arg2} могут вычисляться дважды. А при использовании
+@code{(or @var{arg1} @var{arg2} ни один из аргументов не вычисляется дважды.
+
+@c This is not completely equivalent because it can evaluate @var{arg1} or
+@c @var{arg2} twice.  By contrast, @code{(or @var{arg1} @var{arg2}
+@c @var{arg3})} never evaluates any argument more than once.
 @end defspec
 
 @node Iteration
-@section Iteration
+@section Повторения(Циклы)
 @cindex iteration
 @cindex recursion
 
-  Iteration means executing part of a program repetitively.  For
-example, you might want to repeat some computation once for each element
-of a list, or once for each integer from 0 to @var{n}.  You can do this
-in Emacs Lisp with the special form @code{while}:
+  Циклы подразумевают выполнение части программы несколько раз.
+Например, может понадобится повторить какое-то вычисления для
+каждого элемента списка, или для каждого числа от 0 до @var{n}.
+В Emacs Lisp это можно сделать используя специальную форму
+@code{while}:
+
+@c   Iteration means executing part of a program repetitively.  For
+@c example, you might want to repeat some computation once for each element
+@c of a list, or once for each integer from 0 to @var{n}.  You can do this
+@c in Emacs Lisp with the special form @code{while}:
 
 @defspec while condition forms@dots{}
-@code{while} first evaluates @var{condition}.  If the result is
-non-@code{nil}, it evaluates @var{forms} in textual order.  Then it
-reevaluates @var{condition}, and if the result is non-@code{nil}, it
-evaluates @var{forms} again.  This process repeats until @var{condition}
-evaluates to @code{nil}.
+Специальная форма @code{while} первым делом вычисляет @var{condition}.
+Если значение не-@code{nil}, вычисляются @var{forms} по порядку. Затем
+заново вычисляется @var{condition}, и если значение не-@code{nil}?
+снова вычисляются @var{forms}. Так продолжается пока вычисление
+@var{condition} не вернет @code{nil}.
 
-There is no limit on the number of iterations that may occur.  The loop
-will continue until either @var{condition} evaluates to @code{nil} or
-until an error or @code{throw} jumps out of it (@pxref{Nonlocal Exits}).
+@c @code{while} first evaluates @var{condition}.  If the result is
+@c non-@code{nil}, it evaluates @var{forms} in textual order.  Then it
+@c reevaluates @var{condition}, and if the result is non-@code{nil}, it
+@c evaluates @var{forms} again.  This process repeats until @var{condition}
+@c evaluates to @code{nil}.
 
-The value of a @code{while} form is always @code{nil}.
+Ограничения на количество повторений нет. Цикл будет продолжаться
+пока вычисление @var{condition} не вернет @code{nil} или
+не возникнет ошибка или исключение @code{throw} выведет управление
+за цикл (@pxref{Nonlocal Exits}).
+
+@c There is no limit on the number of iterations that may occur.  The loop
+@c will continue until either @var{condition} evaluates to @code{nil} or
+@c until an error or @code{throw} jumps out of it (@pxref{Nonlocal Exits}).
+
+Значение формы @code{while} всегда @code{nil}.
+ 
+@c The value of a @code{while} form is always @code{nil}.
 
 @example
 @group
@@ -660,10 +1030,15 @@ The value of a @code{while} form is always @code{nil}.
 @end group
 @end example
 
-To write a repeat-until loop, which will execute something on each
-iteration and then do the end-test, put the body followed by the
-end-test in a @code{progn} as the first argument of @code{while}, as
-shown here:
+Для написания цикла repeat-until, который сначала выполняет
+действие, после чего повторяет условие, нужно поместить body
+за тестом на завершение в @code{progn}, как первый аргумент @code{while}.
+Например:
+
+@c To write a repeat-until loop, which will execute something on each
+@c iteration and then do the end-test, put the body followed by the
+@c end-test in a @code{progn} as the first argument of @code{while}, as
+@c shown here:
 
 @example
 @group
@@ -674,20 +1049,34 @@ shown here:
 @end example
 
 @noindent
-This moves forward one line and continues moving by lines until it
-reaches an empty line.  It is peculiar in that the @code{while} has no
-body, just the end test (which also does the real work of moving point).
+В данном примере строка перемещается на вперед и продолжает
+двигать строку, пока не будет достигнута пустая строка.
+В данном случае @code{while} не имеет тела, а только
+условие завершения, в котором в том числе выполняется реальная работа.
+
+@c This moves forward one line and continues moving by lines until it
+@c reaches an empty line.  It is peculiar in that the @code{while} has no
+@c body, just the end test (which also does the real work of moving point).
 @end defspec
 
-  The @code{dolist} and @code{dotimes} macros provide convenient ways to
-write two common kinds of loops.
+  Макросы @code{dolist} и @code{dotimes} предоставляют удобный способ
+написания двух распространенных видов циклов.
+
+@c   The @code{dolist} and @code{dotimes} macros provide convenient ways to
+@c write two common kinds of loops.
 
 @defmac dolist (var list [result]) body@dots{}
-This construct executes @var{body} once for each element of
-@var{list}, binding the variable @var{var} locally to hold the current
-element.  Then it returns the value of evaluating @var{result}, or
-@code{nil} if @var{result} is omitted.  For example, here is how you
-could use @code{dolist} to define the @code{reverse} function:
+Данная конструкция выполняет тело @var{body} для каждого элемента
+@var{list}, при этом в переменной @var{var} хранится значение
+текущего элемента. Форма возвращает значение @var{result}, или
+@code{nil} если @var{result} не задан. Например, так можно
+определить @code{reverse} с использованием @code{dolist}:
+
+@c This construct executes @var{body} once for each element of
+@c @var{list}, binding the variable @var{var} locally to hold the current
+@c element.  Then it returns the value of evaluating @var{result}, or
+@c @code{nil} if @var{result} is omitted.  For example, here is how you
+@c could use @code{dolist} to define the @code{reverse} function:
 
 @example
 (defun reverse (list)
@@ -698,11 +1087,17 @@ could use @code{dolist} to define the @code{reverse} function:
 @end defmac
 
 @defmac dotimes (var count [result]) body@dots{}
-This construct executes @var{body} once for each integer from 0
-(inclusive) to @var{count} (exclusive), binding the variable @var{var}
-to the integer for the current iteration.  Then it returns the value
-of evaluating @var{result}, or @code{nil} if @var{result} is omitted.
-Here is an example of using @code{dotimes} to do something 100 times:
+Макрос выполняет @var{body} для каждого числа от 0 (включительно) до
+@var{count} (не включительно). @var{var} хранит текущее число
+на каждой итерации. Макрос возвращает значение вычисления @var{result},
+либо @code{nil}, если @var{result} не задано. Пример выполнения
+некоторого действия 100 раз:
+
+@c This construct executes @var{body} once for each integer from 0
+@c (inclusive) to @var{count} (exclusive), binding the variable @var{var}
+@c to the integer for the current iteration.  Then it returns the value
+@c of evaluating @var{result}, or @code{nil} if @var{result} is omitted.
+@c Here is an example of using @code{dotimes} to do something 100 times:
 
 @example
 (dotimes (i 100)
@@ -711,98 +1106,168 @@ Here is an example of using @code{dotimes} to do something 100 times:
 @end defmac
 
 @node Generators
-@section Generators
+@section Генераторы
 @cindex generators
 
-  A @dfn{generator} is a function that produces a potentially-infinite
-stream of values.  Each time the function produces a value, it
-suspends itself and waits for a caller to request the next value.
+  @dfn{generator} это функция, которая производит потенциально бесконечный
+потом значений. После того как функция производит значение, она
+приостанавливает свое выполнение, то того как вызывающий код
+запросит следующее значение.
+
+@c   A @dfn{generator} is a function that produces a potentially-infinite
+@c stream of values.  Each time the function produces a value, it
+@c suspends itself and waits for a caller to request the next value.
 
 @defmac iter-defun name args [doc] [declare] [interactive] body@dots{}
-@code{iter-defun} defines a generator function.  A generator function
-has the same signature as a normal function, but works differently.
-Instead of executing @var{body} when called, a generator function
-returns an iterator object.  That iterator runs @var{body} to generate
-values, emitting a value and pausing where @code{iter-yield} or
-@code{iter-yield-from} appears.  When @var{body} returns normally,
-@code{iter-next} signals @code{iter-end-of-sequence} with @var{body}'s
-result as its condition data.
+@code{iter-defun} определяет функцию генератор. Функция генератор имеет
+туже сигнатуру, что и обычная функция, но работает по другому.
+Вместо выполнения @var{body} когда вызывается, функция генератор
+возвращает объект итератор. Итератор вызывает @var{body}, для
+генерации значений, выдачи значения и приостановки, в местах
+где появляется @code{iter-yield} или @code{iter-yield-from}. Когда
+@var{body} завершается обычным образом, @code{iter-next} сигнализирует
+@code{iter-end-of-sequence} с результатом @var{body}.
 
-Any kind of Lisp code is valid inside @var{body}, but
-@code{iter-yield} and @code{iter-yield-from} cannot appear inside
-@code{unwind-protect} forms.
+@c @code{iter-defun} defines a generator function.  A generator function
+@c has the same signature as a normal function, but works differently.
+@c Instead of executing @var{body} when called, a generator function
+@c returns an iterator object.  That iterator runs @var{body} to generate
+@c values, emitting a value and pausing where @code{iter-yield} or
+@c @code{iter-yield-from} appears.  When @var{body} returns normally,
+@c @code{iter-next} signals @code{iter-end-of-sequence} with @var{body}'s
+@c result as its condition data.
+
+Любой вид Lisp кода корректен в @var{body}, но @code{iter-yield} и
+@code{iter-yield-from} не могут находится внутри
+форм @code{unwind-protect}.
+
+@c Any kind of Lisp code is valid inside @var{body}, but
+@c @code{iter-yield} and @code{iter-yield-from} cannot appear inside
+@c @code{unwind-protect} forms.
 
 @end defmac
 
 @defmac iter-lambda args [doc] [interactive] body@dots{}
-@code{iter-lambda} produces an unnamed generator function that works
-just like a generator function produced with @code{iter-defun}.
+@code{iter-lambda} создает анонимную функцию генератор, которая
+работает как функция генератор созданная с использованием @code{iter-defun}.
+
+@c @code{iter-lambda} produces an unnamed generator function that works
+@c just like a generator function produced with @code{iter-defun}.
 @end defmac
 
 @defmac iter-yield value
-When it appears inside a generator function, @code{iter-yield}
-indicates that the current iterator should pause and return
-@var{value} from @code{iter-next}.  @code{iter-yield} evaluates to the
-@code{value} parameter of next call to @code{iter-next}.
+Возвращает @var{value} и приостанавливает работу функции генератора.
+@code{iter-yield}  вычисляет очередное значение для вызова @code{iter-next}.
+
+@c When it appears inside a generator function, @code{iter-yield}
+@c indicates that the current iterator should pause and return
+@c @var{value} from @code{iter-next}.  @code{iter-yield} evaluates to the
+@c @code{value} parameter of next call to @code{iter-next}.
 @end defmac
 
 @defmac iter-yield-from iterator
-@code{iter-yield-from} yields all the values that @var{iterator}
-produces and evaluates to the value that @var{iterator}'s generator
-function returns normally.  While it has control, @var{iterator}
-receives values sent to the iterator using @code{iter-next}.
+@code{iter-yield-from} производит все значения которые @var{iterator}
+может произвести и вычисляет их. Во время выполнения, @var{iterator}
+получается значение через вызов @code{iter-next}.
+
+@c @code{iter-yield-from} yields all the values that @var{iterator}
+@c produces and evaluates to the value that @var{iterator}'s generator
+@c function returns normally.  While it has control, @var{iterator}
+@c receives values sent to the iterator using @code{iter-next}.
 @end defmac
 
-  To use a generator function, first call it normally, producing a
-@dfn{iterator} object.  An iterator is a specific instance of a
-generator.  Then use @code{iter-next} to retrieve values from this
-iterator.  When there are no more values to pull from an iterator,
-@code{iter-next} raises an @code{iter-end-of-sequence} condition with
-the iterator's final value.
+  Для использования функции генератора, нужно сначала вызвать
+ее как обычно, получив объект итератора @dfn{iterator}. Итератор
+это особый экземпляр генератора. Затем нужно использовать @code{iter-next}
+для получения значений из итератора. Когда все значения итератора будут
+получены @code{iter-next} поднимет @code{iter-end-of-sequence} с
+крайним значением итератора.
 
-It's important to note that generator function bodies only execute
-inside calls to @code{iter-next}.  A call to a function defined with
-@code{iter-defun} produces an iterator; you must drive this
-iterator with @code{iter-next} for anything interesting to happen.
-Each call to a generator function produces a @emph{different}
-iterator, each with its own state.
+@c   To use a generator function, first call it normally, producing a
+@c @dfn{iterator} object.  An iterator is a specific instance of a
+@c generator.  Then use @code{iter-next} to retrieve values from this
+@c iterator.  When there are no more values to pull from an iterator,
+@c @code{iter-next} raises an @code{iter-end-of-sequence} condition with
+@c the iterator's final value.
+
+Важно отметить, что тело функции генератора выполняется, только
+внутри вызова @code{iter-next}. Вызов функции созданной через
+@code{iter-defun} создает итератор, для получения значений которого
+нужно использовать @code{iter-next}. Каждый вызов функции
+генератора создает @emph{новый} итератор, каждый со своим состоянием.
+
+@c It's important to note that generator function bodies only execute
+@c inside calls to @code{iter-next}.  A call to a function defined with
+@c @code{iter-defun} produces an iterator; you must drive this
+@c iterator with @code{iter-next} for anything interesting to happen.
+@c Each call to a generator function produces a @emph{different}
+@c iterator, each with its own state.
 
 @defun iter-next iterator value
-Retrieve the next value from @var{iterator}.  If there are no more
-values to be generated (because @var{iterator}'s generator function
-returned), @code{iter-next} signals the @code{iter-end-of-sequence}
-condition; the data value associated with this condition is the value
-with which @var{iterator}'s generator function returned.
+Получает очередное значение итератора @var{iterator}. Если значений
+больше нет, функция сигнализирует @code{iter-end-of-sequence}, с данными
+которые возвращает функция генератор.
 
-@var{value} is sent into the iterator and becomes the value to which
-@code{iter-yield} evaluates.  @var{value} is ignored for the first
-@code{iter-next} call to a given iterator, since at the start of
-@var{iterator}'s generator function, the generator function is not
-evaluating any @code{iter-yield} form.
+@c Retrieve the next value from @var{iterator}.  If there are no more
+@c values to be generated (because @var{iterator}'s generator function
+@c returned), @code{iter-next} signals the @code{iter-end-of-sequence}
+@c condition; the data value associated with this condition is the value
+@c with which @var{iterator}'s generator function returned.
+
+Значение @var{value} передается в итератор и является значением, для
+которого вычисляется очередной шаг итерации через @code{iter-yield}.
+@var{value} игнорируется для первого вызова @code{iter-next} заданного
+итератора, так как это начало функции генератора, и функция генератор
+не вычисляет форму @code{iter-yield}.
+
+@c @var{value} is sent into the iterator and becomes the value to which
+@c @code{iter-yield} evaluates.  @var{value} is ignored for the first
+@c @code{iter-next} call to a given iterator, since at the start of
+@c @var{iterator}'s generator function, the generator function is not
+@c evaluating any @code{iter-yield} form.
 @end defun
 
 @defun iter-close iterator
-If @var{iterator} is suspended inside an @code{unwind-protect}'s
-@code{bodyform} and becomes unreachable, Emacs will eventually run
-unwind handlers after a garbage collection pass.  (Note that
-@code{iter-yield} is illegal inside an @code{unwind-protect}'s
-@code{unwindforms}.)  To ensure that these handlers are run before
-then, use @code{iter-close}.
+Если var{iterator} приостановлен внутри тела @code{unwind-protect}
+и становится не доступным, Emacs вызовет обработчики unwind после
+сборки мусора. (Стоит отметить, что @code{iter-yield} не корректно внутри
+@code{unwind-protect} @code{unwindforms}). Для, того чтобы они вызывались
+до, стоит использовать use @code{iter-close}.
+
+@c If @var{iterator} is suspended inside an @code{unwind-protect}'s
+@c @code{bodyform} and becomes unreachable, Emacs will eventually run
+@c unwind handlers after a garbage collection pass.  (Note that
+@c @code{iter-yield} is illegal inside an @code{unwind-protect}'s
+@c @code{unwindforms}.)  To ensure that these handlers are run before
+@c then, use @code{iter-close}.
 @end defun
 
-Some convenience functions are provided to make working with
-iterators easier:
+Следующие функции позволяют более просто работать с
+итераторами:
+
+@c Some convenience functions are provided to make working with
+@c iterators easier:
 
 @defmac iter-do (var iterator) body @dots{}
-Run @var{body} with @var{var} bound to each value that
-@var{iterator} produces.
+Выполняет тело @var{body} с переменной @var{var}
+равной очередному элементу итератора.
+(Выполняется @var{body} для всех значений итератора.)
+
+@c Run @var{body} with @var{var} bound to each value that
+@c @var{iterator} produces.
 @end defmac
 
-The Common Lisp loop facility also contains features for working with
-iterators.  See @xref{Loop Facility,,,cl,Common Lisp Extensions}.
+Возможности Common Lisp циклом так же предоставляют возможность
+работы с итераторами. См. @xref{Loop Facility,,,cl,Common Lisp Extensions}.
 
-The following piece of code demonstrates some important principles of
-working with iterators.
+@c The Common Lisp loop facility also contains features for working with
+@c iterators.  See @xref{Loop Facility,,,cl,Common Lisp Extensions}.
+
+Следующий код показывает некоторые важный особенности работы
+с итераторами.
+
+@c The following piece of code demonstrates some important principles of
+@c working with iterators.
 
 @example
 (require 'generator)
@@ -829,31 +1294,45 @@ working with iterators.
 @end example
 
 @node Nonlocal Exits
-@section Nonlocal Exits
+@section Не локальный выход
 @cindex nonlocal exits
 
-  A @dfn{nonlocal exit} is a transfer of control from one point in a
-program to another remote point.  Nonlocal exits can occur in Emacs Lisp
-as a result of errors; you can also use them under explicit control.
-Nonlocal exits unbind all variable bindings made by the constructs being
-exited.
+  @dfn{не локальный выход} (@dfn{не локальный выход}) это переход
+из одного места в другое возможно далекое место программы. Не локальные
+переходы в Emacs Lisp могут происходить при ошибках, и кроме
+того их можно использовать для явного управления. Не локальный
+переход освобождает (unbind), все переменные значения которых
+были заданы в конструкциях их которых выполняется выход.
+
+@c   A @dfn{nonlocal exit} is a transfer of control from one point in a
+@c program to another remote point.  Nonlocal exits can occur in Emacs Lisp
+@c as a result of errors; you can also use them under explicit control.
+@c Nonlocal exits unbind all variable bindings made by the constructs being
+@c exited.
 
 @menu
-* Catch and Throw::     Nonlocal exits for the program's own purposes.
-* Examples of Catch::   Showing how such nonlocal exits can be written.
-* Errors::              How errors are signaled and handled.
-* Cleanups::            Arranging to run a cleanup form if an error happens.
+* Catch and Throw::     Не локальные выходы для целей программы.
+* Examples of Catch::   Как написать не локальный выход.
+* Errors::              Как выполняется сигнализация и обработка ошибок.
+* Cleanups::            Организация запуска формы очистки в случае ошибки.
 @end menu
 
 @node Catch and Throw
-@subsection Explicit Nonlocal Exits: @code{catch} and @code{throw}
+@subsection Явные не локальный выходы: @code{catch} и @code{throw}
 
-  Most control constructs affect only the flow of control within the
-construct itself.  The function @code{throw} is the exception to this
-rule of normal program execution: it performs a nonlocal exit on
-request.  (There are other exceptions, but they are for error handling
-only.)  @code{throw} is used inside a @code{catch}, and jumps back to
-that @code{catch}.  For example:
+  Большинство управляющих конструкций влияют, только на поток управления
+определяемый непосредственно самой конструкцией. Функция @code{throw}
+является исключениям их правила, она выполняет не локальный выход.
+(Есть и другие исключения, но они используются только для обработки ошибок.)
+@code{throw} используется внутри @code{catch} и используется для
+перехода назад к @code{catch}. Например:
+
+@c   Most control constructs affect only the flow of control within the
+@c construct itself.  The function @code{throw} is the exception to this
+@c rule of normal program execution: it performs a nonlocal exit on
+@c request.  (There are other exceptions, but they are for error handling
+@c only.)  @code{throw} is used inside a @code{catch}, and jumps back to
+@c that @code{catch}.  For example:
 
 @example
 @group
@@ -870,87 +1349,156 @@ that @code{catch}.  For example:
 @end example
 
 @noindent
-The @code{throw} form, if executed, transfers control straight back to
-the corresponding @code{catch}, which returns immediately.  The code
-following the @code{throw} is not executed.  The second argument of
-@code{throw} is used as the return value of the @code{catch}.
+Форма @code{throw}, если выполняется, передает управление соответствующей
+@code{catch}. Код следующий за @code{throw} при этом не выполняется.
+Второй аргумент @code{throw} используется в качестве возвращаемого
+значения @code{catch}.
 
-  The function @code{throw} finds the matching @code{catch} based on the
-first argument: it searches for a @code{catch} whose first argument is
-@code{eq} to the one specified in the @code{throw}.  If there is more
-than one applicable @code{catch}, the innermost one takes precedence.
-Thus, in the above example, the @code{throw} specifies @code{foo}, and
-the @code{catch} in @code{foo-outer} specifies the same symbol, so that
-@code{catch} is the applicable one (assuming there is no other matching
-@code{catch} in between).
+@c The @code{throw} form, if executed, transfers control straight back to
+@c the corresponding @code{catch}, which returns immediately.  The code
+@c following the @code{throw} is not executed.  The second argument of
+@c @code{throw} is used as the return value of the @code{catch}.
 
-  Executing @code{throw} exits all Lisp constructs up to the matching
-@code{catch}, including function calls.  When binding constructs such
-as @code{let} or function calls are exited in this way, the bindings
-are unbound, just as they are when these constructs exit normally
-(@pxref{Local Variables}).  Likewise, @code{throw} restores the buffer
-and position saved by @code{save-excursion} (@pxref{Excursions}), and
-the narrowing status saved by @code{save-restriction}.  It also runs
-any cleanups established with the @code{unwind-protect} special form
-when it exits that form (@pxref{Cleanups}).
+  Функция @code{throw} находит соответствующий @code{catch}, основываясь
+на первом аргумента, она ищет @code{catch} чей первый аргумент @code{eq}
+первому аргументу @code{throw}. Если есть несколько подходящих
+@code{catch} выбирается ближайший @code{catch} в стеке выполнения.
+В примере выше, @code{throw} использует в качестве первого аргумента @code{foo}
+и @code{catch} в
+@code{foo-outer} определяется тем же символом, поэтому применяется этот
+@code{catch}.
 
-  The @code{throw} need not appear lexically within the @code{catch}
-that it jumps to.  It can equally well be called from another function
-called within the @code{catch}.  As long as the @code{throw} takes place
-chronologically after entry to the @code{catch}, and chronologically
-before exit from it, it has access to that @code{catch}.  This is why
-@code{throw} can be used in commands such as @code{exit-recursive-edit}
-that throw back to the editor command loop (@pxref{Recursive Editing}).
+@c   The function @code{throw} finds the matching @code{catch} based on the
+@c first argument: it searches for a @code{catch} whose first argument is
+@c @code{eq} to the one specified in the @code{throw}.  If there is more
+@c than one applicable @code{catch}, the innermost one takes precedence.
+@c Thus, in the above example, the @code{throw} specifies @code{foo}, and
+@c the @code{catch} in @code{foo-outer} specifies the same symbol, so that
+@c @code{catch} is the applicable one (assuming there is no other matching
+@c @code{catch} in between).
+
+  Выполнение @code{throw} выходит из всех Lisp конструкций
+до соответствующего @code{catch}, включая вызовы функций. При выходе
+из конструкций связывания @code{let} или вызовов функций привязка значений
+сбрасывается, как если бы выполнение данных конструкций закончилось
+обычным способом (@pxref{Local Variables}). Так же @code{throw},
+восстанавливает буферы и позиции сохраненные  с помощью @code{save-excursion}
+(@pxref{Excursions}) и вложенных статусов сохраненных с использованием
+@code{save-restriction}. Кроме того функции очистки установленные с
+помощью @code{unwind-protect} будут вызваны (@pxref{Cleanups}).
+
+@c   Executing @code{throw} exits all Lisp constructs up to the matching
+@c @code{catch}, including function calls.  When binding constructs such
+@c as @code{let} or function calls are exited in this way, the bindings
+@c are unbound, just as they are when these constructs exit normally
+@c (@pxref{Local Variables}).  Likewise, @code{throw} restores the buffer
+@c and position saved by @code{save-excursion} (@pxref{Excursions}), and
+@c the narrowing status saved by @code{save-restriction}.  It also runs
+@c any cleanups established with the @code{unwind-protect} special form
+@c when it exits that form (@pxref{Cleanups}).
+
+   @code{throw} не нужно входить в одну лексическую конструкцию с
+@code{catch}.  @code{throw} может быть вызван из другой функции
+вызванной внутри @code{catch}. @code{throw} нужны быть вызванным
+после входа в @code{catch} и до выхода из него. Поэтому @code{throw}
+может использоваться в командах наподобие @code{exit-recursive-edit},
+которые возвращают назад в цикл редактирования (@pxref{Recursive Editing}).
+
+@c   The @code{throw} need not appear lexically within the @code{catch}
+@c that it jumps to.  It can equally well be called from another function
+@c called within the @code{catch}.  As long as the @code{throw} takes place
+@c chronologically after entry to the @code{catch}, and chronologically
+@c before exit from it, it has access to that @code{catch}.  This is why
+@c @code{throw} can be used in commands such as @code{exit-recursive-edit}
+@c that throw back to the editor command loop (@pxref{Recursive Editing}).
 
 @cindex CL note---only @code{throw} in Emacs
 @quotation
-@b{Common Lisp note:} Most other versions of Lisp, including Common Lisp,
-have several ways of transferring control nonsequentially: @code{return},
-@code{return-from}, and @code{go}, for example.  Emacs Lisp has only
-@code{throw}.  The @file{cl-lib} library provides versions of some of
-these.  @xref{Blocks and Exits,,,cl,Common Lisp Extensions}.
+@b{Common Lisp note:} Большинство других версий Lisp, включая Common Lisp,
+имеют несколько способов передачи управления в не последовательно, таких
+как @code{return}, @code{return-from}, и @code{go}, например. Emacs Lisp
+имеет только @code{throw}. @file{cl-lib} предоставляет реализации некоторых
+из них. @xref{Blocks and Exits,,,cl,Common Lisp Extensions}.
+
+@c @b{Common Lisp note:} Most other versions of Lisp, including Common Lisp,
+@c have several ways of transferring control nonsequentially: @code{return},
+@c @code{return-from}, and @code{go}, for example.  Emacs Lisp has only
+@c @code{throw}.  The @file{cl-lib} library provides versions of some of
+@c these.  @xref{Blocks and Exits,,,cl,Common Lisp Extensions}.
 @end quotation
 
 @defspec catch tag body@dots{}
 @cindex tag on run time stack
-@code{catch} establishes a return point for the @code{throw} function.
-The return point is distinguished from other such return points by
-@var{tag}, which may be any Lisp object except @code{nil}.  The argument
-@var{tag} is evaluated normally before the return point is established.
+@code{catch} устанавливает точку возврата для функции @code{throw}.
+Точка возврата отличается от других точек возврата с помощью тега
+@var{tag}, который может быть любым Lisp объектом кроме @code{nil}.
+Аргумент @var{tag} вычисляется обычным образом, до установки точки возврата.
 
-With the return point in effect, @code{catch} evaluates the forms of the
-@var{body} in textual order.  If the forms execute normally (without
-error or nonlocal exit) the value of the last body form is returned from
-the @code{catch}.
+@c @code{catch} establishes a return point for the @code{throw} function.
+@c The return point is distinguished from other such return points by
+@c @var{tag}, which may be any Lisp object except @code{nil}.  The argument
+@c @var{tag} is evaluated normally before the return point is established.
 
-If a @code{throw} is executed during the execution of @var{body},
-specifying the same value @var{tag}, the @code{catch} form exits
-immediately; the value it returns is whatever was specified as the
-second argument of @code{throw}.
+Кроме установки точки возврата, @code{catch} вычисляет формы в
+@var{body} в порядке следования. Если формы вычисляются без ошибок
+или не локального выхода (@code{throw}), возвращается крайнее вычисленное
+значение.
+
+@c With the return point in effect, @code{catch} evaluates the forms of the
+@c @var{body} in textual order.  If the forms execute normally (without
+@c error or nonlocal exit) the value of the last body form is returned from
+@c the @code{catch}.
+
+Если @code{throw} выполняется при выполнении @var{body}, с тем
+же тегом @var{tag}, выход из @code{catch} выполняется  сразу, а
+не выполненные формы игнорируются, возвращается значение заданное
+вторым аргументом @code{throw}.
+
+@c If a @code{throw} is executed during the execution of @var{body},
+@c specifying the same value @var{tag}, the @code{catch} form exits
+@c immediately; the value it returns is whatever was specified as the
+@c second argument of @code{throw}.
 @end defspec
 
 @defun throw tag value
-The purpose of @code{throw} is to return from a return point previously
-established with @code{catch}.  The argument @var{tag} is used to choose
-among the various existing return points; it must be @code{eq} to the value
-specified in the @code{catch}.  If multiple return points match @var{tag},
-the innermost one is used.
+Назначение @code{throw} возврат в ранее установленную @code{catch} точку
+возврата. Аргумент @var{tag} используется для выбора точки возврата;
+он должен быть @code{eq} значению используемому в соответствующем
+@code{catch}. Среди множества точек возврата с одним и тем же
+тегом @var{tag} выбирается ближайшая по стеку вызова.
 
-The argument @var{value} is used as the value to return from that
-@code{catch}.
+@c The purpose of @code{throw} is to return from a return point previously
+@c established with @code{catch}.  The argument @var{tag} is used to choose
+@c among the various existing return points; it must be @code{eq} to the value
+@c specified in the @code{catch}.  If multiple return points match @var{tag},
+@c the innermost one is used.
+
+Аргумент @var{value} используется в качестве результата возвращаемого
+из @code{catch}.
+
+@c The argument @var{value} is used as the value to return from that
+@c @code{catch}.
 
 @kindex no-catch
-If no return point is in effect with tag @var{tag}, then a @code{no-catch}
-error is signaled with data @code{(@var{tag} @var{value})}.
+Если нет точки возврата с тегом @var{tag}, тогда сообщается
+об ошибке @code{no-catch} с передачей данных @code{(@var{tag} @var{value})}.
+
+@c If no return point is in effect with tag @var{tag}, then a @code{no-catch}
+@c error is signaled with data @code{(@var{tag} @var{value})}.
 @end defun
 
 @node Examples of Catch
-@subsection Examples of @code{catch} and @code{throw}
+@subsection Примеры @code{catch} и @code{throw}
 
-  One way to use @code{catch} and @code{throw} is to exit from a doubly
-nested loop.  (In most languages, this would be done with a @code{goto}.)
-Here we compute @code{(foo @var{i} @var{j})} for @var{i} and @var{j}
-varying from 0 to 9:
+  Одним из способов использования @code{catch} и @code{throw}
+является выход из вложенных циклов. (В большинстве языков, это можно сделать
+используя @code{goto}.) Ниже выполняется вычисление @code{(foo @var{i} @var{j})}
+для @var{i} и @var{j} в диапазоне от 0 до 9:
+
+@c   One way to use @code{catch} and @code{throw} is to exit from a doubly
+@c nested loop.  (In most languages, this would be done with a @code{goto}.)
+@c Here we compute @code{(foo @var{i} @var{j})} for @var{i} and @var{j}
+@c varying from 0 to 9:
 
 @example
 @group
@@ -968,14 +1516,23 @@ varying from 0 to 9:
 @end example
 
 @noindent
-If @code{foo} ever returns non-@code{nil}, we stop immediately and return a
-list of @var{i} and @var{j}.  If @code{foo} always returns @code{nil}, the
-@code{catch} returns normally, and the value is @code{nil}, since that
-is the result of the @code{while}.
+Если @code{foo} в какой-то момент возвращает не-@code{nil}, вычисление
+сразу останавливается из возвращается список из i и j. Если @code{foo} всегда
+возвращает @code{nil}, @code{catch} выполнится обычным способом, и
+будет возвращать значение @code{nil}, так как @code{nil} равно
+значение @code{while}.
 
-  Here are two tricky examples, slightly different, showing two
-return points at once.  First, two return points with the same tag,
-@code{hack}:
+@c If @code{foo} ever returns non-@code{nil}, we stop immediately and return a
+@c list of @var{i} and @var{j}.  If @code{foo} always returns @code{nil}, the
+@c @code{catch} returns normally, and the value is @code{nil}, since that
+@c is the result of the @code{while}.
+
+  Ниже приводится два примера, показывающих одновременно две
+точки возврата помеченных одни и тем же тегом @code{hack}:
+
+@c   Here are two tricky examples, slightly different, showing two
+@c return points at once.  First, two return points with the same tag,
+@c @code{hack}:
 
 @example
 @group
@@ -995,13 +1552,22 @@ return points at once.  First, two return points with the same tag,
 @end example
 
 @noindent
-Since both return points have tags that match the @code{throw}, it goes to
-the inner one, the one established in @code{catch2}.  Therefore,
-@code{catch2} returns normally with value @code{yes}, and this value is
-printed.  Finally the second body form in the outer @code{catch}, which is
-@code{'no}, is evaluated and returned from the outer @code{catch}.
+Так как обе точки возврата имеют один и тот же тег соответствующий
+тегу @code{throw}, переход выполняется к ближайшему по стеку вызова.
+В данном примере это @code{catch} внутри @code{catch2}. Поэтому @code{catch2}
+завершается обычным способом со значением @code{yes}, и это значение
+выводится на печать. После чего выполняется вторая форма тела внешнего @code{catch},
+это форма @code{'no}, которая вычисляется и возвращается как результат.
 
-  Now let's change the argument given to @code{catch2}:
+@c Since both return points have tags that match the @code{throw}, it goes to
+@c the inner one, the one established in @code{catch2}.  Therefore,
+@c @code{catch2} returns normally with value @code{yes}, and this value is
+@c printed.  Finally the second body form in the outer @code{catch}, which is
+@c @code{'no}, is evaluated and returned from the outer @code{catch}.
+
+  В следующем примере будет изменен аргумент @code{catch2}:
+
+  @c Now let's change the argument given to @code{catch2}:
 
 @example
 @group
@@ -1013,77 +1579,133 @@ printed.  Finally the second body form in the outer @code{catch}, which is
 @end example
 
 @noindent
-We still have two return points, but this time only the outer one has
-the tag @code{hack}; the inner one has the tag @code{quux} instead.
-Therefore, @code{throw} makes the outer @code{catch} return the value
-@code{yes}.  The function @code{print} is never called, and the
-body-form @code{'no} is never evaluated.
+В данном примере тоже две точки возврата, то только одна из них
+удовлетворяет значению тега @code{hack}. Поэтому @code{throw} выполняет
+выход к @code{catch} вне функции @code{catch2}, которая возвращает
+значение @code{yes}. Функция @code{print} не вызывается, и форма
+@code{'no} не вычисляется.
+
+@c We still have two return points, but this time only the outer one has
+@c the tag @code{hack}; the inner one has the tag @code{quux} instead.
+@c Therefore, @code{throw} makes the outer @code{catch} return the value
+@c @code{yes}.  The function @code{print} is never called, and the
+@c body-form @code{'no} is never evaluated.
 
 @node Errors
-@subsection Errors
+@subsection Ошибки
 @cindex errors
 
-  When Emacs Lisp attempts to evaluate a form that, for some reason,
-cannot be evaluated, it @dfn{signals} an @dfn{error}.
+  Когда Emacs Lisp пытается вычислить форму, которая не может быть
+вычислена, он @dfn{сигнализирует} (@dfn{signals}) об @dfn{ошибке} (@dfn{error}).
 
-  When an error is signaled, Emacs's default reaction is to print an
-error message and terminate execution of the current command.  This is
-the right thing to do in most cases, such as if you type @kbd{C-f} at
-the end of the buffer.
+@c   When Emacs Lisp attempts to evaluate a form that, for some reason,
+@c cannot be evaluated, it @dfn{signals} an @dfn{error}.
 
-  In complicated programs, simple termination may not be what you want.
-For example, the program may have made temporary changes in data
-structures, or created temporary buffers that should be deleted before
-the program is finished.  In such cases, you would use
-@code{unwind-protect} to establish @dfn{cleanup expressions} to be
-evaluated in case of error.  (@xref{Cleanups}.)  Occasionally, you may
-wish the program to continue execution despite an error in a subroutine.
-In these cases, you would use @code{condition-case} to establish
-@dfn{error handlers} to recover control in case of error.
+  Когда поступает сигнал об ошибке, стандартная реакция Emacs заключается
+в печати сообщения об ошибке и прекращении выполнения текущей команды.
+Как правило это правильно поведение, как например если ввести @kbd{C-f}
+в конце буфера.
 
-  Resist the temptation to use error handling to transfer control from
-one part of the program to another; use @code{catch} and @code{throw}
-instead.  @xref{Catch and Throw}.
+@c   When an error is signaled, Emacs's default reaction is to print an
+@c error message and terminate execution of the current command.  This is
+@c the right thing to do in most cases, such as if you type @kbd{C-f} at
+@c the end of the buffer.
+
+  В сложных программах, просто прекращение работы может оказаться не
+желательным. Например, если программа сделала временные изменения в
+структурах данных, или создала временные буферы, которые должны быть
+удалены до завершения программы. В этих случаях, нужно использовать
+@code{unwind-protect}, для установки @dfn{кода очистки} (@dfn{cleanup expressions})
+который будет выполнен в случае ошибки. (@xfre{Cleanups}.) Иногда, может
+потребоваться продолжить выполнение программы в случае ошибки в одной из
+внутренних функцией. В этом случае стоит использовать @code{condition-case} для
+установки @dfn{обработчиков ошибок} (@dfn{error handlers}) для восстановления
+работы после ошибки.
+
+@c   In complicated programs, simple termination may not be what you want.
+@c For example, the program may have made temporary changes in data
+@c structures, or created temporary buffers that should be deleted before
+@c the program is finished.  In such cases, you would use
+@c @code{unwind-protect} to establish @dfn{cleanup expressions} to be
+@c evaluated in case of error.  (@xref{Cleanups}.)  Occasionally, you may
+@c wish the program to continue execution despite an error in a subroutine.
+@c In these cases, you would use @code{condition-case} to establish
+@c @dfn{error handlers} to recover control in case of error.
+
+  Не стоит использовать обработку ошибок для передачи управления
+между частями программы. Стоит использовать @code{catch} и @code{throw}
+в этих случаях. @xref{Catch and Throw}.
+
+@c   Resist the temptation to use error handling to transfer control from
+@c one part of the program to another; use @code{catch} and @code{throw}
+@c instead.  @xref{Catch and Throw}.
 
 @menu
-* Signaling Errors::      How to report an error.
-* Processing of Errors::  What Emacs does when you report an error.
-* Handling Errors::       How you can trap errors and continue execution.
-* Error Symbols::         How errors are classified for trapping them.
+* Signaling Errors::      Как сообщить об ошибке.
+* Processing of Errors::  Что делает Emacs если сообщить ему об ошибке.
+* Handling Errors::       Как можно поймать ошибку, обработать и продолжить выполнение.
+* Error Symbols::         Классификация ошибок.
 @end menu
 
 @node Signaling Errors
-@subsubsection How to Signal an Error
+@subsubsection Как сигнализировать об ошибке
 @cindex signaling errors
 
-   @dfn{Signaling} an error means beginning error processing.  Error
-processing normally aborts all or part of the running program and
-returns to a point that is set up to handle the error
-(@pxref{Processing of Errors}).  Here we describe how to signal an
-error.
+   @dfn{Сигнализация} (@dfn{Signaling}) об ошибке означает, начало
+обработки ошибки. Обычно при обработке ошибки прекращается выполнение
+текущей Lisp программы и управление передается в точку предназначенную
+для обработки ошибок (@pxref{Processing of Errors}). В данной секции
+описывается как сигнализировать об ошибке.
 
-  Most errors are signaled automatically within Lisp primitives
-which you call for other purposes, such as if you try to take the
-@sc{car} of an integer or move forward a character at the end of the
-buffer.  You can also signal errors explicitly with the functions
-@code{error} and @code{signal}.
+@c    @dfn{Signaling} an error means beginning error processing.  Error
+@c processing normally aborts all or part of the running program and
+@c returns to a point that is set up to handle the error
+@c (@pxref{Processing of Errors}).  Here we describe how to signal an
+@c error.
 
-  Quitting, which happens when the user types @kbd{C-g}, is not
-considered an error, but it is handled almost like an error.
-@xref{Quitting}.
+  Сигнализация большинства ошибок выполняется автоматически
+в Lisp примитивах (primitives) которые вызываются для выполнения
+других задач, например если попытаться взять @sc{car} для числа или попытаться
+переместить вперед символ в конце буфера. Явно просигнализировать
+об ошибке позволяют функции @code{error} и @code{signal}.
 
-  Every error specifies an error message, one way or another.  The
-message should state what is wrong (``File does not exist''), not how
-things ought to be (``File must exist'').  The convention in Emacs
-Lisp is that error messages should start with a capital letter, but
-should not end with any sort of punctuation.
+@c   Most errors are signaled automatically within Lisp primitives
+@c which you call for other purposes, such as if you try to take the
+@c @sc{car} of an integer or move forward a character at the end of the
+@c buffer.  You can also signal errors explicitly with the functions
+@c @code{error} and @code{signal}.
+
+  Выход, при нажатии @kbd{C-g}, не считается ошибкой, но обрабатывается
+похоже. @xref{Quitting}.
+
+@c   Quitting, which happens when the user types @kbd{C-g}, is not
+@c considered an error, but it is handled almost like an error.
+@c @xref{Quitting}.
+
+  Каждая ошибка определяет сообщение об ошибке. Сообщение должно
+сообщать, что не так (``Файла нет'' (``File does not exists''),
+а не то как должно быть (``Должен быть файл'' (``File must exist'')).
+По соглашению в Emacs Lisp сообщение должно начинаться с заглавной буквы,
+и не должно иметь знаки пунктуации в конце.
+
+@c   Every error specifies an error message, one way or another.  The
+@c message should state what is wrong (``File does not exist''), not how
+@c things ought to be (``File must exist'').  The convention in Emacs
+@c Lisp is that error messages should start with a capital letter, but
+@c should not end with any sort of punctuation.
 
 @defun error format-string &rest args
-This function signals an error with an error message constructed by
-applying @code{format-message} (@pxref{Formatting Strings}) to
-@var{format-string} and @var{args}.
+Функция сигнализирует об ошибке с сообщением, полученным путем
+вызова @code{format-message} (@pxref{Formatting Strings}) к
+@var{format-string} и @var{args}.
 
-These examples show typical uses of @code{error}:
+@c This function signals an error with an error message constructed by
+@c applying @code{format-message} (@pxref{Formatting Strings}) to
+@c @var{format-string} and @var{args}.
+
+Например:
+
+@c These examples show typical uses of @code{error}:
 
 @example
 @group
@@ -1097,55 +1719,100 @@ These examples show typical uses of @code{error}:
 @end group
 @end example
 
-@code{error} works by calling @code{signal} with two arguments: the
-error symbol @code{error}, and a list containing the string returned by
-@code{format-message}.
+@code{error} работает путем вызова @code{signal} с двумя аргументами:
+символов ошибке @code{error}, и списком содержащим строку возвращаемую вызовом @code{format-message}.
 
-The @code{text-quoting-style} variable controls what quotes are
-generated; @xref{Keys in Documentation}.  A call using a format like
-@t{"Missing `%s'"} with grave accents and apostrophes typically
-generates a message like @t{"Missing ‘foo’"} with matching curved
-quotes.  In contrast, a call using a format like @t{"Missing '%s'"}
-with only apostrophes typically generates a message like @t{"Missing
-’foo’"} with only closing curved quotes, an unusual style in English.
+@c @code{error} works by calling @code{signal} with two arguments: the
+@c error symbol @code{error}, and a list containing the string returned by
+@c @code{format-message}.
 
-@strong{Warning:} If you want to use your own string as an error message
-verbatim, don't just write @code{(error @var{string})}.  If @var{string}
-@var{string} contains @samp{%}, @samp{`}, or @samp{'} it may be
-reformatted, with undesirable results.  Instead, use @code{(error "%s"
-@var{string})}.
+Переменная @code{text-quoting-style} управляет тем какие кавычки
+будут использованы. @xref{Keys in Documentation}. Вызов использующий
+формат вроде: @t{"Missing `%s'"} с ударениями и апострофами, как
+правило приводит к генерации сообщений наподобие @t{"Missing ‘foo’"}
+с изогнутыми кавычками. А при вызове с форматом вида: @t{"Missing '%s'"}
+с использованием только апострофов, как правило генерируется
+сообщение @t{"Missing ’foo’"} только с закрывающими изогнутыми кавычками,
+что не обычно для Английского языка.
+
+@c The @code{text-quoting-style} variable controls what quotes are
+@c generated; @xref{Keys in Documentation}.  A call using a format like
+@c @t{"Missing `%s'"} with grave accents and apostrophes typically
+@c generates a message like @t{"Missing ‘foo’"} with matching curved
+@c quotes.  In contrast, a call using a format like @t{"Missing '%s'"}
+@c with only apostrophes typically generates a message like @t{"Missing
+@c ’foo’"} with only closing curved quotes, an unusual style in English.
+
+@strong{Warning:} Если нужно использовать сообщение без форматирования,
+не стоит писать @code{(error @var{string})}. Если @var{string}
+содержит @samp{%}, @samp{`} или @samp{'}, она может быть переформатирована
+с получением не предсказуемого результата. Стоит писать так:
+@code{(error "%s" @var{string})}.
+
+@c @strong{Warning:} If you want to use your own string as an error message
+@c verbatim, don't just write @code{(error @var{string})}.  If @var{string}
+@c @var{string} contains @samp{%}, @samp{`}, or @samp{'} it may be
+@c reformatted, with undesirable results.  Instead, use @code{(error "%s"
+@c @var{string})}.
 @end defun
 
 @defun signal error-symbol data
 @anchor{Definition of signal}
-This function signals an error named by @var{error-symbol}.  The
-argument @var{data} is a list of additional Lisp objects relevant to
-the circumstances of the error.
+Функция сигнализирует об ошибке с именем @var{error-symbol}. Аргумент
+@var{data} это Lisp объект содержащий дополнительную
+информацию по ошибке.
 
-The argument @var{error-symbol} must be an @dfn{error symbol}---a symbol
-defined with @code{define-error}.  This is how Emacs Lisp classifies different
-sorts of errors.  @xref{Error Symbols}, for a description of error symbols,
-error conditions and condition names.
+@c This function signals an error named by @var{error-symbol}.  The
+@c argument @var{data} is a list of additional Lisp objects relevant to
+@c the circumstances of the error.
 
-If the error is not handled, the two arguments are used in printing
-the error message.  Normally, this error message is provided by the
-@code{error-message} property of @var{error-symbol}.  If @var{data} is
-non-@code{nil}, this is followed by a colon and a comma separated list
-of the unevaluated elements of @var{data}.  For @code{error}, the
-error message is the @sc{car} of @var{data} (that must be a string).
-Subcategories of @code{file-error} are handled specially.
+Аргумент @var{error-symbol} должен быть @dfn{символом ошибки} (@dfn{error symbol})-- символом
+определенным с использованием @code{define-error}. Таким образом Emacs Lisp может
+классифицировать ошибки. Для получения информации по символам ошибок, условиям ошибок и
+именам ошибок @xref{Error Symbols}.
 
-The number and significance of the objects in @var{data} depends on
-@var{error-symbol}.  For example, with a @code{wrong-type-argument} error,
-there should be two objects in the list: a predicate that describes the type
-that was expected, and the object that failed to fit that type.
+@c The argument @var{error-symbol} must be an @dfn{error symbol}---a symbol
+@c defined with @code{define-error}.  This is how Emacs Lisp classifies different
+@c sorts of errors.  @xref{Error Symbols}, for a description of error symbols,
+@c error conditions and condition names.
 
-Both @var{error-symbol} and @var{data} are available to any error
-handlers that handle the error: @code{condition-case} binds a local
-variable to a list of the form @code{(@var{error-symbol} .@:
-@var{data})} (@pxref{Handling Errors}).
+Если ошибка не обработана, эти аргументы используются для печати
+сообщения об ошибке. Обычно, сообщение об ошибке предоставляется
+свойством @code{error-message} @var{error-symbol}. Если @var{data}
+не-@code{nil}, они печатаются после двоеточия в виде разделенного
+запятыми списка элементов @var{data} (элементы судя по всему не вычисляются).
+Для @code{error}, сообщение об ошибке это @sc{car} @var{data} (должно быть строкой).
+Ошибки с файлами @code{file-error} обрабатываются специальным образом.
 
-The function @code{signal} never returns.
+@c If the error is not handled, the two arguments are used in printing
+@c the error message.  Normally, this error message is provided by the
+@c @code{error-message} property of @var{error-symbol}.  If @var{data} is
+@c non-@code{nil}, this is followed by a colon and a comma separated list
+@c of the unevaluated elements of @var{data}.  For @code{error}, the
+@c error message is the @sc{car} of @var{data} (that must be a string).
+@c Subcategories of @code{file-error} are handled specially.
+
+Число и смысл объектов @var{data} зависит от @var{error-symbol}. Например,
+для ошибке @code{wrong-type-argument} в @var{data} должно быть два объекта
+в списке: предикат описывающий ожидаемый тип, и объект который не подошел
+под этот тип. 
+
+@c The number and significance of the objects in @var{data} depends on
+@c @var{error-symbol}.  For example, with a @code{wrong-type-argument} error,
+@c there should be two objects in the list: a predicate that describes the type
+@c that was expected, and the object that failed to fit that type.
+
+Оба параметра @var{error-symbol} и @var{data} доступны любому обработчику
+ошибок: @code{condition-case} выполняет переменных списку в форме @code{(@var{error-symbol} .@: @var{data})}
+(@pxref{Handling Errors}).
+
+@c Both @var{error-symbol} and @var{data} are available to any error
+@c handlers that handle the error: @code{condition-case} binds a local
+@c variable to a list of the form @code{(@var{error-symbol} .@:
+@c @var{data})} (@pxref{Handling Errors}).
+
+Функция @code{signal} не имеет возврата.
+(The function @code{signal} never returns.)
 @c (though in older Emacs versions it sometimes could).
 
 @example
@@ -1163,70 +1830,121 @@ The function @code{signal} never returns.
 
 @cindex user errors, signaling
 @defun user-error format-string &rest args
-This function behaves exactly like @code{error}, except that it uses
-the error symbol @code{user-error} rather than @code{error}.  As the
-name suggests, this is intended to report errors on the part of the
-user, rather than errors in the code itself.  For example,
-if you try to use the command @code{Info-history-back} (@kbd{l}) to
-move back beyond the start of your Info browsing history, Emacs
-signals a @code{user-error}.  Such errors do not cause entry to the
-debugger, even when @code{debug-on-error} is non-@code{nil}.
+Функция работает как @code{error}, за исключением того, что она
+использует символ @code{user-error}, а не @code{error}. Как
+подсказывает имя, функция подразумевает сообщение об ошибке
+пользователя, вместо не об ошибке в кода. Например,
+если попытаться использовать команду @code{Info-history-back} (@kbd{l})
+для перемещения назад в начале истории просмотра Info, Emacs сигнализирует
+@code{user-error}. Такие ошибке не приводят к запуску
+отладчика, даже когда @code{debug-on-error} не-@code{nil}.
 @xref{Error Debugging}.
+
+@c This function behaves exactly like @code{error}, except that it uses
+@c the error symbol @code{user-error} rather than @code{error}.  As the
+@c name suggests, this is intended to report errors on the part of the
+@c user, rather than errors in the code itself.  For example,
+@c if you try to use the command @code{Info-history-back} (@kbd{l}) to
+@c move back beyond the start of your Info browsing history, Emacs
+@c signals a @code{user-error}.  Such errors do not cause entry to the
+@c debugger, even when @code{debug-on-error} is non-@code{nil}.
+@c @xref{Error Debugging}.
 @end defun
 
 @cindex CL note---no continuable errors
 @quotation
-@b{Common Lisp note:} Emacs Lisp has nothing like the Common Lisp
-concept of continuable errors.
+@b{Common Lips note:} Emacs Lisp не имеет ничего похожего на
+концепцию continuable errors как в Common Lisp.
+
+@c @b{Common Lisp note:} Emacs Lisp has nothing like the Common Lisp
+@c concept of continuable errors.
 @end quotation
 
 @node Processing of Errors
-@subsubsection How Emacs Processes Errors
+@subsubsection Как Emacs обрабатывает ошибки
 @cindex processing of errors
 
-When an error is signaled, @code{signal} searches for an active
-@dfn{handler} for the error.  A handler is a sequence of Lisp
-expressions designated to be executed if an error happens in part of the
-Lisp program.  If the error has an applicable handler, the handler is
-executed, and control resumes following the handler.  The handler
-executes in the environment of the @code{condition-case} that
-established it; all functions called within that @code{condition-case}
-have already been exited, and the handler cannot return to them.
+Когда выполнена сигнализация об ошибке, @code{signal} ищет активный @dfn{обработчик}
+(@dfn{handler}) ошибки. Обработчик это последовательность Lisp выражений
+которые должны выполниться в случае ошибки в Lisp программе. Если
+для ошибки есть обработчик, то он выполняется и работа продолжается
+в соответствии с обработчиком. Обработчик выполняется в окружении
+@code{condition-case}, который установил обработчик, при этом все
+функции которые вызывались внутри @code{condition-case}, при обработки
+ошибки уже будут завершены, и обработчик не сможет
+в них вернуться.
 
-If there is no applicable handler for the error, it terminates the
-current command and returns control to the editor command loop.  (The
-command loop has an implicit handler for all kinds of errors.)  The
-command loop's handler uses the error symbol and associated data to
-print an error message.  You can use the variable
-@code{command-error-function} to control how this is done:
+@c When an error is signaled, @code{signal} searches for an active
+@c @dfn{handler} for the error.  A handler is a sequence of Lisp
+@c expressions designated to be executed if an error happens in part of the
+@c Lisp program.  If the error has an applicable handler, the handler is
+@c executed, and control resumes following the handler.  The handler
+@c executes in the environment of the @code{condition-case} that
+@c established it; all functions called within that @code{condition-case}
+@c have already been exited, and the handler cannot return to them.
+
+Если нет применимого обработчика для ошибки, выполняется завершение
+текущей команды и возврат управления в цикл команд редактора.
+(Подразумевается, что цикл команд имеет обработчик для всех
+видов ошибок.) Обработчик в цикле команд использует символ
+ошибки и связанные данные для печати сообщения об ошибке. Можно
+использовать переменную @code{command-error-function} для
+управления данным действием:
+
+@c If there is no applicable handler for the error, it terminates the
+@c current command and returns control to the editor command loop.  (The
+@c command loop has an implicit handler for all kinds of errors.)  The
+@c command loop's handler uses the error symbol and associated data to
+@c print an error message.  You can use the variable
+@c @code{command-error-function} to control how this is done:
 
 @defvar command-error-function
-This variable, if non-@code{nil}, specifies a function to use to
-handle errors that return control to the Emacs command loop.  The
-function should take three arguments: @var{data}, a list of the same
-form that @code{condition-case} would bind to its variable;
-@var{context}, a string describing the situation in which the error
-occurred, or (more often) @code{nil}; and @var{caller}, the Lisp
-function which called the primitive that signaled the error.
+Данная переменная, если не-@code{nil}, задает функцию используемую
+для обработки ошибок, которые возвращают управление цикл команд Emacs.
+Функция должна принимать три аргумента: @var{data}, список того же
+вида, который @code{condition-case} связывает с этой переменной;
+@var{context}, строка описывающая ситуацию при которой произошла
+ошибка, или (наиболее часто) @code{nil}; и @var{caller}, Lisp
+функция которая вызвала примитив который просигнализировал об
+ошибке.
+
+@c This variable, if non-@code{nil}, specifies a function to use to
+@c handle errors that return control to the Emacs command loop.  The
+@c function should take three arguments: @var{data}, a list of the same
+@c form that @code{condition-case} would bind to its variable;
+@c @var{context}, a string describing the situation in which the error
+@c occurred, or (more often) @code{nil}; and @var{caller}, the Lisp
+@c function which called the primitive that signaled the error.
 @end defvar
 
 @cindex @code{debug-on-error} use
-An error that has no explicit handler may call the Lisp debugger.  The
-debugger is enabled if the variable @code{debug-on-error} (@pxref{Error
-Debugging}) is non-@code{nil}.  Unlike error handlers, the debugger runs
-in the environment of the error, so that you can examine values of
-variables precisely as they were at the time of the error.
+Ошибки, для которых нет явного обработчика могут запускать Lisp отладчик.
+Отладчик активен если переменная @code{debug-on-error} (@pxref{Error Debugging})
+не-@code{nil}. В отличие от обработчиков ошибок, отладчик
+запускается в окружении ошибки, поэтому есть возможность
+проверить значения переменных до возникновения ошибки.
+
+@c An error that has no explicit handler may call the Lisp debugger.  The
+@c debugger is enabled if the variable @code{debug-on-error} (@pxref{Error
+@c Debugging}) is non-@code{nil}.  Unlike error handlers, the debugger runs
+@c in the environment of the error, so that you can examine values of
+@c variables precisely as they were at the time of the error.
 
 @node Handling Errors
-@subsubsection Writing Code to Handle Errors
+@subsubsection Написание обработчиков ошибок
 @cindex error handler
 @cindex handling errors
 
-  The usual effect of signaling an error is to terminate the command
-that is running and return immediately to the Emacs editor command loop.
-You can arrange to trap errors occurring in a part of your program by
-establishing an error handler, with the special form
-@code{condition-case}.  A simple example looks like this:
+  Обычным результатом сигнализации об ошибке является прекращение выполнения
+текущей команды и немедленный возврат в цикл команд Emacs. Но можно создать
+обработчик ошибок для части программы с использованием специальной формы
+@code{condition-case}. Простой пример может выглядеть так:
+
+@c   The usual effect of signaling an error is to terminate the command
+@c that is running and return immediately to the Emacs editor command loop.
+@c You can arrange to trap errors occurring in a part of your program by
+@c establishing an error handler, with the special form
+@c @code{condition-case}.  A simple example looks like this:
 
 @example
 @group
@@ -1237,49 +1955,91 @@ establishing an error handler, with the special form
 @end example
 
 @noindent
-This deletes the file named @var{filename}, catching any error and
-returning @code{nil} if an error occurs.  (You can use the macro
-@code{ignore-errors} for a simple case like this; see below.)
+В примере удаляется файл с именем @var{filename}, при этом
+перехватываются все возможные ошибки и возвращается @code{nil}
+в случае их возникновения. (Можно использовать макрос
+@code{ignore-errors}) для простых случаев наподобие рассматриваемого).
 
-  The @code{condition-case} construct is often used to trap errors that
-are predictable, such as failure to open a file in a call to
-@code{insert-file-contents}.  It is also used to trap errors that are
-totally unpredictable, such as when the program evaluates an expression
-read from the user.
+@c This deletes the file named @var{filename}, catching any error and
+@c returning @code{nil} if an error occurs.  (You can use the macro
+@c @code{ignore-errors} for a simple case like this; see below.)
 
-  The second argument of @code{condition-case} is called the
-@dfn{protected form}.  (In the example above, the protected form is a
-call to @code{delete-file}.)  The error handlers go into effect when
-this form begins execution and are deactivated when this form returns.
-They remain in effect for all the intervening time.  In particular, they
-are in effect during the execution of functions called by this form, in
-their subroutines, and so on.  This is a good thing, since, strictly
-speaking, errors can be signaled only by Lisp primitives (including
-@code{signal} and @code{error}) called by the protected form, not by the
-protected form itself.
+  @code{condition-case} часто используется для обработки предсказуемых
+ошибок, таких как ошибка открытия файла в вызове @code{insert-file-contents}.
+А так же используется для обработки ошибок, которые совершенно не предсказуемы,
+такие как выполнение программ с вычислением выражений введенных пользователем.
 
-  The arguments after the protected form are handlers.  Each handler
-lists one or more @dfn{condition names} (which are symbols) to specify
-which errors it will handle.  The error symbol specified when an error
-is signaled also defines a list of condition names.  A handler applies
-to an error if they have any condition names in common.  In the example
-above, there is one handler, and it specifies one condition name,
-@code{error}, which covers all errors.
+@c   The @code{condition-case} construct is often used to trap errors that
+@c are predictable, such as failure to open a file in a call to
+@c @code{insert-file-contents}.  It is also used to trap errors that are
+@c totally unpredictable, such as when the program evaluates an expression
+@c read from the user.
 
-  The search for an applicable handler checks all the established handlers
-starting with the most recently established one.  Thus, if two nested
-@code{condition-case} forms offer to handle the same error, the inner of
-the two gets to handle it.
+  Второй аргумент @code{condition-case} называется @dfn{защищаемой формой}
+(@dfn{protection form}). (В примере выше, защищаемой формой является вызов
+@code{delete-file}). Обработчик ошибок становится активным когда
+защищаемая форма начинает выполнение, и деактивируется при возврате из формы.
+То есть обработчик активен при вызове функций формы включая подфункции.
+Хорошо, что строго говоря, об ошибке может сообщить только Lisp примитив
+(Lisp primitives) (включая @code{signal} и @code{error}) вызываемых
+защищаемой формой, а не самой формой.
 
-  If an error is handled by some @code{condition-case} form, this
-ordinarily prevents the debugger from being run, even if
-@code{debug-on-error} says this error should invoke the debugger.
+@c   The second argument of @code{condition-case} is called the
+@c @dfn{protected form}.  (In the example above, the protected form is a
+@c call to @code{delete-file}.)  The error handlers go into effect when
+@c this form begins execution and are deactivated when this form returns.
+@c They remain in effect for all the intervening time.  In particular, they
+@c are in effect during the execution of functions called by this form, in
+@c their subroutines, and so on.  This is a good thing, since, strictly
+@c speaking, errors can be signaled only by Lisp primitives (including
+@c @code{signal} and @code{error}) called by the protected form, not by the
+@c protected form itself.
 
-  If you want to be able to debug errors that are caught by a
-@code{condition-case}, set the variable @code{debug-on-signal} to a
-non-@code{nil} value.  You can also specify that a particular handler
-should let the debugger run first, by writing @code{debug} among the
-conditions, like this:
+  Аргументы после защищаемой формы являются обработчиками. Каждый
+обработчик определяет одно или более @dfn{названий условий} (@dfn{condition name})
+(которые являются символами) определяющие обрабатываемые ошибки. Символ
+ошибки, указанный при сигнализации ошибки, тоже определяет
+список имен условий. Обработчик применяется если у него есть общие
+имена условий. В примере выше, есть один обработчик, и он определяет
+одно @dfn{название условия} @code{error}, которое относится ко всем ошибкам.
+
+@c   The arguments after the protected form are handlers.  Each handler
+@c lists one or more @dfn{condition names} (which are symbols) to specify
+@c which errors it will handle.  The error symbol specified when an error
+@c is signaled also defines a list of condition names.  A handler applies
+@c to an error if they have any condition names in common.  In the example
+@c above, there is one handler, and it specifies one condition name,
+@c @code{error}, which covers all errors.
+
+  Поиск применимого обработчика проверяет все установленные обработчики,
+начиная с крайнего установленного. Таким образом, если две формы @code{condition-case}
+могут обработать одну и ту же ошибку, будет использована внутренняя из них.
+
+@c   The search for an applicable handler checks all the established handlers
+@c starting with the most recently established one.  Thus, if two nested
+@c @code{condition-case} forms offer to handle the same error, the inner of
+@c the two gets to handle it.
+
+  Если ошибка обрабатывается некоторой @code{condition-case},
+как правило отладчик вызываться при этом вызываться не будет, даже
+если @code{debug-on-error} указывает на то что для этой ошибки должен
+запускаться отладчик.
+
+@c   If an error is handled by some @code{condition-case} form, this
+@c ordinarily prevents the debugger from being run, even if
+@c @code{debug-on-error} says this error should invoke the debugger.
+
+  Если нужно запустить отладчик для ошибок, которые обрабатываются
+@code{condition-case}   нужно установить @code{debug-on-signal}
+в не-@code{nil}. Кроме того можно установить, чтобы обработчик
+сначала запускал отладчик, путем добавления @code{debug} в условия,
+например:
+
+@c   If you want to be able to debug errors that are caught by a
+@c @code{condition-case}, set the variable @code{debug-on-signal} to a
+@c non-@code{nil} value.  You can also specify that a particular handler
+@c should let the debugger run first, by writing @code{debug} among the
+@c conditions, like this:
 
 @example
 @group
@@ -1290,53 +2050,96 @@ conditions, like this:
 @end example
 
 @noindent
-The effect of @code{debug} here is only to prevent
-@code{condition-case} from suppressing the call to the debugger.  Any
-given error will invoke the debugger only if @code{debug-on-error} and
-the other usual filtering mechanisms say it should.  @xref{Error Debugging}.
+Использование @code{debug} в примере, предотвращает подавление
+вызова отладчика в @code{condition-case}. Любая ошибка будет
+запускать отладчик если @code{debug-on-error} и другие механизмы фильтрации
+будут разрешать его запуск. @xref{Error Debugging}.
+
+@c The effect of @code{debug} here is only to prevent
+@c @code{condition-case} from suppressing the call to the debugger.  Any
+@c given error will invoke the debugger only if @code{debug-on-error} and
+@c the other usual filtering mechanisms say it should.  @xref{Error Debugging}.
 
 @defmac condition-case-unless-debug var protected-form handlers@dots{}
-The macro @code{condition-case-unless-debug} provides another way to
-handle debugging of such forms.  It behaves exactly like
-@code{condition-case}, unless the variable @code{debug-on-error} is
-non-@code{nil}, in which case it does not handle any errors at all.
+Макрос @code{condition-case-unless-debug} предоставляет другой способ
+выполнить отладку такой формы. Макрос работает как @code{condition-case},
+за исключением ситуаций когда @code{debug-on-error} не-@code{nil},
+в этом случае макрос вообще не обрабатывает ошибки.
+
+@c The macro @code{condition-case-unless-debug} provides another way to
+@c handle debugging of such forms.  It behaves exactly like
+@c @code{condition-case}, unless the variable @code{debug-on-error} is
+@c non-@code{nil}, in which case it does not handle any errors at all.
 @end defmac
 
-  Once Emacs decides that a certain handler handles the error, it
-returns control to that handler.  To do so, Emacs unbinds all variable
-bindings made by binding constructs that are being exited, and
-executes the cleanups of all @code{unwind-protect} forms that are
-being exited.  Once control arrives at the handler, the body of the
-handler executes normally.
+  Как только Emacs находит обработчик для ошибки, управление передается
+этому обработчику. Для этого происходит удаление привязок
+переменных (unbind) выполненных конструкциями из которых выполняется
+переход, и выполняется код очистки из всех @code{unwind-protect} форм,
+которые выполнились внутри кода сигнализирующего об ошибке. После
+этого выполняется тело обработчика обычным образом.
 
-  After execution of the handler body, execution returns from the
-@code{condition-case} form.  Because the protected form is exited
-completely before execution of the handler, the handler cannot resume
-execution at the point of the error, nor can it examine variable
-bindings that were made within the protected form.  All it can do is
-clean up and proceed.
+@c   Once Emacs decides that a certain handler handles the error, it
+@c returns control to that handler.  To do so, Emacs unbinds all variable
+@c bindings made by binding constructs that are being exited, and
+@c executes the cleanups of all @code{unwind-protect} forms that are
+@c being exited.  Once control arrives at the handler, the body of the
+@c handler executes normally.
 
-  Error signaling and handling have some resemblance to @code{throw} and
-@code{catch} (@pxref{Catch and Throw}), but they are entirely separate
-facilities.  An error cannot be caught by a @code{catch}, and a
-@code{throw} cannot be handled by an error handler (though using
-@code{throw} when there is no suitable @code{catch} signals an error
-that can be handled).
+  После выполнения тела обработчика, выполнение возвращается из
+формы @code{condition-case}.  Так как выход из защищаемой формы
+выполняет до выполнения обработчика, обработчик не может
+продолжить выполнение в точке где произошла ошибка, и не может проверить
+значения переменных внутри защищаемой формы. Обработчик может
+только выполнить очистку и продолжить.
+
+@c   After execution of the handler body, execution returns from the
+@c @code{condition-case} form.  Because the protected form is exited
+@c completely before execution of the handler, the handler cannot resume
+@c execution at the point of the error, nor can it examine variable
+@c bindings that were made within the protected form.  All it can do is
+@c clean up and proceed.
+
+  Сигнализация и обработка ошибок схоже с механизмом @code{throw} и
+@code{catch}. Ошибка не может быть поймана @code{catch} и @code{throw}
+не может быть обработано обработчиком ошибок (хотя если для @code{throw}
+нет подходящего @code{catch} сигнализируется об ошибке, которую можно
+обработать).
+
+@c   Error signaling and handling have some resemblance to @code{throw} and
+@c @code{catch} (@pxref{Catch and Throw}), but they are entirely separate
+@c facilities.  An error cannot be caught by a @code{catch}, and a
+@c @code{throw} cannot be handled by an error handler (though using
+@c @code{throw} when there is no suitable @code{catch} signals an error
+@c that can be handled).
 
 @defspec condition-case var protected-form handlers@dots{}
-This special form establishes the error handlers @var{handlers} around
-the execution of @var{protected-form}.  If @var{protected-form} executes
-without error, the value it returns becomes the value of the
-@code{condition-case} form; in this case, the @code{condition-case} has
-no effect.  The @code{condition-case} form makes a difference when an
-error occurs during @var{protected-form}.
+Специальная формы устанавливающая обработчик ошибок @var{handlers}, для
+защищаемой формы @var{protected-form}. Если @var{protected-form} выполняется
+без ошибок, возвращаемое значение формы становится значением формы @code{condition-case};
+в этом случае @code{condition-case} не имеет полезного действия. Формы проявляет себя в случае
+если при выполнении @var{protected-form} происходит ошибка.
 
-Each of the @var{handlers} is a list of the form @code{(@var{conditions}
-@var{body}@dots{})}.  Here @var{conditions} is an error condition name
-to be handled, or a list of condition names (which can include @code{debug}
-to allow the debugger to run before the handler); @var{body} is one or more
-Lisp expressions to be executed when this handler handles an error.
-Here are examples of handlers:
+@c This special form establishes the error handlers @var{handlers} around
+@c the execution of @var{protected-form}.  If @var{protected-form} executes
+@c without error, the value it returns becomes the value of the
+@c @code{condition-case} form; in this case, the @code{condition-case} has
+@c no effect.  The @code{condition-case} form makes a difference when an
+@c error occurs during @var{protected-form}.
+
+Каждый @var{handlers} это список вида @code{(@var{conditions} @var{body}@dots{})}.
+Где @code{conditions} это названия условий (имена ошибок) которые должны
+обрабатываться (среди них может быть @code{debug} для запуска отладчика
+перед обработчиком); @var{body} представляет собой одно или несколько Lisp 
+выражений которые должны выполниться при обработке ошибки.
+Ниже примеры обработчиков:
+
+@c Each of the @var{handlers} is a list of the form @code{(@var{conditions}
+@c @var{body}@dots{})}.  Here @var{conditions} is an error condition name
+@c to be handled, or a list of condition names (which can include @code{debug}
+@c to allow the debugger to run before the handler); @var{body} is one or more
+@c Lisp expressions to be executed when this handler handles an error.
+@c Here are examples of handlers:
 
 @example
 @group
@@ -1350,57 +2153,97 @@ Here are examples of handlers:
 @end group
 @end example
 
-Each error that occurs has an @dfn{error symbol} that describes what
-kind of error it is, and which describes also a list of condition names
-(@pxref{Error Symbols}).  Emacs
-searches all the active @code{condition-case} forms for a handler that
-specifies one or more of these condition names; the innermost matching
-@code{condition-case} handles the error.  Within this
-@code{condition-case}, the first applicable handler handles the error.
+Каждая возникающая ошибка имеет @dfn{символ ошибки} (@dfn{error symbol}),
+которые описывает к какому типу ошибок относится ошибка, и описывает
+список названий условий (@pxref{Error Symbols}). Emacs ищет
+все активные формы @code{condtion-case} в которых есть обработчик
+содержащий одно или более из этих названий условий; ближайший по дереву
+вызова @code{condtion-case} выполняет обработку ошибки. Внутри
+найденного @code{condition-case} выполняется первый применимый обработчик.
 
-After executing the body of the handler, the @code{condition-case}
-returns normally, using the value of the last form in the handler body
-as the overall value.
+@c Each error that occurs has an @dfn{error symbol} that describes what
+@c kind of error it is, and which describes also a list of condition names
+@c (@pxref{Error Symbols}).  Emacs
+@c searches all the active @code{condition-case} forms for a handler that
+@c specifies one or more of these condition names; the innermost matching
+@c @code{condition-case} handles the error.  Within this
+@c @code{condition-case}, the first applicable handler handles the error.
+
+После выполнения текла обработчика, @code{condition-case} завершается
+обычным образом возвращая значений крайнего выражения выполняемого
+тела обработчика ошибки.
+
+@c After executing the body of the handler, the @code{condition-case}
+@c returns normally, using the value of the last form in the handler body
+@c as the overall value.
 
 @cindex error description
-The argument @var{var} is a variable.  @code{condition-case} does not
-bind this variable when executing the @var{protected-form}, only when it
-handles an error.  At that time, it binds @var{var} locally to an
-@dfn{error description}, which is a list giving the particulars of the
-error.  The error description has the form @code{(@var{error-symbol}
-. @var{data})}.  The handler can refer to this list to decide what to
-do.  For example, if the error is for failure opening a file, the file
-name is the second element of @var{data}---the third element of the
-error description.
+Аргумент @var{var} это переменная. @code{condition-case} не связывает
+эту переменную при выполнении @var{protected-form}, а только при
+выполнении обработчика ошибки. При обработки ошибки @var{var} хранит
+значение @dfn{описание ошибки}({error description}), которое содержит
+сведения об ошибке. Описание ошибки имеет формы @code{(@var{error-symbol . @var{data}})}.
+Обработчик может ссылаться на этот список, чтобы решить что делать.
+Например, если происходит ошибка открытия файла, имя файла второй элемент @var{data}---
+будет третьим элементом описания ошибки.
 
-If @var{var} is @code{nil}, that means no variable is bound.  Then the
-error symbol and associated data are not available to the handler.
+@c The argument @var{var} is a variable.  @code{condition-case} does not
+@c bind this variable when executing the @var{protected-form}, only when it
+@c handles an error.  At that time, it binds @var{var} locally to an
+@c @dfn{error description}, which is a list giving the particulars of the
+@c error.  The error description has the form @code{(@var{error-symbol}
+@c . @var{data})}.  The handler can refer to this list to decide what to
+@c do.  For example, if the error is for failure opening a file, the file
+@c name is the second element of @var{data}---the third element of the
+@c error description.
+
+Если @var{var} @code{nil}, значит, что связывания со значением не производится
+(переменной нет). В этом случае символ ошибки и связанные с ней данные будут
+не доступны для обработчика. 
+
+@c If @var{var} is @code{nil}, that means no variable is bound.  Then the
+@c error symbol and associated data are not available to the handler.
 
 @cindex rethrow a signal
-Sometimes it is necessary to re-throw a signal caught by
-@code{condition-case}, for some outer-level handler to catch.  Here's
-how to do that:
+Иногда нужно перепослать сигнал пойманный @code{condition-case},
+на более высокие уровни обработки. Таким образом это можно сделать:
+
+@c Sometimes it is necessary to re-throw a signal caught by
+@c @code{condition-case}, for some outer-level handler to catch.  Here's
+@c how to do that:
 
 @example
   (signal (car err) (cdr err))
 @end example
 
 @noindent
-where @code{err} is the error description variable, the first argument
-to @code{condition-case} whose error condition you want to re-throw.
+где @code{err} это переменная описания ошибки, первый аргумент @code{condition-case}
+ошибку в котором нужно перепослать выше.
+
+@c where @code{err} is the error description variable, the first argument
+@c to @code{condition-case} whose error condition you want to re-throw.
 @xref{Definition of signal}.
 @end defspec
 
 @defun error-message-string error-descriptor
-This function returns the error message string for a given error
-descriptor.  It is useful if you want to handle an error by printing the
-usual error message for that error.  @xref{Definition of signal}.
+Функция возвращает строку описания ошибки для данной ошибки. Данная
+функция если нужно обработать ошибку путем печати сообщения для
+ошибки. @xref{Definition of signal}.
+
+@c This function returns the error message string for a given error
+@c descriptor.  It is useful if you want to handle an error by printing the
+@c usual error message for that error.  @xref{Definition of signal}.
 @end defun
 
 @cindex @code{arith-error} example
-Here is an example of using @code{condition-case} to handle the error
-that results from dividing by zero.  The handler displays the error
-message (but without a beep), then returns a very large number.
+Тут есть пример использования @code{condition-case} для
+обработки ошибки деления на ноль. Обработчик показывает сообщение
+об ошибке (но без звукового сигнала), а затем возвращает
+очень большое число.
+
+@c Here is an example of using @code{condition-case} to handle the error
+@c that results from dividing by zero.  The handler displays the error
+@c message (but without a beep), then returns a very large number.
 
 @example
 @group
@@ -1426,9 +2269,13 @@ message (but without a beep), then returns a very large number.
 @end example
 
 @noindent
-The handler specifies condition name @code{arith-error} so that it
-will handle only division-by-zero errors.  Other kinds of errors will
-not be handled (by this @code{condition-case}).  Thus:
+Обработчик определяет название условия @code{arith-error} поэтому
+будут обрабатываться только ошибки деления на ноль. Другие виды
+ошибок не будут обрабатываться (этим @code{condition-case}). То есть:
+
+@c The handler specifies condition name @code{arith-error} so that it
+@c will handle only division-by-zero errors.  Other kinds of errors will
+@c not be handled (by this @code{condition-case}).  Thus:
 
 @example
 @group
@@ -1437,8 +2284,10 @@ not be handled (by this @code{condition-case}).  Thus:
 @end group
 @end example
 
-  Here is a @code{condition-case} that catches all kinds of errors,
-including those from @code{error}:
+  Ниже @code{condition-case} который обрабатывает все виды ошибок:
+
+@c   Here is a @code{condition-case} that catches all kinds of errors,
+@c including those from @code{error}:
 
 @example
 @group
@@ -1461,13 +2310,21 @@ including those from @code{error}:
 @end example
 
 @defmac ignore-errors body@dots{}
-This construct executes @var{body}, ignoring any errors that occur
-during its execution.  If the execution is without error,
-@code{ignore-errors} returns the value of the last form in @var{body};
-otherwise, it returns @code{nil}.
+Данная конструкция выполняет @var{body}, игнорируя все ошибки случающиеся
+во время его выполнения. Если при выполнении не происходит без ошибок,
+@code{ignore-errors} возвращает значение последней формы @var{body}; иначе
+возвращается @code{nil}.
 
-Here's the example at the beginning of this subsection rewritten using
+@c This construct executes @var{body}, ignoring any errors that occur
+@c during its execution.  If the execution is without error,
+@c @code{ignore-errors} returns the value of the last form in @var{body};
+@c otherwise, it returns @code{nil}.
+
+Ниже пример из начала данной секции переписанный с использованием
 @code{ignore-errors}:
+
+@c Here's the example at the beginning of this subsection rewritten using
+@c @code{ignore-errors}:
 
 @example
 @group
@@ -1478,18 +2335,27 @@ Here's the example at the beginning of this subsection rewritten using
 @end defmac
 
 @defmac with-demoted-errors format body@dots{}
-This macro is like a milder version of @code{ignore-errors}.  Rather
-than suppressing errors altogether, it converts them into messages.
-It uses the string @var{format} to format the message.
-@var{format} should contain a single @samp{%}-sequence; e.g.,
-@code{"Error: %S"}.  Use @code{with-demoted-errors} around code
-that is not expected to signal errors, but
-should be robust if one does occur.  Note that this macro uses
-@code{condition-case-unless-debug} rather than @code{condition-case}.
+Данный макрос является более мягкой версией @code{ignore-errors}.
+Вместо полного подавления ошибок, он преобразует их в сообщения.
+Макрос использует строку @var{format} для форматирования сообщения.
+@var{format} должен содержать одну @samp{%}-последовательность; например
+@code{"Error: %s"}. Стоит использовать обертку @code{with-demoted-errors} для
+кода в котором не ожидается сигнализация ошибок, но который должен быть надежен
+если сигнализация произойдет. Данный макрос использует
+@code{condition-case-unless-debug} вместо @code{condition-case}.
+
+@c This macro is like a milder version of @code{ignore-errors}.  Rather
+@c than suppressing errors altogether, it converts them into messages.
+@c It uses the string @var{format} to format the message.
+@c @var{format} should contain a single @samp{%}-sequence; e.g.,
+@c @code{"Error: %S"}.  Use @code{with-demoted-errors} around code
+@c that is not expected to signal errors, but
+@c should be robust if one does occur.  Note that this macro uses
+@c @code{condition-case-unless-debug} rather than @code{condition-case}.
 @end defmac
 
 @node Error Symbols
-@subsubsection Error Symbols and Condition Names
+@subsubsection Символы ошибок и Названия условий
 @cindex error symbol
 @cindex error name
 @cindex condition name
@@ -1497,41 +2363,74 @@ should be robust if one does occur.  Note that this macro uses
 @kindex error-conditions
 @kindex define-error
 
-  When you signal an error, you specify an @dfn{error symbol} to specify
-the kind of error you have in mind.  Each error has one and only one
-error symbol to categorize it.  This is the finest classification of
-errors defined by the Emacs Lisp language.
+  При сигнализации об ошибке, задается @dfn{символ ошибки} (@dfn{error symbol})
+для указания подразумеваемой ошибки. Каждая ошибка имеет один и только
+один символ ошибки. Это лучшая классификация ошибок
+определенная языком Emacs Lisp.
 
-  These narrow classifications are grouped into a hierarchy of wider
-classes called @dfn{error conditions}, identified by @dfn{condition
-names}.  The narrowest such classes belong to the error symbols
-themselves: each error symbol is also a condition name.  There are also
-condition names for more extensive classes, up to the condition name
-@code{error} which takes in all kinds of errors (but not @code{quit}).
-Thus, each error has one or more condition names: @code{error}, the
-error symbol if that is distinct from @code{error}, and perhaps some
-intermediate classifications.
+@c   When you signal an error, you specify an @dfn{error symbol} to specify
+@c the kind of error you have in mind.  Each error has one and only one
+@c error symbol to categorize it.  This is the finest classification of
+@c errors defined by the Emacs Lisp language.
+
+  Данные классы сгруппированы в иерархию из более
+широких классов называемых @dfn{условия ошибок} (@dfn{error conditions}),
+идентифицируемых @dfn{названиями условий} (@dfn{condition names}).
+Наиболее узким классом к которому принадлежит символ ошибки, является
+он сам: каждый символ так же является названием условия. Кроме того
+есть названия условий для более обширные классы, вплоть до названия условия
+@code{error}, в который входят все виды ошибок (кроме @code{quit}).
+Таким образом, каждая ошибка имеет одно или более названий условий: @code{error},
+символ ошибки, если он нет @code{error}, и возможно еще несколько
+промежуточных классов.
+
+@c   These narrow classifications are grouped into a hierarchy of wider
+@c classes called @dfn{error conditions}, identified by @dfn{condition
+@c names}.  The narrowest such classes belong to the error symbols
+@c themselves: each error symbol is also a condition name.  There are also
+@c condition names for more extensive classes, up to the condition name
+@c @code{error} which takes in all kinds of errors (but not @code{quit}).
+@c Thus, each error has one or more condition names: @code{error}, the
+@c error symbol if that is distinct from @code{error}, and perhaps some
+@c intermediate classifications.
 
 @defun define-error name message &optional parent
-  In order for a symbol to be an error symbol, it must be defined with
-@code{define-error} which takes a parent condition (defaults to @code{error}).
-This parent defines the conditions that this kind of error belongs to.
-The transitive set of parents always includes the error symbol itself, and the
-symbol @code{error}.  Because quitting is not considered an error, the set of
-parents of @code{quit} is just @code{(quit)}.
+  Чтобы определить символ ошибки нужно задать его с использованием
+@code{define-error} одним из параметром которого является родительское
+условие (по умолчанию @code{error}). Родитель определяет условия к которым
+относится данная ошибка. Транзитивное множество родителей всегда все включает символ
+ошибки, и символ @code{error}. Так как выход не рассматривается как ошибка,
+множество родителей @code{quit} это @code{(quit)}.
+
+@c   In order for a symbol to be an error symbol, it must be defined with
+@c @code{define-error} which takes a parent condition (defaults to @code{error}).
+@c This parent defines the conditions that this kind of error belongs to.
+@c The transitive set of parents always includes the error symbol itself, and the
+@c symbol @code{error}.  Because quitting is not considered an error, the set of
+@c parents of @code{quit} is just @code{(quit)}.
 @end defun
 
 @cindex peculiar error
-  In addition to its parents, the error symbol has a @var{message} which
-is a string to be printed when that error is signaled but not handled.  If that
-message is not valid, the error message @samp{peculiar error} is used.
+  Кроме родителей, символ ошибки имеет @var{message}, которое является строкой
+которая печатается если данная ошибка была просигнализирована но не обработана.
+Если сообщение не корректно, используется @samp{peculiar error}.
 @xref{Definition of signal}.
 
-Internally, the set of parents is stored in the @code{error-conditions}
-property of the error symbol and the message is stored in the
-@code{error-message} property of the error symbol.
+@c   In addition to its parents, the error symbol has a @var{message} which
+@c is a string to be printed when that error is signaled but not handled.  If that
+@c message is not valid, the error message @samp{peculiar error} is used.
+@c @xref{Definition of signal}.
 
-  Here is how we define a new error symbol, @code{new-error}:
+Множество родителей хранится в свойстве @code{error-conditions} символа
+ошибки, а сообщение об ошибке хранится в свойстве @code{error-message}.
+
+@c Internally, the set of parents is stored in the @code{error-conditions}
+@c property of the error symbol and the message is stored in the
+@c @code{error-message} property of the error symbol.
+
+  Ниже пример определения нового символа ошибки @code{new-error}:
+
+  @c Here is how we define a new error symbol, @code{new-error}:
 
 @example
 @group
@@ -1540,17 +2439,27 @@ property of the error symbol and the message is stored in the
 @end example
 
 @noindent
-This error has several condition names: @code{new-error}, the narrowest
-classification; @code{my-own-errors}, which we imagine is a wider
-classification; and all the conditions of @code{my-own-errors} which should
-include @code{error}, which is the widest of all.
+Ошибка имеет несколько названий условий: @code{new-error}, @code{my-own-errors},
+и все условия @code{my-own-errors} которые должны включать @code{error}.
 
-  The error string should start with a capital letter but it should
-not end with a period.  This is for consistency with the rest of Emacs.
+@c This error has several condition names: @code{new-error}, the narrowest
+@c classification; @code{my-own-errors}, which we imagine is a wider
+@c classification; and all the conditions of @code{my-own-errors} which should
+@c include @code{error}, which is the widest of all.
 
-  Naturally, Emacs will never signal @code{new-error} on its own; only
-an explicit call to @code{signal} (@pxref{Definition of signal}) in
-your code can do this:
+  Строка описания ошибки должна начинаться с заглавной буквы. Точка
+в конце не ставится. Это соглашение используемые в Emacs.
+
+@c   The error string should start with a capital letter but it should
+@c not end with a period.  This is for consistency with the rest of Emacs.
+
+  При выполнении, Emacs никогда самостоятельно не просигнализирует @code{new-error}.
+@code{new-error} сигнализация возможна только после явного вызова @code{signal}
+(@pxref{Definition of signal}) в Lisp коде.
+
+@c   Naturally, Emacs will never signal @code{new-error} on its own; only
+@c an explicit call to @code{signal} (@pxref{Definition of signal}) in
+@c your code can do this:
 
 @example
 @group
@@ -1559,9 +2468,13 @@ your code can do this:
 @end group
 @end example
 
-  This error can be handled through any of its condition names.
-This example handles @code{new-error} and any other errors in the class
-@code{my-own-errors}:
+  Данная ошибка может быть обработана с помощью перехватчика для любого
+из ее названий условий. Пример ниже обрабатывает @code{new-error} и любую
+другую ошибку из класса @code{my-own-errors}:
+
+@c   This error can be handled through any of its condition names.
+@c This example handles @code{new-error} and any other errors in the class
+@c @code{my-own-errors}:
 
 @example
 @group
@@ -1571,64 +2484,108 @@ This example handles @code{new-error} and any other errors in the class
 @end group
 @end example
 
-  The significant way that errors are classified is by their condition
-names---the names used to match errors with handlers.  An error symbol
-serves only as a convenient way to specify the intended error message
-and list of condition names.  It would be cumbersome to give
-@code{signal} a list of condition names rather than one error symbol.
+  Важно то, что ошибки при обработки классифицируются с использованием
+названий условий и передачей только имени символа ошибки в функцию @code{signal}.
+Передача условий в @code{signal}, была бы более громоздким вариантом решения.
 
-  By contrast, using only error symbols without condition names would
-seriously decrease the power of @code{condition-case}.  Condition names
-make it possible to categorize errors at various levels of generality
-when you write an error handler.  Using error symbols alone would
-eliminate all but the narrowest level of classification.
+@c   The significant way that errors are classified is by their condition
+@c names---the names used to match errors with handlers.  An error symbol
+@c serves only as a convenient way to specify the intended error message
+@c and list of condition names.  It would be cumbersome to give
+@c @code{signal} a list of condition names rather than one error symbol.
 
-  @xref{Standard Errors}, for a list of the main error symbols
-and their conditions.
+  При этом, использование только символов без названий условий,
+могло бы сильно уменьшить возможности @code{condition-case}. Названия условий
+позволяют выделить категории ошибок с разной степенью детализации, при
+написании обработчиков. Использование только символов ошибок позволяет
+писать обработчики только для самой узкой степени детализации категорий.
+
+@c   By contrast, using only error symbols without condition names would
+@c seriously decrease the power of @code{condition-case}.  Condition names
+@c make it possible to categorize errors at various levels of generality
+@c when you write an error handler.  Using error symbols alone would
+@c eliminate all but the narrowest level of classification.
+
+  Основные символы ошибок и их условия описаны в @xref{Standr Errors}.
+
+@c   @xref{Standard Errors}, for a list of the main error symbols
+@c and their conditions.
 
 @node Cleanups
-@subsection Cleaning Up from Nonlocal Exits
+@subsection Уборка мусора при не локальном выходе
 @cindex nonlocal exits, cleaning up
 
-  The @code{unwind-protect} construct is essential whenever you
-temporarily put a data structure in an inconsistent state; it permits
-you to make the data consistent again in the event of an error or
-throw.  (Another more specific cleanup construct that is used only for
-changes in buffer contents is the atomic change group; @ref{Atomic
-Changes}.)
+  Конструкция @code{unwind-protect} является необходимой
+при временной установки данных в неустойчивое (inconsistent) состояние.
+Она позволяет вернуть данные в устойчивое состояние, даже в случае
+ошибки или throw. (Другая более специфичная конструкция уборки
+которая используется только изменений содержимого буферов группа
+атомарных изменений (the atomic change group; @ref{Atomic Changes}.))
+
+@c   The @code{unwind-protect} construct is essential whenever you
+@c temporarily put a data structure in an inconsistent state; it permits
+@c you to make the data consistent again in the event of an error or
+@c throw.  (Another more specific cleanup construct that is used only for
+@c changes in buffer contents is the atomic change group; @ref{Atomic
+@c Changes}.)
 
 @defspec unwind-protect body-form cleanup-forms@dots{}
 @cindex cleanup forms
 @cindex protected forms
 @cindex error cleanup
 @cindex unwinding
-@code{unwind-protect} executes @var{body-form} with a guarantee that
-the @var{cleanup-forms} will be evaluated if control leaves
-@var{body-form}, no matter how that happens.  @var{body-form} may
-complete normally, or execute a @code{throw} out of the
-@code{unwind-protect}, or cause an error; in all cases, the
-@var{cleanup-forms} will be evaluated.
+@code{unwind-protect} выполняет @var{body-form} гарантируя, что
+@var{cleanup-forms} будут выполнены при выходе из @var{body-form}, и не
+важно каким образом. @var{body-form} может завершиться обычным образом, выполнив
+все формы, выйти через @code{throw} или выйти при возникновении ошибки,
+во всех случаях @var{cleanup-forms} будут вычислены.
 
-If @var{body-form} finishes normally, @code{unwind-protect} returns the
-value of @var{body-form}, after it evaluates the @var{cleanup-forms}.
-If @var{body-form} does not finish, @code{unwind-protect} does not
-return any value in the normal sense.
+@c @code{unwind-protect} executes @var{body-form} with a guarantee that
+@c the @var{cleanup-forms} will be evaluated if control leaves
+@c @var{body-form}, no matter how that happens.  @var{body-form} may
+@c complete normally, or execute a @code{throw} out of the
+@c @code{unwind-protect}, or cause an error; in all cases, the
+@c @var{cleanup-forms} will be evaluated.
 
-Only @var{body-form} is protected by the @code{unwind-protect}.  If any
-of the @var{cleanup-forms} themselves exits nonlocally (via a
-@code{throw} or an error), @code{unwind-protect} is @emph{not}
-guaranteed to evaluate the rest of them.  If the failure of one of the
-@var{cleanup-forms} has the potential to cause trouble, then protect
-it with another @code{unwind-protect} around that form.
+Если @var{body-form} заканчивается обычным образом, @code{unwind-protect}
+возвращает значение @var{body-form}, после вычисления @var{cleanup-forms}.
+Если @var{body-form} не выполнилось полностью, @code{unwind-protect}
+не возвращает никакого значения в обычном понимании.
 
-The number of currently active @code{unwind-protect} forms counts,
-together with the number of local variable bindings, against the limit
-@code{max-specpdl-size} (@pxref{Definition of max-specpdl-size,, Local
-Variables}).
+@c If @var{body-form} finishes normally, @code{unwind-protect} returns the
+@c value of @var{body-form}, after it evaluates the @var{cleanup-forms}.
+@c If @var{body-form} does not finish, @code{unwind-protect} does not
+@c return any value in the normal sense.
+
+Только @var{body-form} защищается в @code{unwind-protect}. Если
+любой из @code{cleanup-forms} выходит не локально (через @code{throw}
+или ошибку), @code{unwind-protect} @emph{не} гарантирует вычисления оставшихся
+форм очистки. Если возможна ошибка в одной из @var{cleanup-forms} стоит
+использовать для нее еще один @code{unwind-protect}.
+
+@c Only @var{body-form} is protected by the @code{unwind-protect}.  If any
+@c of the @var{cleanup-forms} themselves exits nonlocally (via a
+@c @code{throw} or an error), @code{unwind-protect} is @emph{not}
+@c guaranteed to evaluate the rest of them.  If the failure of one of the
+@c @var{cleanup-forms} has the potential to cause trouble, then protect
+@c it with another @code{unwind-protect} around that form.
+
+Количество текущих активных форм @code{unwind-protect} считается вместе
+с количеством связываний локальных переменных (local variable bindings),
+ограничение для которого задается в @code{max-specpdl-size}. (@pxref{Definition
+of max-specpdl-size,, Local Variables}).
+
+@c The number of currently active @code{unwind-protect} forms counts,
+@c together with the number of local variable bindings, against the limit
+@c @code{max-specpdl-size} (@pxref{Definition of max-specpdl-size,, Local
+@c Variables}).
 @end defspec
 
-  For example, here we make an invisible buffer for temporary use, and
-make sure to kill it before finishing:
+  Например, так можно сделать невидимый буфер для временного использования,
+и так можно удостоверится, что он будет удален:
+
+@c   For example, here we make an invisible buffer for temporary use, and
+@c make sure to kill it before finishing:
 
 @example
 @group
@@ -1641,27 +2598,46 @@ make sure to kill it before finishing:
 @end example
 
 @noindent
-You might think that we could just as well write @code{(kill-buffer
-(current-buffer))} and dispense with the variable @code{buffer}.
-However, the way shown above is safer, if @var{body-form} happens to
-get an error after switching to a different buffer!  (Alternatively,
-you could write a @code{save-current-buffer} around @var{body-form},
-to ensure that the temporary buffer becomes current again in time to
-kill it.)
+Можно выполнить @code{(kill-buffer (current-buffer))}
+и освободить переменную @code{buffer}. Но пример выше,
+более безопасный, если в @var{body-form} будет ошибка, после
+переключения в другой буфер. (Альтернативный вариант
+использовать @code{save-current-buffer} для @var{body-form},
+чтобы гарантировать, что временный буфер станет текущим ко времени
+его удаления.)
 
-  Emacs includes a standard macro called @code{with-temp-buffer} which
-expands into more or less the code shown above (@pxref{Definition of
-with-temp-buffer,, Current Buffer}).  Several of the macros defined in
-this manual use @code{unwind-protect} in this way.
+@c You might think that we could just as well write @code{(kill-buffer
+@c (current-buffer))} and dispense with the variable @code{buffer}.
+@c However, the way shown above is safer, if @var{body-form} happens to
+@c get an error after switching to a different buffer!  (Alternatively,
+@c you could write a @code{save-current-buffer} around @var{body-form},
+@c to ensure that the temporary buffer becomes current again in time to
+@c kill it.)
+
+  Emacs предоставляет стандартный макрос @code{with-temp-buffer}, который
+раскрывается в код похожий на то, что было показано в примере выше.
+(@pxref{Definition of with-temp-buffer,, Current Buffer}). Некоторые из
+макросов в этом руководстве использую @code{unwind-protect} таким образом.
+
+@c   Emacs includes a standard macro called @code{with-temp-buffer} which
+@c expands into more or less the code shown above (@pxref{Definition of
+@c with-temp-buffer,, Current Buffer}).  Several of the macros defined in
+@c this manual use @code{unwind-protect} in this way.
 
 @findex ftp-login
-  Here is an actual example derived from an FTP package.  It creates a
-process (@pxref{Processes}) to try to establish a connection to a remote
-machine.  As the function @code{ftp-login} is highly susceptible to
-numerous problems that the writer of the function cannot anticipate, it
-is protected with a form that guarantees deletion of the process in the
-event of failure.  Otherwise, Emacs might fill up with useless
-subprocesses.
+  Пример из FTP пакета. В примере создается процесс (@pxref{Processes})
+для попытки установки соединения с удаленной машиной. Так как функция
+@code{ftp-login} подвержена различным проблемам, она защищается, чтобы
+гарантировать удаление процесса в случае ошибки. Иначе Emacs может
+быть переполнен бесполезными процессами.
+
+@c   Here is an actual example derived from an FTP package.  It creates a
+@c process (@pxref{Processes}) to try to establish a connection to a remote
+@c machine.  As the function @code{ftp-login} is highly susceptible to
+@c numerous problems that the writer of the function cannot anticipate, it
+@c is protected with a form that guarantees deletion of the process in the
+@c event of failure.  Otherwise, Emacs might fill up with useless
+@c subprocesses.
 
 @example
 @group
@@ -1676,8 +2652,14 @@ subprocesses.
 @end group
 @end example
 
-  This example has a small bug: if the user types @kbd{C-g} to
-quit, and the quit happens immediately after the function
-@code{ftp-setup-buffer} returns but before the variable @code{process} is
-set, the process will not be killed.  There is no easy way to fix this bug,
-but at least it is very unlikely.
+  Пример имеет проблему, если пользователь вводит @kbd{C-g} для
+выхода, и выход выполняется сразу после выхода из функции @code{ftp-setup-buffer}
+но перед установкой переменной @code{process}, процесс не будет завершен.
+Нет простого способа исправления этой проблемы, но она
+довольно редкая.
+
+@c   This example has a small bug: if the user types @kbd{C-g} to
+@c quit, and the quit happens immediately after the function
+@c @code{ftp-setup-buffer} returns but before the variable @code{process} is
+@c set, the process will not be killed.  There is no easy way to fix this bug,
+@c but at least it is very unlikely.
