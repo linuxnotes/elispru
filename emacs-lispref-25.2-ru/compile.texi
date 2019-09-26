@@ -4,50 +4,88 @@
 @c See the file elisp.texi for copying conditions.
 @node Byte Compilation
 @chapter Byte Compilation
+@chapter Байт Компиляция
 @cindex byte compilation
 @cindex byte-code
 @cindex compilation (Emacs Lisp)
 
-  Emacs Lisp has a @dfn{compiler} that translates functions written
-in Lisp into a special representation called @dfn{byte-code} that can be
-executed more efficiently.  The compiler replaces Lisp function
-definitions with byte-code.  When a byte-code function is called, its
-definition is evaluated by the @dfn{byte-code interpreter}.
+  Emacs Lisp имеет @dfn{компилято} (@dfn{compiler}), который преобразует
+функции написанные на Lisp в специальное представление называемое
+@dfn{байт-код} (@dfn{byte-code}), которые выполняется более эффективно.
+Компилятор заменяет определение Lisp функции на байт-код. При вызове
+функции в байт-коде, определение вычисляется с помощью
+@dfn{интерпретатора байт-кода} (@dfn{byte-code interpreter}).
 
-  Because the byte-compiled code is evaluated by the byte-code
-interpreter, instead of being executed directly by the machine's
-hardware (as true compiled code is), byte-code is completely
-transportable from machine to machine without recompilation.  It is not,
-however, as fast as true compiled code.
+@c   Emacs Lisp has a @dfn{compiler} that translates functions written
+@c in Lisp into a special representation called @dfn{byte-code} that can be
+@c executed more efficiently.  The compiler replaces Lisp function
+@c definitions with byte-code.  When a byte-code function is called, its
+@c definition is evaluated by the @dfn{byte-code interpreter}.
 
-  In general, any version of Emacs can run byte-compiled code produced
-by recent earlier versions of Emacs, but the reverse is not true.
+  Так как байт-код вычисляется интерпретатором байт-кода, а не
+выполняется напрямую в машинных кодах (как обычный скомпилированный код),
+он полностью переносим между машинами, без необходимости
+его перекомпиляции. Правда, при этом он не настолько быстрый,
+как скомпилированный код.
+
+@c   Because the byte-compiled code is evaluated by the byte-code
+@c interpreter, instead of being executed directly by the machine's
+@c hardware (as true compiled code is), byte-code is completely
+@c transportable from machine to machine without recompilation.  It is not,
+@c however, as fast as true compiled code.
+
+  В целом, любая версия Emacs может запускать бай-код более
+ранних версий Emacs, обратное не верно.
+
+@c   In general, any version of Emacs can run byte-compiled code produced
+@c by recent earlier versions of Emacs, but the reverse is not true.
 
 @vindex no-byte-compile
-  If you do not want a Lisp file to be compiled, ever, put a file-local
-variable binding for @code{no-byte-compile} into it, like this:
+  Если нужно сделать, чтобы Lisp файл никогда не компилировался, в него нужно
+поместить локальную для файла переменную @code{no-byte-compile}.
+
+@c   If you do not want a Lisp file to be compiled, ever, put a file-local
+@c variable binding for @code{no-byte-compile} into it, like this:
 
 @example
 ;; -*-no-byte-compile: t; -*-
 @end example
 
+
 @menu
-* Speed of Byte-Code::          An example of speedup from byte compilation.
-* Compilation Functions::       Byte compilation functions.
-* Docs and Compilation::        Dynamic loading of documentation strings.
-* Dynamic Loading::             Dynamic loading of individual functions.
-* Eval During Compile::         Code to be evaluated when you compile.
-* Compiler Errors::             Handling compiler error messages.
-* Byte-Code Objects::           The data type used for byte-compiled functions.
-* Disassembly::                 Disassembling byte-code; how to read byte-code.
+* Speed of Byte-Code::          Пример ускорения получаемого за счет байт-компиляции.
+* Compilation Functions::       Функции байт-компиляции.
+* Docs and Compilation::        Динамическая загрузка строк документации.
+* Dynamic Loading::             Динамическая загрузка отдельных функций.
+* Eval During Compile::         Код вычисляемый при компиляции.
+* Compiler Errors::             Обработка ошибок компиляции.
+* Byte-Code Objects::           Тип данных используемый для байт-компилированных функций.
+* Disassembly::                 Дизассемблирование байт-кода; как читать байт-код.
 @end menu
 
-@node Speed of Byte-Code
-@section Performance of Byte-Compiled Code
+@c @menu
+@c * Speed of Byte-Code::          An example of speedup from byte compilation.
+@c * Compilation Functions::       Byte compilation functions.
+@c * Docs and Compilation::        Dynamic loading of documentation strings.
+@c * Dynamic Loading::             Dynamic loading of individual functions.
+@c * Eval During Compile::         Code to be evaluated when you compile.
+@c * Compiler Errors::             Handling compiler error messages.
+@c * Byte-Code Objects::           The data type used for byte-compiled functions.
+@c * Disassembly::                 Disassembling byte-code; how to read byte-code.
+@c @end menu
 
-  A byte-compiled function is not as efficient as a primitive function
-written in C, but runs much faster than the version written in Lisp.
-Here is an example:
+@node Speed of Byte-Code
+@section Производительность Байт-Кода
+
+  Байт-скомпилированная функция нет так эффективна как примитивная
+функция написанная на C, но работает существенно быстрее чем не
+скомпилированная Lisp функция (Прим. думаю зависит от ситуации, и на что
+уходит основное время работы).
+Ниже пример:
+
+@c   A byte-compiled function is not as efficient as a primitive function
+@c written in C, but runs much faster than the version written in Lisp.
+@c Here is an example:
 
 @example
 @group
@@ -75,53 +113,98 @@ Here is an example:
 @end group
 @end example
 
-  In this example, the interpreted code required 10 seconds to run,
-whereas the byte-compiled code required less than 4 seconds.  These
-results are representative, but actual results may vary.
+  В примере, интерпретируемый код выполнялся 10 секунд, а байт-скомпилированная
+версия меньше 4 секунд. Результат 
+репрезентативный, но результаты могут отличаться.
+
+@c   In this example, the interpreted code required 10 seconds to run,
+@c whereas the byte-compiled code required less than 4 seconds.  These
+@c results are representative, but actual results may vary.
 
 @node Compilation Functions
-@section Byte-Compilation Functions
+@section Функции Байт-Компиляции
+@c @section Byte-Compilation Functions
 @cindex compilation functions
 
-  You can byte-compile an individual function or macro definition with
-the @code{byte-compile} function.  You can compile a whole file with
-@code{byte-compile-file}, or several files with
-@code{byte-recompile-directory} or @code{batch-byte-compile}.
+  Можно скомпилировать отдельную функцию или определение макроса
+с помощью функции @code{byte-compile}. Можно скомпилировать файл
+@code{byte-compile-file},
+или несколько файлов с помощью @code{byte-recompile-directory} или
+@code{batch-byte-compile}.
+
+@c   You can byte-compile an individual function or macro definition with
+@c the @code{byte-compile} function.  You can compile a whole file with
+@c @code{byte-compile-file}, or several files with
+@c @code{byte-recompile-directory} or @code{batch-byte-compile}.
 
 @vindex byte-compile-debug
-  Sometimes, the byte compiler produces warning and/or error messages
-(@pxref{Compiler Errors}, for details).  These messages are normally
-recorded in a buffer called @file{*Compile-Log*}, which uses
-Compilation mode.  @xref{Compilation Mode,,,emacs, The GNU Emacs
-Manual}.  However, if the variable @code{byte-compile-debug} is
-non-nil, error message will be signaled as Lisp errors instead
-(@pxref{Errors}).
+  При байт-компиляции возможны предупреждения и/или сообщения
+об ошибках (Подробно, @pxref{Compiler Errors}). Сообщения,
+как правило, сохраняются в буфере @file{*Compile-Log*},
+который используется Compilaction режим. @xref{Compilation Mode,,, emacs, The GNU
+Emacs Manual}. Но, если задать переменную @code{byte-compile-debug}
+в не-@code{nil}, сообщения ошибках будут сигнализироваться как ошибки
+Lisp. (@pxref{Errors}).
+
+@c   Sometimes, the byte compiler produces warning and/or error messages
+@c (@pxref{Compiler Errors}, for details).  These messages are normally
+@c recorded in a buffer called @file{*Compile-Log*}, which uses
+@c Compilation mode.  @xref{Compilation Mode,,,emacs, The GNU Emacs
+@c Manual}.  However, if the variable @code{byte-compile-debug} is
+@c non-nil, error message will be signaled as Lisp errors instead
+@c (@pxref{Errors}).
 
 @cindex macro compilation
-  Be careful when writing macro calls in files that you intend to
-byte-compile.  Since macro calls are expanded when they are compiled,
-the macros need to be loaded into Emacs or the byte compiler will not
-do the right thing.  The usual way to handle this is with
-@code{require} forms which specify the files containing the needed
-macro definitions (@pxref{Named Features}).  Normally, the
-byte compiler does not evaluate the code that it is compiling, but it
-handles @code{require} forms specially, by loading the specified
-libraries.  To avoid loading the macro definition files when someone
-@emph{runs} the compiled program, write @code{eval-when-compile}
-around the @code{require} calls (@pxref{Eval During Compile}).  For
-more details, @xref{Compiling Macros}.
+  Стоит проявить дополнительную осторожность с вызовами макросов
+в файлах которые должны быть скомпилированы. Так макро вызовы
+раскрываются при компиляции, макросы должны быть загружены
+при компиляции или байт-компилятор не сможет корректно их обработать.
+@code{require} используется для определения файлов
+содержащих нужные определения макросов(@pxref{Named Features}).
+Обычно, байт компилятор не вычисляет компилируемый код, но
+обрабатывает форму @code{require} и загружает указанные библиотеки.
+Чтобы избежать загрузки файлов с определением макросов, когда
+кто-то @emph{запускает} скомпилированную программу, нужно
+использовать @code{eval-when-compile} для @code{require}
+(@pxref{Eval During Compile}). Больше подробностей в
+@xref{Compiling Macros}.
 
-  Inline (@code{defsubst}) functions are less troublesome; if you
-compile a call to such a function before its definition is known, the
-call will still work right, it will just run slower.
+@c   Be careful when writing macro calls in files that you intend to
+@c byte-compile.  Since macro calls are expanded when they are compiled,
+@c the macros need to be loaded into Emacs or the byte compiler will not
+@c do the right thing.  The usual way to handle this is with
+@c @code{require} forms which specify the files containing the needed
+@c macro definitions (@pxref{Named Features}).  Normally, the
+@c byte compiler does not evaluate the code that it is compiling, but it
+@c handles @code{require} forms specially, by loading the specified
+@c libraries.  To avoid loading the macro definition files when someone
+@c @emph{runs} the compiled program, write @code{eval-when-compile}
+@c around the @code{require} calls (@pxref{Eval During Compile}).  For
+@c more details, @xref{Compiling Macros}.
+
+  Встраиваемые (@code{defsubst}) функции являются меньшей проблемой,
+в случае компиляции вызова такой функции до ее определения,
+вызов останется рабочим, просто возможно он будет работать
+медленнее.
+
+@c   Inline (@code{defsubst}) functions are less troublesome; if you
+@c compile a call to such a function before its definition is known, the
+@c call will still work right, it will just run slower.
 
 @defun byte-compile symbol
-This function byte-compiles the function definition of @var{symbol},
-replacing the previous definition with the compiled one.  The function
-definition of @var{symbol} must be the actual code for the function;
-@code{byte-compile} does not handle function indirection.  The return
-value is the byte-code function object which is the compiled
-definition of @var{symbol} (@pxref{Byte-Code Objects}).
+Функция выполняет байт-компиляцию определения @var{symbol},
+заменяя предыдущее определение на скомпилированное. Определение
+функции @var{symbol} должно быть кодом функции, @code{byte-compile}
+не обрабатывает косвенное обращение к функции. Возвращается
+объект функции в байт-коде являющийся скомпилированной версией
+@var{symbol} (@pxref{Byte-Code Objects}).
+
+@c This function byte-compiles the function definition of @var{symbol},
+@c replacing the previous definition with the compiled one.  The function
+@c definition of @var{symbol} must be the actual code for the function;
+@c @code{byte-compile} does not handle function indirection.  The return
+@c value is the byte-code function object which is the compiled
+@c definition of @var{symbol} (@pxref{Byte-Code Objects}).
 
 @example
 @group
@@ -142,46 +225,84 @@ definition of @var{symbol} (@pxref{Byte-Code Objects}).
 @end group
 @end example
 
-If @var{symbol}'s definition is a byte-code function object,
-@code{byte-compile} does nothing and returns @code{nil}.  It does not
-compile the symbol's definition again, since the original
-(non-compiled) code has already been replaced in the symbol's function
-cell by the byte-compiled code.
+Если определение @var{symbol} уже является объектом функции
+в байт-коде, @code{byte-compile} ничего не делает и возвращает
+@code{nil}. Повторно компиляция не выполняется, так как
+оригинальные (не скомпилированный) код уже заменен в ячейки функции на
+скомпилированный.
 
-The argument to @code{byte-compile} can also be a @code{lambda}
-expression.  In that case, the function returns the corresponding
-compiled code but does not store it anywhere.
+@c If @var{symbol}'s definition is a byte-code function object,
+@c @code{byte-compile} does nothing and returns @code{nil}.  It does not
+@c compile the symbol's definition again, since the original
+@c (non-compiled) code has already been replaced in the symbol's function
+@c cell by the byte-compiled code.
+
+Аргумент @code{byte-compile} может быть @code{lambda} выражением.
+В этом случае, функция возвращает соответствующий скомпилированный
+код, но никуда его не сохраняет.
+
+@c The argument to @code{byte-compile} can also be a @code{lambda}
+@c expression.  In that case, the function returns the corresponding
+@c compiled code but does not store it anywhere.
 @end defun
 
 @deffn Command compile-defun &optional arg
-This command reads the defun containing point, compiles it, and
-evaluates the result.  If you use this on a defun that is actually a
-function definition, the effect is to install a compiled version of that
-function.
+Команда считывает определение defun содержащее курсор (point), компилирует
+его, и вычисляет результат. Если использовать данную команду для
+defun с определением функции, эффект будет заключаться в установки
+скомпилированной версии функции.
 
-@code{compile-defun} normally displays the result of evaluation in the
-echo area, but if @var{arg} is non-@code{nil}, it inserts the result
-in the current buffer after the form it compiled.
+@c This command reads the defun containing point, compiles it, and
+@c evaluates the result.  If you use this on a defun that is actually a
+@c function definition, the effect is to install a compiled version of that
+@c function.
+
+@code{compile-defun} как правило показывает результат вычисления в
+эхо области, но если @var{arg} не-@code{nil}, результат вставляется
+в текущий буфер после компиляции формы. 
+
+@c @code{compile-defun} normally displays the result of evaluation in the
+@c echo area, but if @var{arg} is non-@code{nil}, it inserts the result
+@c in the current buffer after the form it compiled.
 @end deffn
 
 @deffn Command byte-compile-file filename &optional load
-This function compiles a file of Lisp code named @var{filename} into a
-file of byte-code.  The output file's name is made by changing the
-@samp{.el} suffix into @samp{.elc}; if @var{filename} does not end in
-@samp{.el}, it adds @samp{.elc} to the end of @var{filename}.
+Функция компилирует файл с именем @var{filename} с Lisp кодом в
+файл содержащий байт-код. Результатом является файл с именем в котором
+расширение @samp{.el} заменено на @samp{.elc}; если @var{filename} не
+заканчивается на @samp{.el}, то @samp{.elc} просто добавляется в
+конец @var{filename}.
 
-Compilation works by reading the input file one form at a time.  If it
-is a definition of a function or macro, the compiled function or macro
-definition is written out.  Other forms are batched together, then each
-batch is compiled, and written so that its compiled code will be
-executed when the file is read.  All comments are discarded when the
-input file is read.
+@c This function compiles a file of Lisp code named @var{filename} into a
+@c file of byte-code.  The output file's name is made by changing the
+@c @samp{.el} suffix into @samp{.elc}; if @var{filename} does not end in
+@c @samp{.el}, it adds @samp{.elc} to the end of @var{filename}.
 
-This command returns @code{t} if there were no errors and @code{nil}
-otherwise.  When called interactively, it prompts for the file name.
+Компиляция работает путем считывания по одной форме из файла.
+Если это определение макроса или функции, в результирующий файл
+записывается скомпилированная версия. Другие формы объединяются
+вместе, после чего порция кода компилируется, и результат записывается
+в файл. Все комментарии удаляются при чтении.
 
-If @var{load} is non-@code{nil}, this command loads the compiled file
-after compiling it.  Interactively, @var{load} is the prefix argument.
+@c Compilation works by reading the input file one form at a time.  If it
+@c is a definition of a function or macro, the compiled function or macro
+@c definition is written out.  Other forms are batched together, then each
+@c batch is compiled, and written so that its compiled code will be
+@c executed when the file is read.  All comments are discarded when the
+@c input file is read.
+
+Команда возвращает @code{t} если ошибок не было, а иначе @code{nil}.
+При интерактивном вызове, запрашивается имя файла.
+
+@c This command returns @code{t} if there were no errors and @code{nil}
+@c otherwise.  When called interactively, it prompts for the file name.
+
+Если @var{load} не-@code{nil}, команда загружает скомпилированный файл
+после компиляции. При интерактивном вызове, @var{load} задается
+через префикс.
+
+@c If @var{load} is non-@code{nil}, this command loads the compiled file
+@c after compiling it.  Interactively, @var{load} is the prefix argument.
 
 @example
 @group
@@ -204,36 +325,63 @@ $ ls -l push*
 
 @deffn Command byte-recompile-directory directory &optional flag force
 @cindex library compilation
-This command recompiles every @samp{.el} file in @var{directory} (or
-its subdirectories) that needs recompilation.  A file needs
-recompilation if a @samp{.elc} file exists but is older than the
-@samp{.el} file.
+Команда выполняется перекомпиляцию  всех @samp{.el} файлов в
+@var{directory} (и поддиректориях) для которых файл
+@samp{.elc} старее чем соответствующий @samp{.el} файл.
 
-When a @samp{.el} file has no corresponding @samp{.elc} file,
-@var{flag} says what to do.  If it is @code{nil}, this command ignores
-these files.  If @var{flag} is 0, it compiles them.  If it is neither
-@code{nil} nor 0, it asks the user whether to compile each such file,
-and asks about each subdirectory as well.
+@c This command recompiles every @samp{.el} file in @var{directory} (or
+@c its subdirectories) that needs recompilation.  A file needs
+@c recompilation if a @samp{.elc} file exists but is older than the
+@c @samp{.el} file.
 
-Interactively, @code{byte-recompile-directory} prompts for
-@var{directory} and @var{flag} is the prefix argument.
+Если @samp{.el} файл не имеет соответствующего @samp{.elc} файла,
+@var{flag} определяет, что делать. Если значение @code{nil}, такие
+файлы игнорируются. Если @var{flag} 0, файлы компилируются. Если
+не @code{nil} и не 0, у пользоваться спрашивается нужно ли компилировать
+каждый такой файл.
 
-If @var{force} is non-@code{nil}, this command recompiles every
-@samp{.el} file that has a @samp{.elc} file.
+@c When a @samp{.el} file has no corresponding @samp{.elc} file,
+@c @var{flag} says what to do.  If it is @code{nil}, this command ignores
+@c these files.  If @var{flag} is 0, it compiles them.  If it is neither
+@c @code{nil} nor 0, it asks the user whether to compile each such file,
+@c and asks about each subdirectory as well.
 
-The returned value is unpredictable.
+При интерактивном вызове @code{byte-recompile-directory}
+спрашивает @var{directory} и @var{flag} задается префиксом.
+
+@c Interactively, @code{byte-recompile-directory} prompts for
+@c @var{directory} and @var{flag} is the prefix argument.
+
+Если @var{force} не-@code{nil}, выполняется перекомпиляция
+всех @samp{.el} файлов, для которых есть @samp{.elc}.
+
+@c If @var{force} is non-@code{nil}, this command recompiles every
+@c @samp{.el} file that has a @samp{.elc} file.
+
+Возвращаемое значение не определено.
+@c The returned value is unpredictable.
 @end deffn
 
 @defun batch-byte-compile &optional noforce
-This function runs @code{byte-compile-file} on files specified on the
-command line.  This function must be used only in a batch execution of
-Emacs, as it kills Emacs on completion.  An error in one file does not
-prevent processing of subsequent files, but no output file will be
-generated for it, and the Emacs process will terminate with a nonzero
-status code.
+Функция запускает @code{byte-compile-file} для файлов заданных в
+командной строке. Функция должна использоваться в не интерактивном
+(batch execution of Emacs) режиме работы Emacs, так как Emacs будет
+закрыт после выполнения. Ошибка в одном из файлов не останавливает
+обработку следующих файлов, но для такого файла скомпилированной версии
+не будет, и процесс Emacs завершится с ненулевым кодом завершения.
 
-If @var{noforce} is non-@code{nil}, this function does not recompile
-files that have an up-to-date @samp{.elc} file.
+@c This function runs @code{byte-compile-file} on files specified on the
+@c command line.  This function must be used only in a batch execution of
+@c Emacs, as it kills Emacs on completion.  An error in one file does not
+@c prevent processing of subsequent files, but no output file will be
+@c generated for it, and the Emacs process will terminate with a nonzero
+@c status code.
+
+Если @var{noforce} не-@code{nil}, функция не будет перекомпилировать
+файлы которые имеют актуальные версии @samp{.elc}.
+
+@c If @var{noforce} is non-@code{nil}, this function does not recompile
+@c files that have an up-to-date @samp{.elc} file.
 
 @example
 $ emacs -batch -f batch-byte-compile *.el
@@ -241,158 +389,282 @@ $ emacs -batch -f batch-byte-compile *.el
 @end defun
 
 @node Docs and Compilation
-@section Documentation Strings and Compilation
+@section Строки Документации и Компиляция
+@c @section Documentation Strings and Compilation
 @cindex dynamic loading of documentation
 
-  When Emacs loads functions and variables from a byte-compiled file,
-it normally does not load their documentation strings into memory.
-Each documentation string is dynamically loaded from the
-byte-compiled file only when needed.  This saves memory, and speeds up
-loading by skipping the processing of the documentation strings.
+  Когда Emacs загружает функции и переменные из файла байт-кода,
+как правило строки документации не загружаются в память.
+Строка документации динамически загружается, если она нужна.
+Такой подход позволяет сохранить память и ускорить
+загрузку за счет пропуска обработки строк документации.
 
-  This feature has a drawback: if you delete, move, or alter the
-compiled file (such as by compiling a new version), Emacs may no
-longer be able to access the documentation string of previously-loaded
-functions or variables.  Such a problem normally only occurs if you
-build Emacs yourself, and happen to edit and/or recompile the Lisp
-source files.  To solve it, just reload each file after recompilation.
+@c   When Emacs loads functions and variables from a byte-compiled file,
+@c it normally does not load their documentation strings into memory.
+@c Each documentation string is dynamically loaded from the
+@c byte-compiled file only when needed.  This saves memory, and speeds up
+@c loading by skipping the processing of the documentation strings.
 
-  Dynamic loading of documentation strings from byte-compiled files is
-determined, at compile time, for each byte-compiled file.  It can be
-disabled via the option @code{byte-compile-dynamic-docstrings}.
+  Данная способность имеет недостаток: если удалить, переместить,
+или изменить скомпилированный файл (например скомпилировав новую версию),
+вероятно Emacs не сможет найти документацию для уже загруженных
+функций или переменных. Такая проблема возникает, в случае настройки
+Emacs под себя при выполнении редактирования и пере-компиляции
+файлов с исходными кодами на Lisp. Решением является загрузка
+файлов после пере-компиляции.
+
+@c   This feature has a drawback: if you delete, move, or alter the
+@c compiled file (such as by compiling a new version), Emacs may no
+@c longer be able to access the documentation string of previously-loaded
+@c functions or variables.  Such a problem normally only occurs if you
+@c build Emacs yourself, and happen to edit and/or recompile the Lisp
+@c source files.  To solve it, just reload each file after recompilation.
+
+  Динамическая загрузка строк документации из скомпилированных файлов
+задается при компиляции, для каждого файла отдельно. 
+Для настройки используется параметр  @code{byte-compile-dynamic-docstrings}.
+
+@c   Dynamic loading of documentation strings from byte-compiled files is
+@c determined, at compile time, for each byte-compiled file.  It can be
+@c disabled via the option @code{byte-compile-dynamic-docstrings}.
 
 @defopt byte-compile-dynamic-docstrings
-If this is non-@code{nil}, the byte compiler generates compiled files
-that are set up for dynamic loading of documentation strings.
+Если значение не-@code{nil},  байт компилятор генерирует скомпилированные
+файлы для которых задана динамическая загрузка строк документации.
 
-To disable the dynamic loading feature for a specific file, set this
-option to @code{nil} in its header line (@pxref{File Variables, ,
-Local Variables in Files, emacs, The GNU Emacs Manual}), like this:
+@c If this is non-@code{nil}, the byte compiler generates compiled files
+@c that are set up for dynamic loading of documentation strings.
+
+Чтобы отключить динамическую загрузку для определенного файла, нужно
+установить в @code{nil} в строке заголовка
+(@pxref{File Variables, ,  Local Variables in Files, emacs, The GNU Emacs Manual}),
+например так:
+
+@c To disable the dynamic loading feature for a specific file, set this
+@c option to @code{nil} in its header line (@pxref{File Variables, ,
+@c Local Variables in Files, emacs, The GNU Emacs Manual}), like this:
 
 @smallexample
 -*-byte-compile-dynamic-docstrings: nil;-*-
 @end smallexample
 
-This is useful mainly if you expect to change the file, and you want
-Emacs sessions that have already loaded it to keep working when the
-file changes.
+Данная возможность может быть полезна если предполагается
+изменение файла, и требуется чтобы сессии Emacs уже загрузившие
+его продолжали оставаться работоспособными.
+
+@c This is useful mainly if you expect to change the file, and you want
+@c Emacs sessions that have already loaded it to keep working when the
+@c file changes.
 @end defopt
 
 @cindex @samp{#@@@var{count}}
 @cindex @samp{#$}
-Internally, the dynamic loading of documentation strings is
-accomplished by writing compiled files with a special Lisp reader
-construct, @samp{#@@@var{count}}.  This construct skips the next
-@var{count} characters.  It also uses the @samp{#$} construct, which
-stands for the name of this file, as a string.  Do not use these
-constructs in Lisp source files; they are not designed to be clear to
-humans reading the file.
+Внутренне, динамическая загрузка строк документации заключается
+в создании скомпилированных файлов с особой конструкцией для Lisp
+reader (считывателя), @samp{#@@var{count}}. Данная конструкция пропускает
+следующие @var{count} символов. Так же используется конструкция @samp{#$},
+которая соответствует имени файла, как строке. Эти конструкцию не стоит
+использовать в исходных кодах Lisp; так как они не предназначены для
+файлов читаемых людьми.
+
+@c Internally, the dynamic loading of documentation strings is
+@c accomplished by writing compiled files with a special Lisp reader
+@c construct, @samp{#@@@var{count}}.  This construct skips the next
+@c @var{count} characters.  It also uses the @samp{#$} construct, which
+@c stands for the name of this file, as a string.  Do not use these
+@c constructs in Lisp source files; they are not designed to be clear to
+@c humans reading the file.
 
 @node Dynamic Loading
-@section Dynamic Loading of Individual Functions
+@section Динамическая Загрузка Отдельных Функций
+@c @section Dynamic Loading of Individual Functions
 
 @cindex dynamic loading of functions
 @cindex lazy loading
-  When you compile a file, you can optionally enable the @dfn{dynamic
-function loading} feature (also known as @dfn{lazy loading}).  With
-dynamic function loading, loading the file doesn't fully read the
-function definitions in the file.  Instead, each function definition
-contains a place-holder which refers to the file.  The first time each
-function is called, it reads the full definition from the file, to
-replace the place-holder.
+  При компиляции файла, можно включить @dfn{динамическую загрузку функций}
+(@dfn{dynamic function loading}) (так же известную как @dfn{ленивая загрузка}
+(@dfn{lazy loading})). При динамической загрузке, загрузка файла не считывает
+функции целиком, вместо этого создаются заглушка, ссылающаяся на файл.
+При первом вызове заглушки, выполняется считывание определения из файла,
+для замены заглушки.
 
-  The advantage of dynamic function loading is that loading the file
-becomes much faster.  This is a good thing for a file which contains
-many separate user-callable functions, if using one of them does not
-imply you will probably also use the rest.  A specialized mode which
-provides many keyboard commands often has that usage pattern: a user may
-invoke the mode, but use only a few of the commands it provides.
+@c   When you compile a file, you can optionally enable the @dfn{dynamic
+@c function loading} feature (also known as @dfn{lazy loading}).  With
+@c dynamic function loading, loading the file doesn't fully read the
+@c function definitions in the file.  Instead, each function definition
+@c contains a place-holder which refers to the file.  The first time each
+@c function is called, it reads the full definition from the file, to
+@c replace the place-holder.
 
-  The dynamic loading feature has certain disadvantages:
+  Преимуществом динамической загрузки является более быстрая загрузка
+файла. Для файлов содержащих большое количество функций которые могут
+понадобится пользователю, из которых обычно используется только несколько.
+Специальные режимы, которые предоставляют обработчики для большого
+количества клавиатурных комбинаций, как правило используют данную возможность.
+
+@c   The advantage of dynamic function loading is that loading the file
+@c becomes much faster.  This is a good thing for a file which contains
+@c many separate user-callable functions, if using one of them does not
+@c imply you will probably also use the rest.  A specialized mode which
+@c provides many keyboard commands often has that usage pattern: a user may
+@c invoke the mode, but use only a few of the commands it provides.
+
+  Динамическая загрузка имеет и недостатки:
+  @c The dynamic loading feature has certain disadvantages:
 
 @itemize @bullet
 @item
-If you delete or move the compiled file after loading it, Emacs can no
-longer load the remaining function definitions not already loaded.
+Если удалить или переместить скомпилированный  файл, Emacs не сможет
+загрузить функции, которые еще не были загружены.
+
+@c If you delete or move the compiled file after loading it, Emacs can no
+@c longer load the remaining function definitions not already loaded.
 
 @item
-If you alter the compiled file (such as by compiling a new version),
-then trying to load any function not already loaded will usually yield
-nonsense results.
+Если изменить скомпилированный файла (например скомпилировав новую версию),
+попытка загрузить еще не загруженные функции может привести к
+неожиданным результатам.
+
+@c If you alter the compiled file (such as by compiling a new version),
+@c then trying to load any function not already loaded will usually yield
+@c nonsense results.
 @end itemize
 
-  These problems will never happen in normal circumstances with
-installed Emacs files.  But they are quite likely to happen with Lisp
-files that you are changing.  The easiest way to prevent these problems
-is to reload the new compiled file immediately after each recompilation.
+  Такая проблема не возникает с устанавливаемыми с Emacs файлами.
+Но такое случается с файлами изменяемыми пользователями. Простейшим
+способ решения проблемы является загрузка файла сразу после пере-компиляции.
 
-  The byte compiler uses the dynamic function loading feature if the
-variable @code{byte-compile-dynamic} is non-@code{nil} at compilation
-time.  Do not set this variable globally, since dynamic loading is
-desirable only for certain files.  Instead, enable the feature for
-specific source files with file-local variable bindings.  For example,
-you could do it by writing this text in the source file's first line:
+@c   These problems will never happen in normal circumstances with
+@c installed Emacs files.  But they are quite likely to happen with Lisp
+@c files that you are changing.  The easiest way to prevent these problems
+@c is to reload the new compiled file immediately after each recompilation.
+
+  Байт компилятор использует динамическую загрузку если переменная
+@code{byte-compile-dynamic}  не-@code{nil} при компиляции. Не стоит
+устанавливать эту переменную глобально, так как динамическая загрузка
+подходит только для определенных файлов. Лучше включать данную
+опцию для определенных файлов с  помощью задания локальной для
+файла переменной. Например, можно это сделать добавив следующих
+код в начало файла:
+
+@c   The byte compiler uses the dynamic function loading feature if the
+@c variable @code{byte-compile-dynamic} is non-@code{nil} at compilation
+@c time.  Do not set this variable globally, since dynamic loading is
+@c desirable only for certain files.  Instead, enable the feature for
+@c specific source files with file-local variable bindings.  For example,
+@c you could do it by writing this text in the source file's first line:
 
 @example
 -*-byte-compile-dynamic: t;-*-
 @end example
 
 @defvar byte-compile-dynamic
-If this is non-@code{nil}, the byte compiler generates compiled files
-that are set up for dynamic function loading.
+Если значение не-@code{nil}, байт компилятор генерирует файлы
+с динамической загрузкой функций.
+
+@c If this is non-@code{nil}, the byte compiler generates compiled files
+@c that are set up for dynamic function loading.
 @end defvar
 
 @defun fetch-bytecode function
-If @var{function} is a byte-code function object, this immediately
-finishes loading the byte code of @var{function} from its
-byte-compiled file, if it is not fully loaded already.  Otherwise,
-it does nothing.  It always returns @var{function}.
+Если @var{function} функция в байт-коде, выполняется загрузка
+байт кода @var{function} из скомпилированного файла, если она еще
+не загружена. Иначе, ничего не делается. Всегда возвращается
+@var{function}.
+
+@c If @var{function} is a byte-code function object, this immediately
+@c finishes loading the byte code of @var{function} from its
+@c byte-compiled file, if it is not fully loaded already.  Otherwise,
+@c it does nothing.  It always returns @var{function}.
 @end defun
 
 @node Eval During Compile
-@section Evaluation During Compilation
+@section Вычисления во Время Компиляции
+@c @section Evaluation During Compilation
 @cindex eval during compilation
 
-  These features permit you to write code to be evaluated during
-compilation of a program.
+  Данная возможность позволяет писать код, который будет
+вычислен при выполнении компиляции.
+  
+@c   These features permit you to write code to be evaluated during
+@c compilation of a program.
 
 @defspec eval-and-compile body@dots{}
-This form marks @var{body} to be evaluated both when you compile the
-containing code and when you run it (whether compiled or not).
+Данная форма помечает @var{body} для вычисления при
+компиляции и при запуске (не зависимо от того скомпилировано
+@var{bodу} или нет).
 
-You can get a similar result by putting @var{body} in a separate file
-and referring to that file with @code{require}.  That method is
-preferable when @var{body} is large.  Effectively @code{require} is
-automatically @code{eval-and-compile}, the package is loaded both when
-compiling and executing.
+@c This form marks @var{body} to be evaluated both when you compile the
+@c containing code and when you run it (whether compiled or not).
 
-@code{autoload} is also effectively @code{eval-and-compile} too.  It's
-recognized when compiling, so uses of such a function don't produce
-``not known to be defined'' warnings.
+Аналогичный результат можно получить поместив @var{body} в отдельный
+файл и сославшись на него с помощью @code{requere}, и в случае если
+@var{body} большое так и стоит сделать. Фактически @code{require}
+выполняет @code{eval-and-compile}, и пакет загружается как при компиляции
+так и при выполнении.
 
-Most uses of @code{eval-and-compile} are fairly sophisticated.
+@c You can get a similar result by putting @var{body} in a separate file
+@c and referring to that file with @code{require}.  That method is
+@c preferable when @var{body} is large.  Effectively @code{require} is
+@c automatically @code{eval-and-compile}, the package is loaded both when
+@c compiling and executing.
 
-If a macro has a helper function to build its result, and that macro
-is used both locally and outside the package, then
-@code{eval-and-compile} should be used to get the helper both when
-compiling and then later when running.
+@code{autoload} тоже фактически @code{eval-and-compile}. Форма
+распознается при компиляции, поэтому использование таких
+функций не приводит к появлению предупреждений
+``определение не найдено'' (``not known to be defined'').
 
-If functions are defined programmatically (with @code{fset} say), then
-@code{eval-and-compile} can be used to have that done at compile-time
-as well as run-time, so calls to those functions are checked (and
-warnings about ``not known to be defined'' suppressed).
+
+@c @code{autoload} is also effectively @code{eval-and-compile} too.  It's
+@c recognized when compiling, so uses of such a function don't produce
+@c ``not known to be defined'' warnings.
+
+Использование @code{eval-and-compile} довольно сложно.
+@c Most uses of @code{eval-and-compile} are fairly sophisticated.
+
+Если макрос имеет вспомогательную функцию для построения результата,
+и макрос использует внутренний и внешний пакет, тогда
+@code{eval-and-compile} должно быть использовано для получения
+вспомогательной функции как при компиляции так и позднее при выполнении.
+
+@c If a macro has a helper function to build its result, and that macro
+@c is used both locally and outside the package, then
+@c @code{eval-and-compile} should be used to get the helper both when
+@c compiling and then later when running.
+
+Если функция создается программно (с помощью @code{fset}),
+тогда @code{eval-and-compile} может использовать чтобы
+иметь доступ к ней при компиляции и при выполнении, поэтому
+вызовы этих функций проверяются (и делаются предупреждения
+``определение не найдено'' (``not known to be defined'')).
+
+@c If functions are defined programmatically (with @code{fset} say), then
+@c @code{eval-and-compile} can be used to have that done at compile-time
+@c as well as run-time, so calls to those functions are checked (and
+@c warnings about ``not known to be defined'' suppressed).
 @end defspec
 
 @defspec eval-when-compile body@dots{}
-This form marks @var{body} to be evaluated at compile time but not when
-the compiled program is loaded.  The result of evaluation by the
-compiler becomes a constant which appears in the compiled program.  If
-you load the source file, rather than compiling it, @var{body} is
-evaluated normally.
+Данная форма помечает, что @var{body} должно быть вычислено при
+компиляции, но не когда скомпилированная программа загружена.
+Результат вычисления компилятором становится константой появляющейся
+в скомпилированной программе. Если загрузить файл с исходным кодом,
+вместо скомпилированной версии @var{body} будет вычисляться обычным
+образом.
+
+@c This form marks @var{body} to be evaluated at compile time but not when
+@c the compiled program is loaded.  The result of evaluation by the
+@c compiler becomes a constant which appears in the compiled program.  If
+@c you load the source file, rather than compiling it, @var{body} is
+@c evaluated normally.
 
 @cindex compile-time constant
-If you have a constant that needs some calculation to produce,
-@code{eval-when-compile} can do that at compile-time.  For example,
+Если есть константа которая должна вычисляться,
+с помощью @var{eval-when-compile} ее можно вычислить
+при компиляции. Например,
+
+@c If you have a constant that needs some calculation to produce,
+@c @code{eval-when-compile} can do that at compile-time.  For example,
 
 @lisp
 (defvar my-regexp
@@ -400,19 +672,29 @@ If you have a constant that needs some calculation to produce,
 @end lisp
 
 @cindex macros, at compile time
-If you're using another package, but only need macros from it (the
-byte compiler will expand those), then @code{eval-when-compile} can be
-used to load it for compiling, but not executing.  For example,
+В случае если из другого пакета используются только
+макросы (которые будут раскрыты при компиляции), тогда
+можно использовать @code{eval-when-compile} для загрузки
+их при компиляции, но не при выполнении. Например,
+
+@c If you're using another package, but only need macros from it (the
+@c byte compiler will expand those), then @code{eval-when-compile} can be
+@c used to load it for compiling, but not executing.  For example,
 
 @lisp
 (eval-when-compile
   (require 'my-macro-package))
 @end lisp
 
-The same sort of thing goes for macros and @code{defsubst} functions
-defined locally and only for use within the file.  They are needed for
-compiling the file, but in most cases they are not needed for
-execution of the compiled file.  For example,
+Аналогично можно поступить в случае с макросами и @code{defsubst}
+функциями, используемыми только внутри текущего файла. Такие
+макросы и функции нужно при компиляции, но как правило не нужны при
+выполнении уже скомпилированного файла. Например,
+
+@c The same sort of thing goes for macros and @code{defsubst} functions
+@c defined locally and only for use within the file.  They are needed for
+@c compiling the file, but in most cases they are not needed for
+@c execution of the compiled file.  For example,
 
 @lisp
 (eval-when-compile
@@ -422,159 +704,266 @@ execution of the compiled file.  For example,
 @end lisp
 
 @noindent
-This is often good for code that's only a fallback for compatibility
-with other versions of Emacs.
+Для кода используемого для совместимости с другими версиями
+Emacs, такой способ как правило является хорошей идеей.
 
-@strong{Common Lisp Note:} At top level, @code{eval-when-compile} is analogous to the Common
-Lisp idiom @code{(eval-when (compile eval) @dots{})}.  Elsewhere, the
-Common Lisp @samp{#.} reader macro (but not when interpreting) is closer
-to what @code{eval-when-compile} does.
+@c This is often good for code that's only a fallback for compatibility
+@c with other versions of Emacs.
+
+@strong{Common Lisp Note:}: На верхнем уровне (top level), @code{eval-when-compile} аналогичен
+@samp{(eval-when (compile eval) @dots{})} из Common Lisp. В других местах,
+макрос чтения @samp{#.} (но не при интерпретации) больше походит на
+поведение @code{eval-when-compile}.
+
+@c @strong{Common Lisp Note:} At top level, @code{eval-when-compile} is analogous to the Common
+@c Lisp idiom @code{(eval-when (compile eval) @dots{})}.  Elsewhere, the
+@c Common Lisp @samp{#.} reader macro (but not when interpreting) is closer
+@c to what @code{eval-when-compile} does.
 @end defspec
 
 @node Compiler Errors
-@section Compiler Errors
+@section Ошибки Компиляции
+@c @section Compiler Errors
 @cindex compiler errors
 
-  Error and warning messages from byte compilation are printed in a
-buffer named @file{*Compile-Log*}.  These messages include file names
-and line numbers identifying the location of the problem.  The usual
-Emacs commands for operating on compiler output can be used on these
-messages.
+  Сообщения об ошибках и предупреждения выводятся в буфер @file{*Compile-Log*}.
+Сообщения содержат имя файла и номер строки в файле, где возникла
+проблема. Обыкновенные команды Emacs для работы с выводом компилятора
+могут быть использованы с этими сообщениями.
 
-  When an error is due to invalid syntax in the program, the byte
-compiler might get confused about the error's exact location.  One way
-to investigate is to switch to the buffer @w{@file{ *Compiler
-Input*}}.  (This buffer name starts with a space, so it does not show
-up in the Buffer Menu.)  This buffer contains the program being
-compiled, and point shows how far the byte compiler was able to read;
-the cause of the error might be nearby.  @xref{Syntax Errors}, for
-some tips for locating syntax errors.
+@c   Error and warning messages from byte compilation are printed in a
+@c buffer named @file{*Compile-Log*}.  These messages include file names
+@c and line numbers identifying the location of the problem.  The usual
+@c Emacs commands for operating on compiler output can be used on these
+@c messages.
 
-  A common type of warning issued by the byte compiler is for
-functions and variables that were used but not defined.  Such warnings
-report the line number for the end of the file, not the locations
-where the missing functions or variables were used; to find these, you
-must search the file manually.
+  В случае синтаксической ошибки байт компилятор не всегда точно
+может определить место возникновения проблемы. Чтобы найти место
+ошибки можно переключиться в буфер @w{@file{ *Compiler Input*}}.
+(Имя начинается с пробела, поэтому он не отображается в списке
+буферов (Buffer Menu)). Данный буфер содержит компилируемую программу,
+и текущая точка указывает до куда байт компилятор выполнил чтение;
+причина ошибки вероятно будет находится где-то рядом с точкой.
+Чтобы получить дополнительную информацию по поиску места ошибки
+@xref{Syntax Errors}.
 
-  If you are sure that a warning message about a missing function or
-variable is unjustified, there are several ways to suppress it:
+@c   When an error is due to invalid syntax in the program, the byte
+@c compiler might get confused about the error's exact location.  One way
+@c to investigate is to switch to the buffer @w{@file{ *Compiler
+@c Input*}}.  (This buffer name starts with a space, so it does not show
+@c up in the Buffer Menu.)  This buffer contains the program being
+@c compiled, and point shows how far the byte compiler was able to read;
+@c the cause of the error might be nearby.  @xref{Syntax Errors}, for
+@c some tips for locating syntax errors.
+
+  Довольно распространенное предупреждение компилятора об
+использовании функций и переменных которые не были объявлены.
+Такие предупреждения содержат указание на конец файла, а не место где
+функция или переменная бала использована, чтобы найти такие места
+нужно вручную выполнить поиск по файлу.
+
+@c   A common type of warning issued by the byte compiler is for
+@c functions and variables that were used but not defined.  Such warnings
+@c report the line number for the end of the file, not the locations
+@c where the missing functions or variables were used; to find these, you
+@c must search the file manually.
+
+  В случае если вы уверены, что предупреждение ошибочно, есть несколько
+способов подавить его:
+@c   If you are sure that a warning message about a missing function or
+@c variable is unjustified, there are several ways to suppress it:
 
 @itemize @bullet
 @item
-You can suppress the warning for a specific call to a function
-@var{func} by conditionalizing it on an @code{fboundp} test, like
-this:
+Можно подавить предупреждение о вызову определенной функции
+@var{func} поместив его в проверку @code{fboundp},
+например так:
+
+@c You can suppress the warning for a specific call to a function
+@c @var{func} by conditionalizing it on an @code{fboundp} test, like
+@c this:
 
 @example
 (if (fboundp '@var{func}) ...(@var{func} ...)...)
 @end example
 
 @noindent
-The call to @var{func} must be in the @var{then-form} of the
-@code{if}, and @var{func} must appear quoted in the call to
-@code{fboundp}.  (This feature operates for @code{cond} as well.)
+Вызов @var{func} должен быть в @var{then-form} @code{if}, и
+@var{func} должна быть в закавыченной форме в @code{fboundp}.
+(Данная возможность так же работает для @code{cond}).
+
+@c The call to @var{func} must be in the @var{then-form} of the
+@c @code{if}, and @var{func} must appear quoted in the call to
+@c @code{fboundp}.  (This feature operates for @code{cond} as well.)
 
 @item
-Likewise, you can suppress the warning for a specific use of a
-variable @var{variable} by conditionalizing it on a @code{boundp}
-test:
+Аналогично, подавить предупреждение для переменной можно
+использовав @code{boundp}:
+
+@c Likewise, you can suppress the warning for a specific use of a
+@c variable @var{variable} by conditionalizing it on a @code{boundp}
+@c test:
 
 @example
 (if (boundp '@var{variable}) ...@var{variable}...)
 @end example
 
 @noindent
-The reference to @var{variable} must be in the @var{then-form} of the
-@code{if}, and @var{variable} must appear quoted in the call to
-@code{boundp}.
+Ссылка на @var{variable} должна быть в @var{then-form} @code{if},
+и @var{variable} должна быть закавыченной в @code{boundp}.
+
+@c The reference to @var{variable} must be in the @var{then-form} of the
+@c @code{if}, and @var{variable} must appear quoted in the call to
+@c @code{boundp}.
 
 @item
-You can tell the compiler that a function is defined using
-@code{declare-function}. @xref{Declaring Functions}.
+Можно указать компилятору, что функция определена
+используя @code{declare-function}. @xref{Declaring Functions}.
+
+@c You can tell the compiler that a function is defined using
+@c @code{declare-function}. @xref{Declaring Functions}.
 
 @item
-Likewise, you can tell the compiler that a variable is defined using
-@code{defvar} with no initial value.  (Note that this marks the
-variable as special.)  @xref{Defining Variables}.
+Аналогично, можно указать компилятору что переменная определена
+используя @code{defvar}  без начального значения. (Внимание, это
+пометит переменную как специальную.) @xref{Defining Varibles}.
+
+@c Likewise, you can tell the compiler that a variable is defined using
+@c @code{defvar} with no initial value.  (Note that this marks the
+@c variable as special.)  @xref{Defining Variables}.
 @end itemize
 
-  You can also suppress any and all compiler warnings within a certain
-expression using the construct @code{with-no-warnings}:
+  Кроме того можно подавить все предупреждения внутри заданного
+выражения с помощью конструкции @code{with-no-warnings}:
+
+@c   You can also suppress any and all compiler warnings within a certain
+@c expression using the construct @code{with-no-warnings}:
 
 @c This is implemented with a defun, but conceptually it is
 @c a special form.
 
 @defspec with-no-warnings body@dots{}
-In execution, this is equivalent to @code{(progn @var{body}...)},
-but the compiler does not issue warnings for anything that occurs
-inside @var{body}.
+При выполнении, конструкция эквивалентна @code{(progn @var{body}...)},
+но компилятор не будет показывать предупреждения для кода
+внутри @var{body}.
 
-We recommend that you use this construct around the smallest
-possible piece of code, to avoid missing possible warnings other than
-one you intend to suppress.
+@c In execution, this is equivalent to @code{(progn @var{body}...)},
+@c but the compiler does not issue warnings for anything that occurs
+@c inside @var{body}.
+
+Данную конструкцию стоит использовать для кода как можно
+меньшего размера, чтобы не отключить нужные предупреждения.
+
+@c We recommend that you use this construct around the smallest
+@c possible piece of code, to avoid missing possible warnings other than
+@c one you intend to suppress.
 @end defspec
 
-  Byte compiler warnings can be controlled more precisely by setting
-the variable @code{byte-compile-warnings}.  See its documentation
-string for details.
+  Более точно предупреждения компилятора могу управляться установкой
+переменной @code{byte-compile-warnings}, описание которой можно
+посмотреть в ее документации (@kbd{C-h v} byte-compile-warnings @kbd{RET}.
+
+@c   Byte compiler warnings can be controlled more precisely by setting
+@c the variable @code{byte-compile-warnings}.  See its documentation
+@c string for details.
 
 @node Byte-Code Objects
-@section Byte-Code Function Objects
+@section Байт-Код Функций
+@c @section Byte-Code Function Objects
 @cindex compiled function
 @cindex byte-code function
 @cindex byte-code object
 
-  Byte-compiled functions have a special data type: they are
-@dfn{byte-code function objects}.  Whenever such an object appears as
-a function to be called, Emacs uses the byte-code interpreter to
-execute the byte-code.
+  Скомпилированные функции имеют специальный тип объектов:
+@dfn{байт-код функции} (@dfn{byte-code function objects}).
+Когда такой объект вызывается, Emacs использует интерпретатор
+байт-кода для выполнения байт-кода.
 
-  Internally, a byte-code function object is much like a vector; its
-elements can be accessed using @code{aref}.  Its printed
-representation is like that for a vector, with an additional @samp{#}
-before the opening @samp{[}.  It must have at least four elements;
-there is no maximum number, but only the first six elements have any
-normal use.  They are:
+@c   Byte-compiled functions have a special data type: they are
+@c @dfn{byte-code function objects}.  Whenever such an object appears as
+@c a function to be called, Emacs uses the byte-code interpreter to
+@c execute the byte-code.
+
+  Внутренне, байт-код функции похожи на вектор, и элементы такого объекта могут
+быть получены с использованием @code{aref}. Печатная форма такого объекта
+тоже как у вектора, но с добавлением @samp{#} перед открывающей @samp{[}.
+Объект содержит как минимум четыре элемента; ограничения сверху нет,
+но обычно используются только первые шесть элементов. Это элементы:
+
+@c   Internally, a byte-code function object is much like a vector; its
+@c elements can be accessed using @code{aref}.  Its printed
+@c representation is like that for a vector, with an additional @samp{#}
+@c before the opening @samp{[}.  It must have at least four elements;
+@c there is no maximum number, but only the first six elements have any
+@c normal use.  They are:
 
 @table @var
 @item argdesc
-The descriptor of the arguments.  This can either be a list of
-arguments, as described in @ref{Argument List}, or an integer encoding
-the required number of arguments.  In the latter case, the value of
-the descriptor specifies the minimum number of arguments in the bits
-zero to 6, and the maximum number of arguments in bits 8 to 14.  If
-the argument list uses @code{&rest}, then bit 7 is set; otherwise it's
-cleared.
+Описание аргументов. Тут может быть список аргументов, как
+описано в @ref{Argument List}, или целое число кодирующее требуемое
+число аргументов. В последнем случае, значение определяет минимальное
+количество аргументов в битах с 0 по 6, и максимальное количество
+в битах с 8 по 14. Если список аргументов содержит @code{&rest},
+тогда устанавливается 7 бит; иначе он не задается.
+ 
+@c The descriptor of the arguments.  This can either be a list of
+@c arguments, as described in @ref{Argument List}, or an integer encoding
+@c the required number of arguments.  In the latter case, the value of
+@c the descriptor specifies the minimum number of arguments in the bits
+@c zero to 6, and the maximum number of arguments in bits 8 to 14.  If
+@c the argument list uses @code{&rest}, then bit 7 is set; otherwise it's
+@c cleared.
 
-If @var{argdesc} is a list, the arguments will be dynamically bound
-before executing the byte code.  If @var{argdesc} is an integer, the
-arguments will be instead pushed onto the stack of the byte-code
-interpreter, before executing the code.
+Если @var{argdesc} список, аргументы будут динамически привязаны перед
+выполнением байт кода. Если @var{argdesc} число, аргументы будут помещены
+в стек интерпретатора байт-кода, перед выполнением кода.
+
+@c If @var{argdesc} is a list, the arguments will be dynamically bound
+@c before executing the byte code.  If @var{argdesc} is an integer, the
+@c arguments will be instead pushed onto the stack of the byte-code
+@c interpreter, before executing the code.
 
 @item byte-code
-The string containing the byte-code instructions.
+Строка содержащая инструкции байт-кода.
+@c The string containing the byte-code instructions.
 
 @item constants
-The vector of Lisp objects referenced by the byte code.  These include
-symbols used as function names and variable names.
+Вектор Lisp объектов на которые есть ссылки из байт-кода. Сюда входят
+символы используемые как имена функций и переменных.
+
+@c The vector of Lisp objects referenced by the byte code.  These include
+@c symbols used as function names and variable names.
 
 @item stacksize
-The maximum stack size this function needs.
+Максимальный размер стека который может потребоваться функции.
+@c The maximum stack size this function needs.
 
 @item docstring
-The documentation string (if any); otherwise, @code{nil}.  The value may
-be a number or a list, in case the documentation string is stored in a
-file.  Use the function @code{documentation} to get the real
-documentation string (@pxref{Accessing Documentation}).
+Строка документации (если есть); иначе @code{nil}. Значение может быть
+числом или списком, тогда документация хранится в файле. С помощью функции
+@code{documentation} можно получить фактическую строку документации
+(@pxref{Accessing Documentation}).
+
+@c The documentation string (if any); otherwise, @code{nil}.  The value may
+@c be a number or a list, in case the documentation string is stored in a
+@c file.  Use the function @code{documentation} to get the real
+@c documentation string (@pxref{Accessing Documentation}).
 
 @item interactive
-The interactive spec (if any).  This can be a string or a Lisp
-expression.  It is @code{nil} for a function that isn't interactive.
+Спецификация интерактивного вызова (если есть). Значение может быть
+строкой или Lisp выражением. Если значение @code{nil}, то функция
+не интерактивная.
+
+@c The interactive spec (if any).  This can be a string or a Lisp
+@c expression.  It is @code{nil} for a function that isn't interactive.
 @end table
 
-Here's an example of a byte-code function object, in printed
-representation.  It is the definition of the command
-@code{backward-sexp}.
+Ниже приводится пример байт-код функции, в печатной форме.
+Это байт-код команды @code{backward-sexp}.
+
+@c Here's an example of a byte-code function object, in printed
+@c representation.  It is the definition of the command
+@c @code{backward-sexp}.
 
 @example
 #[256
@@ -585,55 +974,100 @@ representation.  It is the definition of the command
   "^p"]
 @end example
 
-  The primitive way to create a byte-code object is with
-@code{make-byte-code}:
+  @code{make-byte-code} простейший способ создать байт-код объект:
+
+@c   The primitive way to create a byte-code object is with
+@c @code{make-byte-code}:
 
 @defun make-byte-code &rest elements
-This function constructs and returns a byte-code function object
-with @var{elements} as its elements.
+Функция создается и возвращает байт-код функцию с
+элементами @var{elements}.
+
+@c This function constructs and returns a byte-code function object
+@c with @var{elements} as its elements.
 @end defun
 
-  You should not try to come up with the elements for a byte-code
-function yourself, because if they are inconsistent, Emacs may crash
-when you call the function.  Always leave it to the byte compiler to
-create these objects; it makes the elements consistent (we hope).
+  Не стоит пытаться составлять элементы для создания байт кода,
+потому что если они будут не согласованы, Emacs может упасть
+при вызове функции. Данную задачу стоит оставить для байт компилятора;
+в этом случае(можно надеяться) элементы будут согласованы.
+
+@c   You should not try to come up with the elements for a byte-code
+@c function yourself, because if they are inconsistent, Emacs may crash
+@c when you call the function.  Always leave it to the byte compiler to
+@c create these objects; it makes the elements consistent (we hope).
 
 @node Disassembly
-@section Disassembled Byte-Code
+@section Дизассемблирование Байт-Кода
+@c @section Disassembled Byte-Code
 @cindex disassembled byte-code
 
-  People do not write byte-code; that job is left to the byte
-compiler.  But we provide a disassembler to satisfy a cat-like
-curiosity.  The disassembler converts the byte-compiled code into
-human-readable form.
+  Люди не пишут байт-код; эта задача делегирована байт компилятору.
+Но для байт кода предоставляется дизассеблер для удовлетворения
+любопытства. Дизассемблер преобразует байт-код в человеко читаемый
+формат.
 
-  The byte-code interpreter is implemented as a simple stack machine.
-It pushes values onto a stack of its own, then pops them off to use them
-in calculations whose results are themselves pushed back on the stack.
-When a byte-code function returns, it pops a value off the stack and
-returns it as the value of the function.
+@c   People do not write byte-code; that job is left to the byte
+@c compiler.  But we provide a disassembler to satisfy a cat-like
+@c curiosity.  The disassembler converts the byte-compiled code into
+@c human-readable form.
 
-  In addition to the stack, byte-code functions can use, bind, and set
-ordinary Lisp variables, by transferring values between variables and
-the stack.
+  Интерпретатор байт-кода выполняется как простая стек машина.
+Значения помещаются в стек как есть, после чего они извлекаются для
+выполнения вычисления результат которого снова помещается в стек.
+При выходе из функции байт кода, она берет значение из стека и возвращает
+его как результат выполнения функции.
+
+@c   The byte-code interpreter is implemented as a simple stack machine.
+@c It pushes values onto a stack of its own, then pops them off to use them
+@c in calculations whose results are themselves pushed back on the stack.
+@c When a byte-code function returns, it pops a value off the stack and
+@c returns it as the value of the function.
+
+  Кроме использования стека, функция в байт-коде может использовать,
+связывать и устанавливать обычные Lisp переменные, путем переноса значений
+между переменными и стеком.
+
+@c   In addition to the stack, byte-code functions can use, bind, and set
+@c ordinary Lisp variables, by transferring values between variables and
+@c the stack.
 
 @deffn Command disassemble object &optional buffer-or-name
-This command displays the disassembled code for @var{object}.  In
-interactive use, or if @var{buffer-or-name} is @code{nil} or omitted,
-the output goes in a buffer named @file{*Disassemble*}.  If
-@var{buffer-or-name} is non-@code{nil}, it must be a buffer or the
-name of an existing buffer.  Then the output goes there, at point, and
-point is left before the output.
+Команда отображает дизассемблированный код для @var{object}. При интерактивном
+вызове, или если @var{buffer-or-name} @code{nil} или опущен,
+результат отображается в буфере с именем @file{*Disassemble*}. Если
+@var{buffer-or-name} не-@code{nil}, значение должно быть буфером или
+именем существующего буфера. Тогда вывод будет отображен в указанном
+буфере, в текущей(там где стоит курсор) точке буфера, и точка остается
+перед выводом.
 
-The argument @var{object} can be a function name, a lambda expression
-(@pxref{Lambda Expressions}), or a byte-code object (@pxref{Byte-Code
-Objects}).  If it is a lambda expression, @code{disassemble} compiles
-it and disassembles the resulting compiled code.
+@c This command displays the disassembled code for @var{object}.  In
+@c interactive use, or if @var{buffer-or-name} is @code{nil} or omitted,
+@c the output goes in a buffer named @file{*Disassemble*}.  If
+@c @var{buffer-or-name} is non-@code{nil}, it must be a buffer or the
+@c name of an existing buffer.  Then the output goes there, at point, and
+@c point is left before the output.
+
+Аргумент @var{object} может быть именем функции, lambda выражением
+(@pxref{Lamba Expressions}), или байт-код объектом (@pxref{Byte-Code Objects}).
+Если значение lambda выражение, @code{disassemble} выполняет компиляцию
+выражения и дизассеблирует результат.
+
+@c The argument @var{object} can be a function name, a lambda expression
+@c (@pxref{Lambda Expressions}), or a byte-code object (@pxref{Byte-Code
+@c Objects}).  If it is a lambda expression, @code{disassemble} compiles
+@c it and disassembles the resulting compiled code.
 @end deffn
 
-  Here are two examples of using the @code{disassemble} function.  We
-have added explanatory comments to help you relate the byte-code to the
-Lisp source; these do not appear in the output of @code{disassemble}.
+
+  Ниже приводится два примера использования функции @code{disassemble}.
+В примерах вставлены пояснительные комментарии, чтобы было проще
+понять исходный код, но в выводе @code{disassemble} таких комментариев
+не будет.
+
+@c   Here are two examples of using the @code{disassemble} function.  We
+@c have added explanatory comments to help you relate the byte-code to the
+@c Lisp source; these do not appear in the output of @code{disassemble}.
 
 @example
 @group
@@ -688,7 +1122,8 @@ Lisp source; these do not appear in the output of @code{disassemble}.
 @end group
 @end example
 
-The @code{silly-loop} function is somewhat more complex:
+Функция @code{silly-loop} более сложная:
+@c The @code{silly-loop} function is somewhat more complex:
 
 @example
 @group
