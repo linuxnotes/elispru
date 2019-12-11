@@ -4,41 +4,71 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Macros
-@chapter Macros
+@chapter Макросы
 @cindex macros
 
-  @dfn{Macros} enable you to define new control constructs and other
-language features.  A macro is defined much like a function, but instead
-of telling how to compute a value, it tells how to compute another Lisp
-expression which will in turn compute the value.  We call this
-expression the @dfn{expansion} of the macro.
+  @dfn{Макрос} (@dfn{Macros}) позволяет определять новые управляющие
+конструкции и другие расширения языка. Макрос определяется как функция,
+но в отличие от функкции, определяющей как будет вычисляться значение,
+макрос описывает способ вычисления другого Lisp выражения, которое потом
+будет использовано для вычисления выражения. Такое выражения называется
+@dfn{расширение} (@dfn{expansion}) макроса.
 
-  Macros can do this because they operate on the unevaluated expressions
-for the arguments, not on the argument values as functions do.  They can
-therefore construct an expansion containing these argument expressions
-or parts of them.
+@c   @dfn{Macros} enable you to define new control constructs and other
+@c language features.  A macro is defined much like a function, but instead
+@c of telling how to compute a value, it tells how to compute another Lisp
+@c expression which will in turn compute the value.  We call this
+@c expression the @dfn{expansion} of the macro.
 
-  If you are using a macro to do something an ordinary function could
-do, just for the sake of speed, consider using an inline function
-instead.  @xref{Inline Functions}.
+  Макрос в отличие от функции не вычисляет аргументы, поэтому
+может конструировать выражения содержащие аргументы макроса или их
+частей.
+
+@c   Macros can do this because they operate on the unevaluated expressions
+@c for the arguments, not on the argument values as functions do.  They can
+@c therefore construct an expansion containing these argument expressions
+@c or parts of them.
+
+  Не стоит использовать маросы для задач, которые могут решать функции
+в целях ускорения, в таких случаях лучше использовать встроенные (inline)
+функции. @xref{Inline Functions}.
+
+@c   If you are using a macro to do something an ordinary function could
+@c do, just for the sake of speed, consider using an inline function
+@c instead.  @xref{Inline Functions}.
 
 @menu
-* Simple Macro::            A basic example.
-* Expansion::               How, when and why macros are expanded.
-* Compiling Macros::        How macros are expanded by the compiler.
-* Defining Macros::         How to write a macro definition.
-* Problems with Macros::    Don't evaluate the macro arguments too many times.
-                              Don't hide the user's variables.
-* Indenting Macros::        Specifying how to indent macro calls.
+* Simple Macro::            Базовый пример.
+* Expansion::               Как, когда и почему расширяются макросы.
+* Compiling Macros::        Как компилятор раскрывает маркосы.
+* Defining Macros::         Как писать определения макросов.
+* Problems with Macros::    Как не вычислять аргументы по многу раз.
+                             Как избегать конфликтов с пользовательскими переменными.
+* Indenting Macros::        Определение расстановки отступов в результатах вызова.
 @end menu
+
+@c @menu
+@c * Simple Macro::            A basic example.
+@c * Expansion::               How, when and why macros are expanded.
+@c * Compiling Macros::        How macros are expanded by the compiler.
+@c * Defining Macros::         How to write a macro definition.
+@c * Problems with Macros::    Don't evaluate the macro arguments too many times.
+@c                               Don't hide the user's variables.
+@c * Indenting Macros::        Specifying how to indent macro calls.
+@c @end menu
 
 @node Simple Macro
 @section A Simple Example of a Macro
+   
+  Предположим нужно определить конструкцию Lisp, которая будет увеличивать
+значение переданно переменной на 1, как это делает @code{++} в C@. То есть написать
+@code{(inc x)} который работает как @code{(setq x (1+ x))}.
+Ниже приводится определение макроса, выполяющего указанные действия.
 
-  Suppose we would like to define a Lisp construct to increment a
-variable value, much like the @code{++} operator in C@.  We would like to
-write @code{(inc x)} and have the effect of @code{(setq x (1+ x))}.
-Here's a macro definition that does the job:
+@c   Suppose we would like to define a Lisp construct to increment a
+@c variable value, much like the @code{++} operator in C@.  We would like to
+@c write @code{(inc x)} and have the effect of @code{(setq x (1+ x))}.
+@c Here's a macro definition that does the job:
 
 @findex inc
 @example
@@ -48,76 +78,136 @@ Here's a macro definition that does the job:
 @end group
 @end example
 
-  When this is called with @code{(inc x)}, the argument @var{var} is the
-symbol @code{x}---@emph{not} the @emph{value} of @code{x}, as it would
-be in a function.  The body of the macro uses this to construct the
-expansion, which is @code{(setq x (1+ x))}.  Once the macro definition
-returns this expansion, Lisp proceeds to evaluate it, thus incrementing
-@code{x}.
+  При вызове @code{(inc x)}, аргумент @var{var} будет соответствовать
+символу @code{x}---@emph{не} @emph{значению} @code{x}, как это было бы
+для функции. Тело макроса использует это для создания расширения, @code{(setq x (1+ x))}.
+После возвращения расширения, Lisp продолжит вычисление, и таким образом
+увеличит x на 1.
+
+@c   When this is called with @code{(inc x)}, the argument @var{var} is the
+@c symbol @code{x}---@emph{not} the @emph{value} of @code{x}, as it would
+@c be in a function.  The body of the macro uses this to construct the
+@c expansion, which is @code{(setq x (1+ x))}.  Once the macro definition
+@c returns this expansion, Lisp proceeds to evaluate it, thus incrementing
+@c @code{x}.
 
 @defun macrop object
-This predicate tests whether its argument is a macro, and returns
-@code{t} if so, @code{nil} otherwise.
+Предикат проверяет является ли аргумент макросом,
+если да возвращается @code{t}, иначе @code{nil}.
+
+@c This predicate tests whether its argument is a macro, and returns
+@c @code{t} if so, @code{nil} otherwise.
 @end defun
 
 @node Expansion
-@section Expansion of a Macro Call
+@section Раскрытие макроса
+@c @section Expansion of a Macro Call
 @cindex expansion of macros
 @cindex macro call
 
-  A macro call looks just like a function call in that it is a list which
-starts with the name of the macro.  The rest of the elements of the list
-are the arguments of the macro.
+  Вызов макроса выглядит как вызов функции в том сысле, что тоже является
+списком первый элемент которого имя макроса. Оставшиеся элементы списка
+являются агументами макроса.
 
-  Evaluation of the macro call begins like evaluation of a function call
-except for one crucial difference: the macro arguments are the actual
-expressions appearing in the macro call.  They are not evaluated before
-they are given to the macro definition.  By contrast, the arguments of a
-function are results of evaluating the elements of the function call
-list.
+@c   A macro call looks just like a function call in that it is a list which
+@c starts with the name of the macro.  The rest of the elements of the list
+@c are the arguments of the macro.
 
-  Having obtained the arguments, Lisp invokes the macro definition just
-as a function is invoked.  The argument variables of the macro are bound
-to the argument values from the macro call, or to a list of them in the
-case of a @code{&rest} argument.  And the macro body executes and
-returns its value just as a function body does.
+  Вычисление макровызова начинаается как вычисление функции за исключением
+очень важной особенности: аргументы макроса являются выражениями, которые
+напрямую (без вычисления) используются в макросе. Они не вычисляются, до
+передачи в макрос. Как было описано выше, аргументы функций напротив, вычисляются
+перед передачей в фнкцию.
 
-  The second crucial difference between macros and functions is that
-the value returned by the macro body is an alternate Lisp expression,
-also known as the @dfn{expansion} of the macro.  The Lisp interpreter
-proceeds to evaluate the expansion as soon as it comes back from the
-macro.
+@c   Evaluation of the macro call begins like evaluation of a function call
+@c except for one crucial difference: the macro arguments are the actual
+@c expressions appearing in the macro call.  They are not evaluated before
+@c they are given to the macro definition.  By contrast, the arguments of a
+@c function are results of evaluating the elements of the function call
+@c list.
 
-  Since the expansion is evaluated in the normal manner, it may contain
-calls to other macros.  It may even be a call to the same macro, though
-this is unusual.
+  Получив аргументы, Lisp вычисляет определение макроса, как для
+функции. Переменые аргументов макроса связываются с фактическими аргументами
+вызова, или с их списком в случае использования @code{rest}. После чего
+вычсиляется тело макроса и возвращается результат, как и при выполнении тела
+функции.
 
-  Note that Emacs tries to expand macros when loading an uncompiled
-Lisp file.  This is not always possible, but if it is, it speeds up
-subsequent execution.  @xref{How Programs Do Loading}.
+@c   Having obtained the arguments, Lisp invokes the macro definition just
+@c as a function is invoked.  The argument variables of the macro are bound
+@c to the argument values from the macro call, or to a list of them in the
+@c case of a @code{&rest} argument.  And the macro body executes and
+@c returns its value just as a function body does.
 
-  You can see the expansion of a given macro call by calling
+  Второе важное отличие между макросом и функцией заключается в том, что
+макрос возвращает другое Lisp выражение, так же называемое
+@dfn{расширением} (@dfn{expansion}) макроса. Интерпретатор
+продолжит вычислеие расширения как только оно будет возвращено из макроса.
+
+@c   The second crucial difference between macros and functions is that
+@c the value returned by the macro body is an alternate Lisp expression,
+@c also known as the @dfn{expansion} of the macro.  The Lisp interpreter
+@c proceeds to evaluate the expansion as soon as it comes back from the
+@c macro.
+
+  Так как расширение вычисляется обычным образом, оно может содержать
+вызовы других макросов. Оно, даже может содержать вызов того же макроса,
+но это не обычно.
+
+@c   Since the expansion is evaluated in the normal manner, it may contain
+@c calls to other macros.  It may even be a call to the same macro, though
+@c this is unusual.
+
+  Emacs пытается выполнить расширение макросов когда загружает
+не компилированный Lisp файл. Это не всегда возможно, но если возможно,
+это ускоряет последующее вычисление. @xref{How Programs Do Loading}.
+
+@c   Note that Emacs tries to expand macros when loading an uncompiled
+@c Lisp file.  This is not always possible, but if it is, it speeds up
+@c subsequent execution.  @xref{How Programs Do Loading}.
+
+  Посмотреть расширение макроса можно с помощью вызова
 @code{macroexpand}.
+
+@c   You can see the expansion of a given macro call by calling
+@c @code{macroexpand}.
 
 @defun macroexpand form &optional environment
 @cindex macro expansion
-This function expands @var{form}, if it is a macro call.  If the result
-is another macro call, it is expanded in turn, until something which is
-not a macro call results.  That is the value returned by
-@code{macroexpand}.  If @var{form} is not a macro call to begin with, it
-is returned as given.
+Данная функция выполняяет расрытие @var{form}, если это макро вызов.
+Если результат другой макро вызов, следующим шагом он будет раскрыт, и так
+до тех пор пока не ббудет получен результат не являющийся макро вызовом.
+Полученное таким образом значение будет возвращено @code{macroexpand}.
+Если @var{form} не вызов макроса, @var{form} возвращается в нейзменном виде.
 
-Note that @code{macroexpand} does not look at the subexpressions of
-@var{form} (although some macro definitions may do so).  Even if they
-are macro calls themselves, @code{macroexpand} does not expand them.
+@c This function expands @var{form}, if it is a macro call.  If the result
+@c is another macro call, it is expanded in turn, until something which is
+@c not a macro call results.  That is the value returned by
+@c @code{macroexpand}.  If @var{form} is not a macro call to begin with, it
+@c is returned as given.
 
-The function @code{macroexpand} does not expand calls to inline functions.
-Normally there is no need for that, since a call to an inline function is
-no harder to understand than a call to an ordinary function.
+@code{macroexpand} не смотрит на подвыражения @var{form} (хотя некотрые определения макросов
+могут). Если там есть макровызовы, @code{macroexpand} не выполняет
+их расширение.
 
-If @var{environment} is provided, it specifies an alist of macro
-definitions that shadow the currently defined macros.  Byte compilation
-uses this feature.
+@c Note that @code{macroexpand} does not look at the subexpressions of
+@c @var{form} (although some macro definitions may do so).  Even if they
+@c are macro calls themselves, @code{macroexpand} does not expand them.
+
+Функция @code{macroexpand} не расширяет вызовы встроенных функций.
+Как правило в этом нет необходимости, так как вызов встроенной функции понять
+не сложнее чем вызов обыкновенной функции.
+
+@c The function @code{macroexpand} does not expand calls to inline functions.
+@c Normally there is no need for that, since a call to an inline function is
+@c no harder to understand than a call to an ordinary function.
+
+Если задано кружение @var{environment}, оно определяет alist (ассоциативный
+массив) макро определений, который подменяет текущие определения макросов.
+При byte компиляуии используется данная возможность.
+
+@c If @var{environment} is provided, it specifies an alist of macro
+@c definitions that shadow the currently defined macros.  Byte compilation
+@c uses this feature.
 
 @example
 @group
@@ -144,14 +234,23 @@ uses this feature.
 
 
 @defun macroexpand-all form &optional environment
-@code{macroexpand-all} expands macros like @code{macroexpand}, but
-will look for and expand all macros in @var{form}, not just at the
-top-level.  If no macros are expanded, the return value is @code{eq}
-to @var{form}.
+@code{macroexpand-all} расширяет макрос аналогично @code{macroexpand},
+но выполняет раскрытие всех макросов в @var{form}, а не только
+верхнего уровня. Если в форме нет макросов для расширения, результат будет
+@code{eq} @var{form}.
 
-Repeating the example used for @code{macroexpand} above with
-@code{macroexpand-all}, we see that @code{macroexpand-all} @emph{does}
-expand the embedded calls to @code{inc}:
+@c @code{macroexpand-all} expands macros like @code{macroexpand}, but
+@c will look for and expand all macros in @var{form}, not just at the
+@c top-level.  If no macros are expanded, the return value is @code{eq}
+@c to @var{form}.
+
+Выполнив пример используемый выше для @code{macroexpand} с
+@code{macroexpand-all}, можно увидеть, что @code{macroexpand-all}
+@emph{раскрыл} внутренние вызовы @code{inc}.
+
+@c Repeating the example used for @code{macroexpand} above with
+@c @code{macroexpand-all}, we see that @code{macroexpand-all} @emph{does}
+@c expand the embedded calls to @code{inc}:
 
 @example
 (macroexpand-all '(inc2 r s))
@@ -161,84 +260,149 @@ expand the embedded calls to @code{inc}:
 @end defun
 
 @defun macroexpand-1 form &optional environment
-This function expands macros like @code{macroexpand}, but it only
-performs one step of the expansion: if the result is another macro
-call, @code{macroexpand-1} will not expand it.
+Данная функция строит расширение макроса аналогично, @code{macroexpand},
+но выполняет только один шаг раскрытия: еслт результатом будет, снова вызов
+макроса, @code{macroexpand-1} не будет выполнять его раскрытие.
+
+@c This function expands macros like @code{macroexpand}, but it only
+@c performs one step of the expansion: if the result is another macro
+@c call, @code{macroexpand-1} will not expand it.
 @end defun
 
 @node Compiling Macros
-@section Macros and Byte Compilation
+@section Макросы и Байт компиляция
+@c @section Macros and Byte Compilationс
 @cindex byte-compiling macros
 
-  You might ask why we take the trouble to compute an expansion for a
-macro and then evaluate the expansion.  Why not have the macro body
-produce the desired results directly?  The reason has to do with
-compilation.
+  Может возникнуть вопрос, зачем так усложнять и вычислять сначала выражение, и
+поотом вычислять выражение, почему не выполнить вычисление резултата
+сразу? Причина кроется в выполнении компиляции.
 
-  When a macro call appears in a Lisp program being compiled, the Lisp
-compiler calls the macro definition just as the interpreter would, and
-receives an expansion.  But instead of evaluating this expansion, it
-compiles the expansion as if it had appeared directly in the program.
-As a result, the compiled code produces the value and side effects
-intended for the macro, but executes at full compiled speed.  This would
-not work if the macro body computed the value and side effects
-itself---they would be computed at compile time, which is not useful.
+@c   You might ask why we take the trouble to compute an expansion for a
+@c macro and then evaluate the expansion.  Why not have the macro body
+@c produce the desired results directly?  The reason has to do with
+@c compilation.
 
-  In order for compilation of macro calls to work, the macros must
-already be defined in Lisp when the calls to them are compiled.  The
-compiler has a special feature to help you do this: if a file being
-compiled contains a @code{defmacro} form, the macro is defined
-temporarily for the rest of the compilation of that file.
+  Когда вызов макроса появляетс в Lisp программе, которая должна быть скомпилирована,
+компилятор Lisp, вызывает определение макроса, как интерпретатор и получает расширение.
+Но вместо вычисления расширения, компилятор его компилирует, как буд-то оно
+находится непосредственно в программе. В результате скомпилированный код,
+при вычислении возвращает те же значения и производит те же побочные эффекты,
+но выполняется со скоростью скомпилированного кода. Что было бы не возможно,
+если бы тело макроса непосредственно выполняло вычисления--так как на этапе компиляции
+их как правило выполнить не поолучится.
 
-  Byte-compiling a file also executes any @code{require} calls at
-top-level in the file, so you can ensure that necessary macro
-definitions are available during compilation by requiring the files
-that define them (@pxref{Named Features}).  To avoid loading the macro
-definition files when someone @emph{runs} the compiled program, write
-@code{eval-when-compile} around the @code{require} calls (@pxref{Eval
-During Compile}).
+@c   When a macro call appears in a Lisp program being compiled, the Lisp
+@c compiler calls the macro definition just as the interpreter would, and
+@c receives an expansion.  But instead of evaluating this expansion, it
+@c compiles the expansion as if it had appeared directly in the program.
+@c As a result, the compiled code produces the value and side effects
+@c intended for the macro, but executes at full compiled speed.  This would
+@c not work if the macro body computed the value and side effects
+@c itself---they would be computed at compile time, which is not useful.
+
+  Чтобы компиляция макро вызова работала, макрос уже должен быть
+определен в Lisp, когда будет выполняться компиляция его вызова.
+У компилятора есть специальный обработчик упрощаюй данную задачу,
+если компилируемый файл содержит форму @code{defmacro}, выполняется временное
+определение макроса для всей процедуры компиляции этого файла.
+
+@c   In order for compilation of macro calls to work, the macros must
+@c already be defined in Lisp when the calls to them are compiled.  The
+@c compiler has a special feature to help you do this: if a file being
+@c compiled contains a @code{defmacro} form, the macro is defined
+@c temporarily for the rest of the compilation of that file.
+
+  При  байт-компиляции файла выполняются все @code{require}, находящиеся
+на верхнем уровне файла, поэтому можно быть уверенным, что
+необходимые определения макросов будут доступны при компиляции, если
+выполнить @code{require} для файлов содеращих определения (@pxref{Named Features}).
+Чтобы избежать загрузки файла определения при запуске скомпилированной программы,
+нужно поместить @code{require} в вызов @code{eval-when-compile}
+(@pxref{Eval During Compile}).
+
+@c   Byte-compiling a file also executes any @code{require} calls at
+@c top-level in the file, so you can ensure that necessary macro
+@c definitions are available during compilation by requiring the files
+@c that define them (@pxref{Named Features}).  To avoid loading the macro
+@c definition files when someone @emph{runs} the compiled program, write
+@c @code{eval-when-compile} around the @code{require} calls (@pxref{Eval
+@c During Compile}).
 
 @node Defining Macros
-@section Defining Macros
+@section Определение макросов
+@c @section Defining Macros
 @cindex defining macros
 @cindex macro, how to define
 
-  A Lisp macro object is a list whose @sc{car} is @code{macro}, and
-whose @sc{cdr} is a function.  Expansion of the macro works
-by applying the function (with @code{apply}) to the list of
-@emph{unevaluated} arguments from the macro call.
+  Макро обьект, представляет из себя список, чей @sc{car} @code{macro},
+и чей @sc{cdr} функция. Расширение макроса работает путем применения
+функции (с помощью @code{apply}) к списку @emph{не вычисленных} (@emph{understand})
+аргументов макро вызова.
 
-  It is possible to use an anonymous Lisp macro just like an anonymous
-function, but this is never done, because it does not make sense to
-pass an anonymous macro to functionals such as @code{mapcar}.  In
-practice, all Lisp macros have names, and they are almost always
-defined with the @code{defmacro} macro.
+@c   A Lisp macro object is a list whose @sc{car} is @code{macro}, and
+@c whose @sc{cdr} is a function.  Expansion of the macro works
+@c by applying the function (with @code{apply}) to the list of
+@c @emph{unevaluated} arguments from the macro call.
 
-@defmac defmacro name args [doc] [declare] body@dots{}
-@code{defmacro} defines the symbol @var{name} (which should not be
-quoted) as a macro that looks like this:
+  Возможно использовать анонимный Lisp макрос как анонимную
+фугкцию, но так не делается, потому что, не имеет смысла передавать
+анонимный макрос в функционалы как @code{mapcar}. На практике,
+все Lisp макросы имеют имега, и они почти всегда
+определяются с использованием макроса @code{defmacro}.
+
+@c   It is possible to use an anonymous Lisp macro just like an anonymous
+@c function, but this is never done, because it does not make sense to
+@c pass an anonymous macro to functionals such as @code{mapcar}.  In
+@c practice, all Lisp macros have names, and they are almost always
+@c defined with the @code{defmacro} macro.
+
+@Defmac defmacro name args [doc] [declare] body@dots{}
+@code{defmacro} определяет символ @var{name} (которые не нужно заковычивать)
+как макрос, который выглядит как:
+
+@c @code{defmacro} defines the symbol @var{name} (which should not be
+@c quoted) as a macro that looks like this:
 
 @example
 (macro lambda @var{args} . @var{body})
 @end example
 
-(Note that the @sc{cdr} of this list is a lambda expression.)  This
-macro object is stored in the function cell of @var{name}.  The
-meaning of @var{args} is the same as in a function, and the keywords
-@code{&rest} and @code{&optional} may be used (@pxref{Argument List}).
-Neither @var{name} nor @var{args} should be quoted.  The return value
-of @code{defmacro} is undefined.
+(Заметьте, что @sc{cdr} в дтом списке lambda выражение.) Этот макро
+обьект сохраняется в ячейку функции @var{name}. Аргументы @var{args},
+задаются как у функции, в том числе поддерживаются опции задаваемые ключевыми словами
+@code{&rest} и @code{&optional} (@pxref{Argument List}).
+Ни @var{name} ни @var{args} не должны быть заковычены. Возвращаемое значение
+@code{defmacro} не определено.
 
-@var{doc}, if present, should be a string specifying the macro's
-documentation string.  @var{declare}, if present, should be a
-@code{declare} form specifying metadata for the macro (@pxref{Declare
-Form}).  Note that macros cannot have interactive declarations, since
-they cannot be called interactively.
+@c (Note that the @sc{cdr} of this list is a lambda expression.)  This
+@c macro object is stored in the function cell of @var{name}.  The
+@c meaning of @var{args} is the same as in a function, and the keywords
+@c @code{&rest} and @code{&optional} may be used (@pxref{Argument List}).
+@c Neither @var{name} nor @var{args} should be quoted.  The return value
+@c of @code{defmacro} is undefined.
+
+Если определить @var{doc}, то так можно опредить строку документации.
+Если задано @var{declare}, то она доолжна быть @code{declare} формой,
+определяющей метаданные макроса (@pxref{Declare Form}). Макросы не могут
+иметь декларации interactive, потому что они не могут быть
+вызваны интерактивно.
+
+@c @var{doc}, if present, should be a string specifying the macro's
+@c documentation string.  @var{declare}, if present, should be a
+@c @code{declare} form specifying metadata for the macro (@pxref{Declare
+@c Form}).  Note that macros cannot have interactive declarations, since
+@c they cannot be called interactively.
 @end defmac
 
-  Macros often need to construct large list structures from a mixture
-of constants and nonconstant parts.  To make this easier, use the
-@samp{`} syntax (@pxref{Backquote}).  For example:
+  В макросах часто возникает необбходимость конструирования больших
+списочных стуктур состоящих из константных и не константных частей.
+Для того, чтобы это было проще сделать существует запись @samp{`}
+(@pxref{Backquote}). Например:
+
+@c   Macros often need to construct large list structures from a mixture
+@c of constants and nonconstant parts.  To make this easier, use the
+@c @samp{`} syntax (@pxref{Backquote}).  For example:
 
 @example
 @example
@@ -256,29 +420,51 @@ of constants and nonconstant parts.  To make this easier, use the
 @end example
 
 @node Problems with Macros
-@section Common Problems Using Macros
+@section Основные Проблемы При Использовании Макросов
+@c @section Common Problems Using Macros
 @cindex macro caveats
 
-  Macro expansion can have counterintuitive consequences.  This
-section describes some important consequences that can lead to
-trouble, and rules to follow to avoid trouble.
+  Расширения макросов могут иметь не очевидные последствия.
+Данный раздел описывает наиболее важные из них, которые могут
+привести к проблемам, и правила позволяющие таких проблем избежать.
+
+@c   Macro expansion can have counterintuitive consequences.  This
+@c section describes some important consequences that can lead to
+@c trouble, and rules to follow to avoid trouble.
 
 @menu
-* Wrong Time::             Do the work in the expansion, not in the macro.
-* Argument Evaluation::    The expansion should evaluate each macro arg once.
-* Surprising Local Vars::  Local variable bindings in the expansion
-                              require special care.
-* Eval During Expansion::  Don't evaluate them; put them in the expansion.
-* Repeated Expansion::     Avoid depending on how many times expansion is done.
+* Wrong Time::             Выполнение действия должно осуществляться в выражении,
+                           а не в макросе.
+* Argument Evaluation::    В расширении каждый аргумент должен вычисляться единожды.
+* Surprising Local Vars::  Локальные переменные в расширении должны задаваться
+                           определенным образом.
+* Eval During Expansion::  Не нужно выполнять вычисления при построеннии расширения,
+                           лучше помещать их в расширение.
+* Repeated Expansion::     Стоит избегать зависимости от количества расширений.
 @end menu
 
-@node Wrong Time
-@subsection Wrong Time
+@c nu
+@c rong Time::             Do the work in the expansion, not in the macro.
+@c * Argument Evaluation::    The expansion should evaluate each macro arg once.
+@c * Surprising Local Vars::  Local variable bindings in the expansion
+@c                               require special care.
+@c * Eval During Expansion::  Don't evaluate them; put them in the expansion.
+@c * Repeated Expansion::     Avoid depending on how many times expansion is done.
+@c @end menu
 
-  The most common problem in writing macros is doing some of the
-real work prematurely---while expanding the macro, rather than in the
-expansion itself.  For instance, one real package had this macro
-definition:
+@node Wrong Time
+@subsection Не во время
+@c @subsection Wrong Time
+
+  Самая частая проблема при написании макросов заключается в
+вы выполнении каких-то действий преждевременно---при раскрытии макроса,
+а не в его расширении. Например, один из пакетов имел такое
+определение макроса:
+
+@c   The most common problem in writing macros is doing some of the
+@c real work prematurely---while expanding the macro, rather than in the
+@c expansion itself.  For instance, one real package had this macro
+@c definition:
 
 @example
 (defmacro my-set-buffer-multibyte (arg)
@@ -286,11 +472,17 @@ definition:
       (set-buffer-multibyte arg)))
 @end example
 
-With this erroneous macro definition, the program worked fine when
-interpreted but failed when compiled.  This macro definition called
-@code{set-buffer-multibyte} during compilation, which was wrong, and
-then did nothing when the compiled package was run.  The definition
-that the programmer really wanted was this:
+Данное определение макроса ошибочно, и программа работает
+корректно в случае интерпретации и не правильно, при компиляции.
+Определение макроса вызывает @code{set-buffer-multibyte} при компиляции,
+что не верно, и ничего не делает когда скомпилированный пакет запускается.
+На самом деле программист должен был реализовать следующий макрос:
+
+@c With this erroneous macro definition, the program worked fine when
+@c interpreted but failed when compiled.  This macro definition called
+@c @code{set-buffer-multibyte} during compilation, which was wrong, and
+@c then did nothing when the compiled package was run.  The definition
+@c that the programmer really wanted was this:
 
 @example
 (defmacro my-set-buffer-multibyte (arg)
@@ -299,17 +491,27 @@ that the programmer really wanted was this:
 @end example
 
 @noindent
-This macro expands, if appropriate, into a call to
-@code{set-buffer-multibyte} that will be executed when the compiled
-program is actually run.
+Данный макрос будет расширен, если условие выполняется, в
+вызов @code{set-buffer-multibyte} который будет выполнен
+при запуске скомпилированной программы.
+
+@c This macro expands, if appropriate, into a call to
+@c @code{set-buffer-multibyte} that will be executed when the compiled
+@c program is actually run.
 
 @node Argument Evaluation
-@subsection Evaluating Macro Arguments Repeatedly
+@subsection Многократное Вычисление Аргументов Макросов 
+@c @subsection Evaluating Macro Arguments Repeatedly
 
-  When defining a macro you must pay attention to the number of times
-the arguments will be evaluated when the expansion is executed.  The
-following macro (used to facilitate iteration) illustrates the
-problem.  This macro allows us to write a for-loop construct.
+  При определении макроса нужно уделить внимание количеству раз
+вычисления аргументов в раскрытии максроса. Следующий макрос
+(упрощающий итерацию) является иллюстрацией для проблемы. Данный
+макрос позволяет писать цикл for.
+
+@c   When defining a macro you must pay attention to the number of times
+@c the arguments will be evaluated when the expansion is executed.  The
+@c following macro (used to facilitate iteration) illustrates the
+@c problem.  This macro allows us to write a for-loop construct.
 
 @findex for
 @example
@@ -346,12 +548,18 @@ For example, (for i from 1 to 10 do (print i))."
 @end example
 
 @noindent
-The arguments @code{from}, @code{to}, and @code{do} in this macro are
-syntactic sugar; they are entirely ignored.  The idea is that you
-will write noise words (such as @code{from}, @code{to}, and @code{do})
-in those positions in the macro call.
+Аргументы @code{from}, @code{to}, и @code{do} в данном примере являются
+синтаксическим сахаром; и полностью игнорируются. Идея в том, что пользователь будет
+писать связывающие слова (@code{from}, @code{to} и @code{do} в тех же местах макро вызова).
 
-Here's an equivalent definition simplified through use of backquote:
+@c The arguments @code{from}, @code{to}, and @code{do} in this macro are
+@c syntactic sugar; they are entirely ignored.  The idea is that you
+@c will write noise words (such as @code{from}, @code{to}, and @code{do})
+@c in those positions in the macro call.
+
+Ниже эквивалентная записьт упрощенная при помощи использования записи
+с обратной кавычкой:
+@c Here's an equivalent definition simplified through use of backquote:
 
 @example
 @group
@@ -365,18 +573,30 @@ For example, (for i from 1 to 10 do (print i))."
 @end group
 @end example
 
-Both forms of this definition (with backquote and without) suffer from
-the defect that @var{final} is evaluated on every iteration.  If
-@var{final} is a constant, this is not a problem.  If it is a more
-complex form, say @code{(long-complex-calculation x)}, this can slow
-down the execution significantly.  If @var{final} has side effects,
-executing it more than once is probably incorrect.
+Обе формы, как с записью с обратной кавычкой так и без, имеют проблему,
+заключающуюся в вычислении @var{final} на каждой итерации. Если @var{final}
+константа, это не является проблемой. Если @code{final} более сложная форма,
+например @code{(long-complex-calculation x)}, это может существенно замедлить
+вычисление. Если @code{final}, к тому же имеет побочные эффекты, вычисление
+его больше одного раза, может быть вообще не корректным.
+
+@c Both forms of this definition (with backquote and without) suffer from
+@c the defect that @var{final} is evaluated on every iteration.  If
+@c @var{final} is a constant, this is not a problem.  If it is a more
+@c complex form, say @code{(long-complex-calculation x)}, this can slow
+@c down the execution significantly.  If @var{final} has side effects,
+@c executing it more than once is probably incorrect.
 
 @cindex macro argument evaluation
-A well-designed macro definition takes steps to avoid this problem by
-producing an expansion that evaluates the argument expressions exactly
-once unless repeated evaluation is part of the intended purpose of the
-macro.  Here is a correct expansion for the @code{for} macro:
+Хорошее определение макроса будет содерать действия по исключению проблемы,
+путем создания расширения в котором выражения аргументов вычисляются
+только по одному разу. Ниже пример корректного расширения для
+макроса @code{for}:
+
+@c A well-designed macro definition takes steps to avoid this problem by
+@c producing an expansion that evaluates the argument expressions exactly
+@c once unless repeated evaluation is part of the intended purpose of the
+@c macro.  Here is a correct expansion for the @code{for} macro:
 
 @example
 @group
@@ -389,7 +609,8 @@ macro.  Here is a correct expansion for the @code{for} macro:
 @end group
 @end example
 
-Here is a macro definition that creates this expansion:
+Ниже определение макроса, создающее данное расширение:
+@c Here is a macro definition that creates this expansion:
 
 @example
 @group
@@ -403,16 +624,23 @@ Here is a macro definition that creates this expansion:
 @end group
 @end example
 
-  Unfortunately, this fix introduces another problem,
-described in the following section.
+  К сожалению, данное исправление создает другую проблему,
+описанную в следующем разделе.
+@c   Unfortunately, this fix introduces another problem,
+@c described in the following section.
 
 @node Surprising Local Vars
-@subsection Local Variables in Macro Expansions
+@subsection Локальные Переменные в Расширениях Макросов 
+@c @subsection Local Variables in Macro Expansions
 
 @ifnottex
-  In the previous section, the definition of @code{for} was fixed as
-follows to make the expansion evaluate the macro arguments the proper
-number of times:
+  В предыдущем разделе, определение @code{for} было исправлено
+следующим образом, позволяя вычислять аргументы макроса корректное
+число раз:
+
+@c   In the previous section, the definition of @code{for} was fixed as
+@c follows to make the expansion evaluate the macro arguments the proper
+@c number of times:
 
 @example
 @group
@@ -429,9 +657,13 @@ number of times:
 @end example
 @end ifnottex
 
-  The new definition of @code{for} has a new problem: it introduces a
-local variable named @code{max} which the user does not expect.  This
-causes trouble in examples such as the following:
+  Новое определение @code{for} имеет новую проблему: оно вводит
+локальную переменную @code{max}, которой не ожидает пользователь.
+Это приводит к проблемам в ситуациях наподобие следующей:
+
+@c   The new definition of @code{for} has a new problem: it introduces a
+@c local variable named @code{max} which the user does not expect.  This
+@c causes trouble in examples such as the following:
 
 @example
 @group
@@ -444,18 +676,32 @@ causes trouble in examples such as the following:
 @end example
 
 @noindent
-The references to @code{max} inside the body of the @code{for}, which
-are supposed to refer to the user's binding of @code{max}, really access
-the binding made by @code{for}.
+Ссылка на @code{max} внутри тела @code{for}, в котором предполагается
+ссылка на пользовательский @code{max}, в действительнности ссылается
+на @code{max} из @code{for}.
 
-The way to correct this is to use an uninterned symbol instead of
-@code{max} (@pxref{Creating Symbols}).  The uninterned symbol can be
-bound and referred to just like any other symbol, but since it is
-created by @code{for}, we know that it cannot already appear in the
-user's program.  Since it is not interned, there is no way the user can
-put it into the program later.  It will never appear anywhere except
-where put by @code{for}.  Here is a definition of @code{for} that works
-this way:
+@c The references to @code{max} inside the body of the @code{for}, which
+@c are supposed to refer to the user's binding of @code{max}, really access
+@c the binding made by @code{for}.
+
+Чтобы решить данную проблему нужно использовать не интернированные
+символы вместо @code{max} (@pxref{Creating Symbols}). Не интернированный
+символ может быть связан и нему можно обратится как к любому другому
+символу, но так как он создан в @code{for} это позволит гарантировать,
+что такого символа нет в пользовательской программе. Так как символ
+не интернированный у пользователя нет возможности ввести его позднее
+в программе. Данный символ не будет использован нигде, кроме как
+внутри @code{for}. Ниже пример определения @code{for}, который работает
+должнам образом:
+
+@c The way to correct this is to use an uninterned symbol instead of
+@c @code{max} (@pxref{Creating Symbols}).  The uninterned symbol can be
+@c bound and referred to just like any other symbol, but since it is
+@c created by @code{for}, we know that it cannot already appear in the
+@c user's program.  Since it is not interned, there is no way the user can
+@c put it into the program later.  It will never appear anywhere except
+@c where put by @code{for}.  Here is a definition of @code{for} that works
+@c this way:
 
 @example
 @group
@@ -471,21 +717,36 @@ this way:
 @end example
 
 @noindent
-This creates an uninterned symbol named @code{max} and puts it in the
-expansion instead of the usual interned symbol @code{max} that appears
-in expressions ordinarily.
+В данном примере создается не интернированный символ с именем @code{max} и
+помещается в выражение вместо интернированного символа @code{max}, который
+обычно используется в выражении.
+
+@c This creates an uninterned symbol named @code{max} and puts it in the
+@c expansion instead of the usual interned symbol @code{max} that appears
+@c in expressions ordinarily.
 
 @node Eval During Expansion
-@subsection Evaluating Macro Arguments in Expansion
+@subsection Вычисление Аргументов Макросов в Расширении
+@c @subsection Evaluating Macro Arguments in Expansion
 
-  Another problem can happen if the macro definition itself
-evaluates any of the macro argument expressions, such as by calling
-@code{eval} (@pxref{Eval}).  If the argument is supposed to refer to the
-user's variables, you may have trouble if the user happens to use a
-variable with the same name as one of the macro arguments.  Inside the
-macro body, the macro argument binding is the most local binding of this
-variable, so any references inside the form being evaluated do refer to
-it.  Here is an example:
+  Другая проблема может возникать, если макроопределение
+само выполняет вычисление выражений аргументов, например с
+использованием @code{eval} (@pxref{Eval}). Если предполагается,
+что аргумент является ссылкой на какую-то пользовательскую переменную,
+может возникнуть проблема если пользователь передаст переменную
+с этим именем в качестве одной из переменных макроса. Внутри
+тела макроса, связываение аргументов макроса как правило локально,
+поэтому любые ссылки в форме которая будет вычислена (evaluated)
+будут ссылаться на локальные переменные. Например:
+
+@c   Another problem can happen if the macro definition itself
+@c evaluates any of the macro argument expressions, such as by calling
+@c @code{eval} (@pxref{Eval}).  If the argument is supposed to refer to the
+@c user's variables, you may have trouble if the user happens to use a
+@c variable with the same name as one of the macro arguments.  Inside the
+@c macro body, the macro argument binding is the most local binding of this
+@c variable, so any references inside the form being evaluated do refer to
+@c it.  Here is an example:
 
 @example
 @group
@@ -504,51 +765,96 @@ it.  Here is an example:
 @end group
 @end example
 
-  It makes a difference whether the user's variable is named @code{a} or
-@code{x}, because @code{a} conflicts with the macro argument variable
+  То есть, есть разница является ли пользовательская переменная @code{a}
+или @code{x}, так как @code{a} конфликтует с переменной аргументом макроса
 @code{a}.
 
-  Another problem with calling @code{eval} in a macro definition is that
-it probably won't do what you intend in a compiled program.  The
-byte compiler runs macro definitions while compiling the program, when
-the program's own computations (which you might have wished to access
-with @code{eval}) don't occur and its local variable bindings don't
-exist.
+@c   It makes a difference whether the user's variable is named @code{a} or
+@c @code{x}, because @code{a} conflicts with the macro argument variable
+@c @code{a}.
 
-  To avoid these problems, @strong{don't evaluate an argument expression
-while computing the macro expansion}.  Instead, substitute the
-expression into the macro expansion, so that its value will be computed
-as part of executing the expansion.  This is how the other examples in
-this chapter work.
+  Другая проблема с вызовом @code{eval} в определении макроса связана с
+тем, что в скомпилированной программе оно может делать не то, что
+предполагается. Байт компилятор выполнит расширение макроса при компиляции,
+но при непосредственном выполнении вычислений в программе (в котой пользователь
+надеется получить доступ с @code{eval}) вычисления не будет и
+не бедет локальной переменной.
+
+@c   Another problem with calling @code{eval} in a macro definition is that
+@c it probably won't do what you intend in a compiled program.  The
+@c byte compiler runs macro definitions while compiling the program, when
+@c the program's own computations (which you might have wished to access
+@c with @code{eval}) don't occur and its local variable bindings don't
+@c exist.
+
+  Чтобы этого избежать, @strong{не нужно вычислять выражения аргументов
+макроса при вычислении расширения макроса}. Вместо этого, стоит
+выполнять подстановку выражений непосредственно в выражение расширения макроса,
+чтобы выражение вычислялось при выполнении расширения. Так работаюют остальные
+примеры из данной главы.
+
+@c   To avoid these problems, @strong{don't evaluate an argument expression
+@c while computing the macro expansion}.  Instead, substitute the
+@c expression into the macro expansion, so that its value will be computed
+@c as part of executing the expansion.  This is how the other examples in
+@c this chapter work.
 
 @node Repeated Expansion
 @subsection How Many Times is the Macro Expanded?
+@c @subsection How Many Times is the Macro Expanded?
 
-  Occasionally problems result from the fact that a macro call is
-expanded each time it is evaluated in an interpreted function, but is
-expanded only once (during compilation) for a compiled function.  If the
-macro definition has side effects, they will work differently depending
-on how many times the macro is expanded.
+  Время от  времени проблемы возникают из-за того, что макро вызов
+расширяется каждый раз при интерпретации, и только один раз при компиляции.
+Если определение макроса имеет побочные эффекты, они могут работать по разному
+в зависимости от того, сколько раз выполняется расширение.
 
-  Therefore, you should avoid side effects in computation of the
-macro expansion, unless you really know what you are doing.
+@c   Occasionally problems result from the fact that a macro call is
+@c expanded each time it is evaluated in an interpreted function, but is
+@c expanded only once (during compilation) for a compiled function.  If the
+@c macro definition has side effects, they will work differently depending
+@c on how many times the macro is expanded.
 
-  One special kind of side effect can't be avoided: constructing Lisp
-objects.  Almost all macro expansions include constructed lists; that is
-the whole point of most macros.  This is usually safe; there is just one
-case where you must be careful: when the object you construct is part of a
-quoted constant in the macro expansion.
+  Поэтому, стоит избегать побоочных эффектов при вычислении
+расшиирения макроса, за исключением ситуаций когда вы делаете
+это осознанно и понимаете разницу.
 
-  If the macro is expanded just once, in compilation, then the object is
-constructed just once, during compilation.  But in interpreted
-execution, the macro is expanded each time the macro call runs, and this
-means a new object is constructed each time.
+@c   Therefore, you should avoid side effects in computation of the
+@c macro expansion, unless you really know what you are doing.
 
-  In most clean Lisp code, this difference won't matter.  It can matter
-only if you perform side-effects on the objects constructed by the macro
-definition.  Thus, to avoid trouble, @strong{avoid side effects on
-objects constructed by macro definitions}.  Here is an example of how
-such side effects can get you into trouble:
+  Одного из видов побочных эффектов не получится избежать: создания Lisp
+обьектов. Почти все расширения макросов включают создание списков; так как
+в этом и заключается смысл большинства макросов. Как правило это безопасно;
+но в случае если, создаваемый обьект
+явлляется частью заковыченной (quoted) константы в раширении макроса, стоит
+быть осторожным.
+
+@c   One special kind of side effect can't be avoided: constructing Lisp
+@c objects.  Almost all macro expansions include constructed lists; that is
+@c the whole point of most macros.  This is usually safe; there is just one
+@c case where you must be careful: when the object you construct is part of a
+@c quoted constant in the macro expansion.
+
+  Если расширение макроса строится только один раз при компиляции, тогда
+обьект создается только один раз при компиляции. Но при выполнении
+интерпретации, расширение строится, при каждом макро вызове, что означает,
+что новый обьект создается каждый раз.
+
+@c   If the macro is expanded just once, in compilation, then the object is
+@c constructed just once, during compilation.  But in interpreted
+@c execution, the macro is expanded each time the macro call runs, and this
+@c means a new object is constructed each time.
+
+  В большинстве кода Lisp, разница не заметна. Разница будет ощутима, тольк
+в случае если выполняется побочное действие при конструировании обьектов
+определением макроса. Поэтому, чтобы избежать проблем,
+@strong{нужно избегать побочных эффектов для обьектов конструируемых определением макроса}.
+Ниже пример, того как побочный эффект может привести к проблемам:
+
+@c   In most clean Lisp code, this difference won't matter.  It can matter
+@c only if you perform side-effects on the objects constructed by the macro
+@c definition.  Thus, to avoid trouble, @strong{avoid side effects on
+@c objects constructed by macro definitions}.  Here is an example of how
+@c such side effects can get you into trouble:
 
 @lisp
 @group
@@ -566,25 +872,43 @@ such side effects can get you into trouble:
 @end lisp
 
 @noindent
-If @code{initialize} is interpreted, a new list @code{(nil)} is
-constructed each time @code{initialize} is called.  Thus, no side effect
-survives between calls.  If @code{initialize} is compiled, then the
-macro @code{empty-object} is expanded during compilation, producing a
-single constant @code{(nil)} that is reused and altered each time
-@code{initialize} is called.
+Если @code{initialize} выполняется при интерпретации, новый список
+@code{(nil)} будет создаваться каждый раз когда @code{initialize}
+вызывается. Поэтому побочные эффекты между вызовами не будут сохраняться.
+Если расширение @code{empty-object} строится при компиляции, создается одна константа
+@code{(nil)}, которая повторно используется и изменяется при каждом
+вызове @code{initialize}.
 
-One way to avoid pathological cases like this is to think of
-@code{empty-object} as a funny kind of constant, not as a memory
-allocation construct.  You wouldn't use @code{setcar} on a constant such
-as @code{'(nil)}, so naturally you won't use it on @code{(empty-object)}
-either.
+@c If @code{initialize} is interpreted, a new list @code{(nil)} is
+@c constructed each time @code{initialize} is called.  Thus, no side effect
+@c survives between calls.  If @code{initialize} is compiled, then the
+@c macro @code{empty-object} is expanded during compilation, producing a
+@c single constant @code{(nil)} that is reused and altered each time
+@c @code{initialize} is called.
+
+Один из способов избежать случаев наподобие данного рассматривать
+@code{empty-object} как забавный вид констант, а не как конструкцию для
+выделения памяти. В этом случае не стоит использовать @code{setcar} для констант
+@code{'(nil)}, в результате чего использовать @code{(empty-object)} в общем-то
+не нужно.
+
+@c One way to avoid pathological cases like this is to think of
+@c @code{empty-object} as a funny kind of constant, not as a memory
+@c allocation construct.  You wouldn't use @code{setcar} on a constant such
+@c as @code{'(nil)}, so naturally you won't use it on @code{(empty-object)}
+@c either.
 
 @node Indenting Macros
-@section Indenting Macros
+@section Отступы в Макросах
+@c @section Indenting Macros
 
-  Within a macro definition, you can use the @code{declare} form
-(@pxref{Defining Macros}) to specify how @key{TAB} should indent
-calls to the macro.  An indentation specification is written like this:
+  При определении макроса, можно использовать форму @code{declare}
+(@pxref{Defining Macros}) для определения @key{TAB} будет работать
+в макро вызовах. Задание отступов записывается примерно следующим образом:
+
+@c   Within a macro definition, you can use the @code{declare} form
+@c (@pxref{Defining Macros}) to specify how @key{TAB} should indent
+@c calls to the macro.  An indentation specification is written like this:
 
 @example
 (declare (indent @var{indent-spec}))
@@ -592,51 +916,86 @@ calls to the macro.  An indentation specification is written like this:
 
 @noindent
 @cindex @code{lisp-indent-function} property
-This results in the @code{lisp-indent-function} property being set on
-the macro name.
+В результате будет установлено свойство @code{lisp-indent-function}
+для символа с именем макроса.
+
+@c This results in the @code{lisp-indent-function} property being set on
+@c the macro name.
 
 @noindent
-Here are the possibilities for @var{indent-spec}:
+Ниже возможные варианты для @var{indent-spec}:
+@c Here are the possibilities for @var{indent-spec}:
 
 @table @asis
 @item @code{nil}
-This is the same as no property---use the standard indentation pattern.
+То же, что и отсутствие свойства----использование стандартного шаблона отступов.
+@c This is the same as no property---use the standard indentation pattern.
 @item @code{defun}
-Handle this function like a @samp{def} construct: treat the second
-line as the start of a @dfn{body}.
+Данный параметр обрабатывается как @samp{def} конструкция, вторая строка
+рассматривается как начало @dfn{body}.
+
+@c Handle this function like a @samp{def} construct: treat the second
+@c line as the start of a @dfn{body}.
 @item an integer, @var{number}
-The first @var{number} arguments of the function are
-@dfn{distinguished} arguments; the rest are considered the body
-of the expression.  A line in the expression is indented according to
-whether the first argument on it is distinguished or not.  If the
-argument is part of the body, the line is indented @code{lisp-body-indent}
-more columns than the open-parenthesis starting the containing
-expression.  If the argument is distinguished and is either the first
-or second argument, it is indented @emph{twice} that many extra columns.
-If the argument is distinguished and not the first or second argument,
-the line uses the standard pattern.
+Первыми @var{number} аргументов функции являются  @dfn{особым} @dfn{различные} (@dfn{distinguished})
+аргументы, а остальная часть рассматривается как тело выражения.
+Отступ для строки в выражении делается в соответствии с тем является
+ли первый аргумент особым (distinguished) или нет. Если аргумент
+является частью тела, делается отступ @code{lisp-body-indent}
+больше чем отступ для открывающей скобки в начале выражения.
+Если аргумент особый(distinguished) и является первым или вторым аргументом,
+отступ делается @emph{дважды}.
+Если аргумент особый(distinguished) и не является первым или вторым аргументом,
+строка использует стандратный шаблон.
+
+@c The first @var{number} arguments of the function are
+@c @dfn{distinguished} arguments; the rest are considered the body
+@c of the expression.  A line in the expression is indented according to
+@c whether the first argument on it is distinguished or not.  If the
+@c argument is part of the body, the line is indented @code{lisp-body-indent}
+@c more columns than the open-parenthesis starting the containing
+@c expression.  If the argument is distinguished and is either the first
+@c or second argument, it is indented @emph{twice} that many extra columns.
+@c If the argument is distinguished and not the first or second argument,
+@c the line uses the standard pattern.
 @item a symbol, @var{symbol}
-@var{symbol} should be a function name; that function is called to
-calculate the indentation of a line within this expression.  The
-function receives two arguments:
+@var{symbol} должен быть именем функции, которая будет вызвана для
+вычисления оступов выражения. Функция принимает два аргумента:
+
+@c @var{symbol} should be a function name; that function is called to
+@c calculate the indentation of a line within this expression.  The
+@c function receives two arguments:
 
 @table @asis
 @item @var{pos}
-The position at which the line being indented begins.
+Позицию начала вычисление оступа для строки.
+@c The position at which the line being indented begins.
 @item @var{state}
-The value returned by @code{parse-partial-sexp} (a Lisp primitive for
-indentation and nesting computation) when it parses up to the
-beginning of this line.
+Значение возвращаемое @code{parse-partial-sexp} (Lisp примитив
+используемый при вычислении отступов и вложенных вычислений)
+когда будет разобрано(parse) начало строки. 
+@c The value returned by @code{parse-partial-sexp} (a Lisp primitive for
+@c indentation and nesting computation) when it parses up to the
+@c beginning of this line.
 @end table
 
 @noindent
-It should return either a number, which is the number of columns of
-indentation for that line, or a list whose car is such a number.  The
-difference between returning a number and returning a list is that a
-number says that all following lines at the same nesting level should
-be indented just like this one; a list says that following lines might
-call for different indentations.  This makes a difference when the
-indentation is being computed by @kbd{C-M-q}; if the value is a
-number, @kbd{C-M-q} need not recalculate indentation for the following
-lines until the end of the list.
+Функция должна вернуть число, которое соответствует количеству оступов
+строки, или список у которого car является таким числом. Разница между
+числом и списком в том, что значение число указывает сделать одинаковый
+уровень вложенности для следующих строк, в том время как список указывает,
+что следующие строки могут иметь разные оступы. Это применяется, например
+когда отступы вычисляются после нажатия @kbd{C-M-q}, если значение число,
+@kbd{C-M-q} не нужно выполнять пересчет отступов для всех строк до конца списка.
+
+
+@c It should return either a number, which is the number of columns of
+@c indentation for that line, or a list whose car is such a number.  The
+@c difference between returning a number and returning a list is that a
+@c number says that all following lines at the same nesting level should
+@c be indented just like this one; a list says that following lines might
+@c call for different indentations.  This makes a difference when the
+@c indentation is being computed by @kbd{C-M-q}; if the value is a
+@c number, @kbd{C-M-q} need not recalculate indentation for the following
+@c lines until the end of the list.
 @end table

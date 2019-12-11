@@ -4,253 +4,439 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Debugging
-@chapter Debugging Lisp Programs
+@chapter Отладка Lisp программ
+@c @chapter Debugging Lisp Programs
 @cindex debugging lisp programs
 
-  There are several ways to find and investigate problems in an Emacs
-Lisp program.
+  Есть несколько способов для поиска и исследования проблем в
+Emacs Lisp программе.
+@c   There are several ways to find and investigate problems in an Emacs
+@c Lisp program.
 
 @itemize @bullet
 @item
-If a problem occurs when you run the program, you can use the built-in
-Emacs Lisp debugger to suspend the Lisp evaluator, and examine and/or
-alter its internal state.
+Если при запуске программы возникает проблема, можно использовать
+встроенный отсладчик Emacs Lisp, для приостановки выполнения
+вычисления Lisp, и посмотреть или изменить внутреннее состояние.
+
+@c If a problem occurs when you run the program, you can use the built-in
+@c Emacs Lisp debugger to suspend the Lisp evaluator, and examine and/or
+@c alter its internal state.
 
 @item
-You can use Edebug, a source-level debugger for Emacs Lisp.
+Можно использовать Edebug, отладчик уровня кода для Emacs Lisp.
+@c You can use Edebug, a source-level debugger for Emacs Lisp.
 
 @item
-If a syntactic problem is preventing Lisp from even reading the
-program, you can locate it using Lisp editing commands.
+Если ошибка в синтаксисе приводит к тому, что программа даже
+не может быть считана, определить место ошибки можно используя
+команды редактирования Lisp.
+
+@c If a syntactic problem is preventing Lisp from even reading the
+@c program, you can locate it using Lisp editing commands.
 
 @item
-You can look at the error and warning messages produced by the byte
-compiler when it compiles the program.  @xref{Compiler Errors}.
+Можно смотреть на ошибки и предупреждения возникающие при
+байт-компиляции когда программа компилируется. @xref{Compiler Errors}.
+
+@c You can look at the error and warning messages produced by the byte
+@c compiler when it compiles the program.  @xref{Compiler Errors}.
 
 @item
-You can use the Testcover package to perform coverage testing on the
-program.
+Можно использовать пакет Testcover (тестовое покрытие), чтобы протестировать
+программу и посмотреть покрытие.
+
+@c You can use the Testcover package to perform coverage testing on the
+@c program.
 
 @item
-You can use the ERT package to write regression tests for the program.
-@xref{Top,the ERT manual,, ert, ERT: Emacs Lisp Regression Testing}.
+Можно использовать пакет ERT для написания регрессионных тестов для программы.
+@xref{Top, the ERT manual,, ert, ERT: Emacs Lisp Regression Testing}.
+
+@c You can use the ERT package to write regression tests for the program.
+@c @xref{Top,the ERT manual,, ert, ERT: Emacs Lisp Regression Testing}.
 
 @item
-You can profile the program to get hints about how to make it more efficient.
+Можно выполнить профилирование программы, чтобы понять как ее можно ускорить.
+@c You can profile the program to get hints about how to make it more efficient.
 @end itemize
 
-  Other useful tools for debugging input and output problems are the
-dribble file (@pxref{Terminal Input}) and the @code{open-termscript}
-function (@pxref{Terminal Output}).
+  Другие полезные инструменты для отладки проблем с вводом и выводом
+это файл (@pxref{Terminal Input}) и @code{open-termscript} функция
+(@pxref{Terminal Output}).
+
+@c   Other useful tools for debugging input and output problems are the
+@c dribble file (@pxref{Terminal Input}) and the @code{open-termscript}
+@c function (@pxref{Terminal Output}).
 
 @menu
-* Debugger::            A debugger for the Emacs Lisp evaluator.
-* Edebug::              A source-level Emacs Lisp debugger.
-* Syntax Errors::       How to find syntax errors.
-* Test Coverage::       Ensuring you have tested all branches in your code.
-* Profiling::           Measuring the resources that your code uses.
+* Debugger::            Отладчик для Emacs Lisp.
+* Edebug::              Отладчик кода в Emacs Lisp.
+* Syntax Errors::       Как искать синтаксические ошибки.
+* Test Coverage::       Как убедится, что протестированы все ветки кода.
+* Profiling::           Измерение используемой программой ресурсов.
 @end menu
 
 @node Debugger
-@section The Lisp Debugger
+@section Отладчик Lisp
+@c @section The Lisp Debugger
 @cindex debugger for Emacs Lisp
 @cindex Lisp debugger
 @cindex break
 
-  The ordinary @dfn{Lisp debugger} provides the ability to suspend
-evaluation of a form.  While evaluation is suspended (a state that is
-commonly known as a @dfn{break}), you may examine the run time stack,
-examine the values of local or global variables, or change those values.
-Since a break is a recursive edit, all the usual editing facilities of
-Emacs are available; you can even run programs that will enter the
-debugger recursively.  @xref{Recursive Editing}.
+  Стандартный @dfn{отладчик Lisp} (@dfn{Lisp debugger}) предоставляет
+возможность приостановить вычисление формы. Во время приостановки вычисления
+(состояние как правило называется @dfn{останов} (@dfn{break})), можно исследовать
+стек выполнения, посмотреть значения локальных и глобвальных переменных,
+или изменить их значения. Так как останов является рекурсивным редактированием
+(recursive edit) можно использовать все возможности для редактирования,
+которые предоставляет Emacs, можно даже запустить программу которая рекурсивно вызовет
+отладчик. @xref{Recursive Editing}.
+
+@c   The ordinary @dfn{Lisp debugger} provides the ability to suspend
+@c evaluation of a form.  While evaluation is suspended (a state that is
+@c commonly known as a @dfn{break}), you may examine the run time stack,
+@c examine the values of local or global variables, or change those values.
+@c Since a break is a recursive edit, all the usual editing facilities of
+@c Emacs are available; you can even run programs that will enter the
+@c debugger recursively.  @xref{Recursive Editing}.
 
 @menu
-* Error Debugging::       Entering the debugger when an error happens.
-* Infinite Loops::        Stopping and debugging a program that doesn't exit.
-* Function Debugging::    Entering it when a certain function is called.
-* Explicit Debug::        Entering it at a certain point in the program.
-* Using Debugger::        What the debugger does; what you see while in it.
-* Debugger Commands::     Commands used while in the debugger.
-* Invoking the Debugger:: How to call the function @code{debug}.
-* Internals of Debugger:: Subroutines of the debugger, and global variables.
+* Error Debugging::       Включение отладки в случае ошибки.
+* Infinite Loops::        Остановка и отладка программы которая не завершается.
+* Function Debugging::    Включение отладки при вызове определенной функции.
+* Explicit Debug::        Включение отладки в определенной точке программы.
+* Using Debugger::        Как работать с отладчиком.
+* Debugger Commands::     Комманды используемые при работе с отладчиком.
+* Invoking the Debugger:: Как вызвать функцию @code{debug}.
+* Internals of Debugger:: Подпрограммы отладчика и глобальные переменные.
 @end menu
 
 @node Error Debugging
-@subsection Entering the Debugger on an Error
+@subsection Включение отладки в случае ошибки.
+@c @subsection Entering the Debugger on an Error
 @cindex error debugging
 @cindex debugging errors
 
-  The most important time to enter the debugger is when a Lisp error
-happens.  This allows you to investigate the immediate causes of the
-error.
+  Один из самых подходящих моментов для вызова отладчика, это возникновение
+ошибки. Так как это позволяет сразу изучить случай возникновения ошибки.
 
-  However, entry to the debugger is not a normal consequence of an
-error.  Many commands signal Lisp errors when invoked inappropriately,
-and during ordinary editing it would be very inconvenient to enter the
-debugger each time this happens.  So if you want errors to enter the
-debugger, set the variable @code{debug-on-error} to non-@code{nil}.
-(The command @code{toggle-debug-on-error} provides an easy way to do
-this.)
+@c   The most important time to enter the debugger is when a Lisp error
+@c happens.  This allows you to investigate the immediate causes of the
+@c error.
+
+  Но, вход в отладчик то не нормальный способ обработки ошибки.
+Многие команды сигнализируют об ошибке, когда вызываются не
+корректно, и при редактировании будет не удобно, если каждый раз в такой ситуации
+будет начинаться отладка. Поэтому если нужно, чтобы ошибка
+приводила к запуску отладки, нужно установить значение
+переменной @code{debug-on-error} в не-@code{nil}.
+(Команда @code{toggle-debug-on-error} предоставляет позволяет
+сделать это просто.)
+
+@c   However, entry to the debugger is not a normal consequence of an
+@c error.  Many commands signal Lisp errors when invoked inappropriately,
+@c and during ordinary editing it would be very inconvenient to enter the
+@c debugger each time this happens.  So if you want errors to enter the
+@c debugger, set the variable @code{debug-on-error} to non-@code{nil}.
+@c (The command @code{toggle-debug-on-error} provides an easy way to do
+@c this.)
 
 @defopt debug-on-error
-This variable determines whether the debugger is called when an error
-is signaled and not handled.  If @code{debug-on-error} is @code{t},
-all kinds of errors call the debugger, except those listed in
-@code{debug-ignored-errors} (see below).  If it is @code{nil}, none
-call the debugger.
+Переменная определяет будет ли вызываться отладчик в случае возникновения
+ошибки, которая не была обработана. Если @code{debug-on-error} @code{t},
+тогда все виды ошибок, кроме перечисленных в списке @code{debug-ignored-errors}
+(см. ниже). Если значение @code{nil}, при возникновении ошибок отладчик не
+будет вызываться.
 
-The value can also be a list of error conditions (@pxref{Signaling
-Errors}).  Then the debugger is called only for error conditions in
-this list (except those also listed in @code{debug-ignored-errors}).
-For example, if you set @code{debug-on-error} to the list
-@code{(void-variable)}, the debugger is only called for errors about a
-variable that has no value.
+@c This variable determines whether the debugger is called when an error
+@c is signaled and not handled.  If @code{debug-on-error} is @code{t},
+@c all kinds of errors call the debugger, except those listed in
+@c @code{debug-ignored-errors} (see below).  If it is @code{nil}, none
+@c call the debugger.
 
-Note that @code{eval-expression-debug-on-error} overrides this
-variable in some cases; see below.
+Значение может быть списком условий ошибок (@pxref{Signaling Errors}).
+Тогда отладчик будет вызываться для условий ошибок в этом списке (за
+исключением тем, которые так же перечисленны в @code{debug-ignored-errors}).
+Например, если установить @code{debug-on-error} равным
+@code{(void-variable)}, отладчик будет вызываться только для ошибок
+возникающих из-за того, что у переменной нет значения.
 
-When this variable is non-@code{nil}, Emacs does not create an error
-handler around process filter functions and sentinels.  Therefore,
-errors in these functions also invoke the debugger.  @xref{Processes}.
+@c The value can also be a list of error conditions (@pxref{Signaling
+@c Errors}).  Then the debugger is called only for error conditions in
+@c this list (except those also listed in @code{debug-ignored-errors}).
+@c For example, if you set @code{debug-on-error} to the list
+@c @code{(void-variable)}, the debugger is only called for errors about a
+@c variable that has no value.
+
+Стоит заметить, что @code{eval-expression-debug-on-error} в некоторых
+случаях перезаписывает данную переменную, см. ниже.
+
+@c Note that @code{eval-expression-debug-on-error} overrides this
+@c variable in some cases; see below.
+
+Когда, данная переменная не-@code{nil}, Emacs не создает обработчик ошибок
+вокруг (around) функций фильтра процесса и sentinels. Таким образом, ошибки в
+этих функциях приводят к вызову отладчика. @xref{Processes}.
+
+@c When this variable is non-@code{nil}, Emacs does not create an error
+@c handler around process filter functions and sentinels.  Therefore,
+@c errors in these functions also invoke the debugger.  @xref{Processes}.
 @end defopt
 
 @defopt debug-ignored-errors
-This variable specifies errors which should not enter the debugger,
-regardless of the value of @code{debug-on-error}.  Its value is a list
-of error condition symbols and/or regular expressions.  If the error
-has any of those condition symbols, or if the error message matches
-any of the regular expressions, then that error does not enter the
-debugger.
+Переменная определяет ошибки которые не должны приводить к вызову отладчика,
+в соответствии со значением @code{debug-on-error}. Значением переменной является
+список символов условий ошибок и/или регулярных выражений. Если ошибка
+имеет один из этих символов, или сообщение об ошибке соответствует
+какому-то регулярному выражению, тогда ошибка не приводит к запуску отладчика.
 
-The normal value of this variable includes @code{user-error}, as well
-as several errors that happen often during editing but rarely result
-from bugs in Lisp programs.  However, ``rarely'' is not ``never''; if
-your program fails with an error that matches this list, you may try
-changing this list to debug the error.  The easiest way is usually to
-set @code{debug-ignored-errors} to @code{nil}.
+@c This variable specifies errors which should not enter the debugger,
+@c regardless of the value of @code{debug-on-error}.  Its value is a list
+@c of error condition symbols and/or regular expressions.  If the error
+@c has any of those condition symbols, or if the error message matches
+@c any of the regular expressions, then that error does not enter the
+@c debugger.
+
+Обычное значение данной переменной содержит @code{user-error}, и некоторые
+другие ошибки, которые происходят при редактировании, но редко являются
+багами в Lisp программах. Но, ``редко'' не значит ``никогда''; если
+ваша программа падает из-за такой ошибки, можно изменить данный список
+чтобы выполнить отладку и исправить ошибку. Простейший способ просто
+установить @code{debug-ignored-errors} в @code{nil}.
+
+@c The normal value of this variable includes @code{user-error}, as well
+@c as several errors that happen often during editing but rarely result
+@c from bugs in Lisp programs.  However, ``rarely'' is not ``never''; if
+@c your program fails with an error that matches this list, you may try
+@c changing this list to debug the error.  The easiest way is usually to
+@c set @code{debug-ignored-errors} to @code{nil}.
+
 @end defopt
 
 @defopt eval-expression-debug-on-error
-If this variable has a non-@code{nil} value (the default), running the
-command @code{eval-expression} causes @code{debug-on-error} to be
-temporarily bound to to @code{t}.  @xref{Lisp Eval,, Evaluating
-Emacs-Lisp Expressions, emacs, The GNU Emacs Manual}.
+Если переменная имеет значение не-@code{nil} (по умолчанию), выполнение
+команды @code{eval-expression} приводит к тому, что значение @code{debug-on-error}
+временно устанавливается в @code{t}. @xref{Lisp Eval,, Evaluating Emacs-Lisp Expressions,
+emacs, The GNU Emacs Manual}.
 
-If @code{eval-expression-debug-on-error} is @code{nil}, then the value
-of @code{debug-on-error} is not changed during @code{eval-expression}.
+@c If this variable has a non-@code{nil} value (the default), running the
+@c command @code{eval-expression} causes @code{debug-on-error} to be
+@c temporarily bound to to @code{t}.  @xref{Lisp Eval,, Evaluating
+@c Emacs-Lisp Expressions, emacs, The GNU Emacs Manual}.
+
+Если @code{eval-expression-debug-on-error} @code{nil}, тогда значение
+@code{debug-on-error} не изменяется при выполнении @code{eval-expression}.
+
+@c If @code{eval-expression-debug-on-error} is @code{nil}, then the value
+@c of @code{debug-on-error} is not changed during @code{eval-expression}.
 @end defopt
 
 @defopt debug-on-signal
-Normally, errors caught by @code{condition-case} never invoke the
-debugger.  The @code{condition-case} gets a chance to handle the error
-before the debugger gets a chance.
+Обычно, ошибки перехватываются @code{condition-case} и не приводят
+к включению отладчикаю @code{condition-case} получает возможность
+обработать ошибку до того как ей займется отладчик.
 
-If you change @code{debug-on-signal} to a non-@code{nil} value, the
-debugger gets the first chance at every error, regardless of the
-presence of @code{condition-case}.  (To invoke the debugger, the error
-must still fulfill the criteria specified by @code{debug-on-error} and
-@code{debug-ignored-errors}.)
+@c Normally, errors caught by @code{condition-case} never invoke the
+@c debugger.  The @code{condition-case} gets a chance to handle the error
+@c before the debugger gets a chance.
+
+Если изменить @code{debug-on-signal} на не-@code{nil} значение, сначала
+для обработки ошибки будет запускаться отладчик. (Чтобы отладчик запустился,
+ошибка должна соответствовать условиям определяемым @code{debug-on-error}
+и @code{debug-ignored-errors}.)
+
+@c If you change @code{debug-on-signal} to a non-@code{nil} value, the
+@c debugger gets the first chance at every error, regardless of the
+@c presence of @code{condition-case}.  (To invoke the debugger, the error
+@c must still fulfill the criteria specified by @code{debug-on-error} and
+@c @code{debug-ignored-errors}.)
 
 @cindex emacsclient, getting a backtrace
 @cindex backtrace from emacsclient's @option{--eval}
-For example, setting this variable is useful to get a backtrace from
-code evaluated by emacsclient's @option{--eval} option.  If Lisp code
-evaluated by emacsclient signals an error while this variable is
-non-@code{nil}, the backtrace will popup in the running Emacs.
+Например, установка данной переменной полезна, для получения обратного
+стека вызовов для кода вычисленного с помощью параметра @option{--eval}
+emacs клиента (emacsclient). Если Lisp код вычисляемый emacs клиентом
+(emacsclient) сигнализирует ошибку и значение данной переменной не-@code{nil},
+будет показан обратный стек вызовов в запущенном Emacs.
 
-@strong{Warning:} Setting this variable to non-@code{nil} may have
-annoying effects.  Various parts of Emacs catch errors in the normal
-course of affairs, and you may not even realize that errors happen
-there.  If you need to debug code wrapped in @code{condition-case},
-consider using @code{condition-case-unless-debug} (@pxref{Handling
-Errors}).
+@c For example, setting this variable is useful to get a backtrace from
+@c code evaluated by emacsclient's @option{--eval} option.  If Lisp code
+@c evaluated by emacsclient signals an error while this variable is
+@c non-@code{nil}, the backtrace will popup in the running Emacs.
+
+@strong{Внимание:} Установка переменной в не-@code{nil} может иметь
+неожиданный эффект. Разные части Emacs перехватывают ошибки IN NORMAL COURSE
+OF AFFRAIRS, и можно не заметить, что произошла ошибка. Чтобы
+выполнить отладку кода обернутого в вызов @code{condition-case},
+можно использовать @code{condition-case-unless-debug} (@pxref{Handling Errors}).
+
+@c @strong{Warning:} Setting this variable to non-@code{nil} may have
+@c annoying effects.  Various parts of Emacs catch errors in the normal
+@c course of affairs, and you may not even realize that errors happen
+@c there.  If you need to debug code wrapped in @code{condition-case},
+@c consider using @code{condition-case-unless-debug} (@pxref{Handling
+@c Errors}).
 @end defopt
 
 @defopt debug-on-event
-If you set @code{debug-on-event} to a special event (@pxref{Special
-Events}), Emacs will try to enter the debugger as soon as it receives
-this event, bypassing @code{special-event-map}.  At present, the only
-supported values correspond to the signals @code{SIGUSR1} and
-@code{SIGUSR2} (this is the default).  This can be helpful when
-@code{inhibit-quit} is set and Emacs is not otherwise responding.
+Если установить @code{debug-on-event} в некоторое событие (event)
+@paxref{Special Events}, Emacs будет (пататься) запускать отлачик
+как только получит такое событие, в соответствии с @code{special-event-map}.
+В настоящее время, поддерживаются только значения соответствующие
+сигналам @code{SIGUSR1} и @code{SIGUSR2} (по умолчанию). Данная возможность
+будет полезна если установлено @code{inhibit-quit} и Emacs не отзывается
+на другие действия.
+
+@c If you set @code{debug-on-event} to a special event (@pxref{Special
+@c Events}), Emacs will try to enter the debugger as soon as it receives
+@c this event, bypassing @code{special-event-map}.  At present, the only
+@c supported values correspond to the signals @code{SIGUSR1} and
+@c @code{SIGUSR2} (this is the default).  This can be helpful when
+@c @code{inhibit-quit} is set and Emacs is not otherwise responding.
 @end defopt
 
 @cindex message, finding what causes a particular message
 @defvar debug-on-message
-If you set @code{debug-on-message} to a regular expression,
-Emacs will enter the debugger if it displays a matching message in the
-echo area.  For example, this can be useful when trying to find the
-cause of a particular message.
+
+Если задать регулярное выражение в качестве значения @code{debug-on-message},
+Emacs будет запускать отладчик при отображении значения, соответствующего
+этому выражению. Например, такая возможность может пригодится, чтобы
+найти причину вощникновения определенного сообщения.
+
+@c If you set @code{debug-on-message} to a regular expression,
+@c Emacs will enter the debugger if it displays a matching message in the
+@c echo area.  For example, this can be useful when trying to find the
+@c cause of a particular message.
 @end defvar
 
-  To debug an error that happens during loading of the init
-file, use the option @samp{--debug-init}.  This binds
-@code{debug-on-error} to @code{t} while loading the init file, and
-bypasses the @code{condition-case} which normally catches errors in the
-init file.
+  Чтобы выполнить отладку ошибок возникающих при загрузке
+init файла, стоит при запуске Emacs использовать параметр
+@samp{--debug-init}.
+При использовании данного параметра @code{debug-on-error}
+устанавливается равным @code{t}, на время загрузки init файла
+и устанавливаеются обертки для @code{condition-case}
+которая обычно используется для обработки ошибок
+в init файле.
+
+@c   To debug an error that happens during loading of the init
+@c file, use the option @samp{--debug-init}.  This binds
+@c @code{debug-on-error} to @code{t} while loading the init file, and
+@c bypasses the @code{condition-case} which normally catches errors in the
+@c init file.
 
 @node Infinite Loops
-@subsection Debugging Infinite Loops
+@subsection Отладка Бесконечных Циклов
+@c @subsection Debugging Infinite Loops
 @cindex infinite loops
 @cindex loops, infinite
 @cindex quitting from infinite loop
 @cindex stopping an infinite loop
 
-  When a program loops infinitely and fails to return, your first
-problem is to stop the loop.  On most operating systems, you can do
-this with @kbd{C-g}, which causes a @dfn{quit}.  @xref{Quitting}.
+  В случае если программа попадает в бесконечный цикл, и не может завершиться
+первой проблемой является остановка бескнечногго цикла. На большинстве
+операционных систем это можно сделать с помощью комбинации @kdb{C-g},
+обозначающей @dfn{quit} (@dfn{выход}). @xref{Quiting}.
 
-  Ordinary quitting gives no information about why the program was
-looping.  To get more information, you can set the variable
-@code{debug-on-quit} to non-@code{nil}.  Once you have the debugger
-running in the middle of the infinite loop, you can proceed from the
-debugger using the stepping commands.  If you step through the entire
-loop, you may get enough information to solve the problem.
+@c   When a program loops infinitely and fails to return, your first
+@c problem is to stop the loop.  On most operating systems, you can do
+@c this with @kbd{C-g}, which causes a @dfn{quit}.  @xref{Quitting}.
 
-  Quitting with @kbd{C-g} is not considered an error, and
-@code{debug-on-error} has no effect on the handling of @kbd{C-g}.
-Likewise, @code{debug-on-quit} has no effect on errors.
+  Обычный выход не дает информации о том, почему программа зациклилась.
+И чтобы получить больше информации, нужно установить переменную @code{debug-on-quit}
+в не-@code{nil}. Когда отладчик будет запущен из середины цикла,
+с помощью команд отладчика можно пройти цикл полностью и получить онформацию из-за
+чего он зацикливается.
+
+@c   Ordinary quitting gives no information about why the program was
+@c looping.  To get more information, you can set the variable
+@c @code{debug-on-quit} to non-@code{nil}.  Once you have the debugger
+@c running in the middle of the infinite loop, you can proceed from the
+@c debugger using the stepping commands.  If you step through the entire
+@c loop, you may get enough information to solve the problem.
+
+  Выход с использованием @kbd{C-g} не рассматривается как ошибка,
+и @code{debug-on-error}, не влияет на обработку @kbd{C-g}.
+Так же как и @code{debug-on-quit} не влияет на обработку ошибок.
+
+@c   Quitting with @kbd{C-g} is not considered an error, and
+@c @code{debug-on-error} has no effect on the handling of @kbd{C-g}.
+@c Likewise, @code{debug-on-quit} has no effect on errors.
 
 @defopt debug-on-quit
-This variable determines whether the debugger is called when
-@code{quit} is signaled and not handled.  If @code{debug-on-quit} is
-non-@code{nil}, then the debugger is called whenever you quit (that
-is, type @kbd{C-g}).  If @code{debug-on-quit} is @code{nil} (the
-default), then the debugger is not called when you quit.
+Переменная определяет будет ли запускаться отладчик
+в случае сигнала @code{quit}, который не был обработан. Если
+@code{debug-on-quit} не-@code{nil}, тогда отладчик
+вызывается в случае quit (происходит при нажатии @kbd{C-g}).
+Если @code{debug-on-quit} @code{nil} (значение по умолчанию),
+отоалчик не вызывается.
+
+@c This variable determines whether the debugger is called when
+@c @code{quit} is signaled and not handled.  If @code{debug-on-quit} is
+@c non-@code{nil}, then the debugger is called whenever you quit (that
+@c is, type @kbd{C-g}).  If @code{debug-on-quit} is @code{nil} (the
+@c default), then the debugger is not called when you quit.
 @end defopt
 
 @node Function Debugging
-@subsection Entering the Debugger on a Function Call
+@subsection Включение Отладчика при Вызове Функции
+@c @subsection Entering the Debugger on a Function Call
 @cindex function call debugging
 @cindex debugging specific functions
 
-  To investigate a problem that happens in the middle of a program, one
-useful technique is to enter the debugger whenever a certain function is
-called.  You can do this to the function in which the problem occurs,
-and then step through the function, or you can do this to a function
-called shortly before the problem, step quickly over the call to that
-function, and then step through its caller.
+  Для исследования проблемм которые случаются в середине выполнения
+программы, полезно использовать технику запуска отладчик
+при вызове определенной функции. Данную возможность можно
+использовать для проблемной функции или функции вызываемой перед
+проблемной и потом по шагам дойти до проблемной точки.
+
+@c   To investigate a problem that happens in the middle of a program, one
+@c useful technique is to enter the debugger whenever a certain function is
+@c called.  You can do this to the function in which the problem occurs,
+@c and then step through the function, or you can do this to a function
+@c called shortly before the problem, step quickly over the call to that
+@c function, and then step through its caller.
 
 @deffn Command debug-on-entry function-name
-This function requests @var{function-name} to invoke the debugger each
-time it is called.
+Функция требует @var{function-name}, для вызова отладчика при каждом
+вызове указанной функции.
 
-Any function or macro defined as Lisp code may be set to break on
-entry, regardless of whether it is interpreted code or compiled code.
-If the function is a command, it will enter the debugger when called
-from Lisp and when called interactively (after the reading of the
-arguments).  You can also set debug-on-entry for primitive functions
-(i.e., those written in C) this way, but it only takes effect when the
-primitive is called from Lisp code.  Debug-on-entry is not allowed for
-special forms.
+@c This function requests @var{function-name} to invoke the debugger each
+@c time it is called.
 
-When @code{debug-on-entry} is called interactively, it prompts for
-@var{function-name} in the minibuffer.  If the function is already set
-up to invoke the debugger on entry, @code{debug-on-entry} does nothing.
-@code{debug-on-entry} always returns @var{function-name}.
+Любая функция или макрос определенные как Lisp код могут
+быть использованы в качестве точки вохода в отладчик, несмотря
+на то является ли этот интерпретируемым или компилируемым.
+Если функция является командой, вход в отладчик будет
+выполнен и при интереактивном вызове(после
+считывания аргументов) и при вызове из Lisp кода.
+Можно установить debug-on-entry для функций примитивов (которые
+написаны на C), но срабатывать такая установка будет
+только для случаев вызова из Lisp кода. Debug-on-entry
+для специальных форм не применим.
 
-Here's an example to illustrate use of this function:
+@c Any function or macro defined as Lisp code may be set to break on
+@c entry, regardless of whether it is interpreted code or compiled code.
+@c If the function is a command, it will enter the debugger when called
+@c from Lisp and when called interactively (after the reading of the
+@c arguments).  You can also set debug-on-entry for primitive functions
+@c (i.e., those written in C) this way, but it only takes effect when the
+@c primitive is called from Lisp code.  Debug-on-entry is not allowed for
+@c special forms.
+
+Когда @code{debug-on-entry} вызывается интерактивно, имя
+@var{function-name} запрашивается в мини-буфере. Если
+для функции уже установлено @code{debug-on-entry},
+вызов ничего не сделает. @code{debug-on-entry} всегда
+возвращает @code{function-name}.
+
+@c When @code{debug-on-entry} is called interactively, it prompts for
+@c @var{function-name} in the minibuffer.  If the function is already set
+@c up to invoke the debugger on entry, @code{debug-on-entry} does nothing.
+@c @code{debug-on-entry} always returns @var{function-name}.
+
+Ниже пример использования:
+@c Here's an example to illustrate use of this function:
 
 @example
 @group
@@ -282,255 +468,469 @@ Debugger entered--entering a function:
 @end deffn
 
 @deffn Command cancel-debug-on-entry &optional function-name
-This function undoes the effect of @code{debug-on-entry} on
-@var{function-name}.  When called interactively, it prompts for
-@var{function-name} in the minibuffer.  If @var{function-name} is
-omitted or @code{nil}, it cancels break-on-entry for all functions.
-Calling @code{cancel-debug-on-entry} does nothing to a function which is
-not currently set up to break on entry.
+Функция отменяет действие @code{debug-on-entry} для
+@var{function-name}. При вызове интерактивно, имя функции
+запрашивается в мини-буфере. Если @code{function-name} не
+задано или @code{nil}, break-on-entry снимается
+для всех функций. Вызов @code{cancel-debug-on-entry} ничего
+не делает, если фунцкия не является точкой входа в отладчик
+(для функции не задано debug-on-entry).
+
+@c This function undoes the effect of @code{debug-on-entry} on
+@c @var{function-name}.  When called interactively, it prompts for
+@c @var{function-name} in the minibuffer.  If @var{function-name} is
+@c omitted or @code{nil}, it cancels break-on-entry for all functions.
+@c Calling @code{cancel-debug-on-entry} does nothing to a function which is
+@c not currently set up to break on entry.
 @end deffn
 
 @node Explicit Debug
-@subsection Explicit Entry to the Debugger
+@subsection Явный Вход в Отладчик
+@c @subsection Explicit Entry to the Debugger
 @cindex debugger, explicit entry
 @cindex force entry to debugger
 
-  You can cause the debugger to be called at a certain point in your
-program by writing the expression @code{(debug)} at that point.  To do
-this, visit the source file, insert the text @samp{(debug)} at the
-proper place, and type @kbd{C-M-x} (@code{eval-defun}, a Lisp mode key
-binding).  @strong{Warning:} if you do this for temporary debugging
-purposes, be sure to undo this insertion before you save the file!
+  Можно войти в отладчик из произвольной точки программы, используя
+выражение @code{(debug)} в этой точке. Чтобы это сделать, нужно открыть
+исходный код и вставить @samp{(debug)}, в нужном месте, после чего
+нужно нажать @kbd{C-M-x} (соотвествует @code{eval-defun}), в Lisp
+режиме). @strong{Внимание:}, стоит не забыть удалить данную
+правку после выполнения отладки.
 
-  The place where you insert @samp{(debug)} must be a place where an
-additional form can be evaluated and its value ignored.  (If the value
-of @code{(debug)} isn't ignored, it will alter the execution of the
-program!)  The most common suitable places are inside a @code{progn} or
-an implicit @code{progn} (@pxref{Sequencing}).
+@c   You can cause the debugger to be called at a certain point in your
+@c program by writing the expression @code{(debug)} at that point.  To do
+@c this, visit the source file, insert the text @samp{(debug)} at the
+@c proper place, and type @kbd{C-M-x} (@code{eval-defun}, a Lisp mode key
+@c binding).  @strong{Warning:} if you do this for temporary debugging
+@c purposes, be sure to undo this insertion before you save the file!
 
-  If you don't know exactly where in the source code you want to put
-the debug statement, but you want to display a backtrace when a
-certain message is displayed, you can set @code{debug-on-message} to a
-regular expression matching the desired message.
+  Место вставки @samp{(debug)} должно быть местом где межно вставить
+вычисление дополнитиельной формы, значение которой будет
+проигнорировано. (Если значение @code{(debug)}) не будет проигнорировано,
+оно изменит ход выполнения программы!) Наиболее подходящее место вставки
+@code{progn} или неявный @code{progn} (@pxref{Sequencing}).
+
+@c   The place where you insert @samp{(debug)} must be a place where an
+@c additional form can be evaluated and its value ignored.  (If the value
+@c of @code{(debug)} isn't ignored, it will alter the execution of the
+@c program!)  The most common suitable places are inside a @code{progn} or
+@c an implicit @code{progn} (@pxref{Sequencing}).
+
+  Если не понятно, где в исходниках стоит поместить выражение debug,
+но нужно получить стеквызовов при отображении определенного
+сообщения, можно установить @code{debug-on-message} в регулярное
+выражение соответствующее нужному сообшениею.
+
+@c   If you don't know exactly where in the source code you want to put
+@c the debug statement, but you want to display a backtrace when a
+@c certain message is displayed, you can set @code{debug-on-message} to a
+@c regular expression matching the desired message.
 
 @node Using Debugger
-@subsection Using the Debugger
+@subsection Использование Отладчика
+@c @subsection Using the Debugger
 
-  When the debugger is entered, it displays the previously selected
-buffer in one window and a buffer named @file{*Backtrace*} in another
-window.  The backtrace buffer contains one line for each level of Lisp
-function execution currently going on.  At the beginning of this buffer
-is a message describing the reason that the debugger was invoked (such
-as the error message and associated data, if it was invoked due to an
-error).
+  При входе в отладчик, в одном окне остается отображаться
+предыдущий выделенный буффер, в другом окне отображается
+буфер с именем @file{*Backtrace*}. Окно трассировки (с именем @file{*Backtrace*})
+содержит одну строку для каждого уровня выполняемой Lisp функции.
+В начале буфера содержится сообщение описывающее причину по которой
+был запущен отладчик (такую как сообщение об ошибке и связанные данные,
+в случае запуска из-за ошибки).
+
+@c   When the debugger is entered, it displays the previously selected
+@c buffer in one window and a buffer named @file{*Backtrace*} in another
+@c window.  The backtrace buffer contains one line for each level of Lisp
+@c function execution currently going on.  At the beginning of this buffer
+@c is a message describing the reason that the debugger was invoked (such
+@c as the error message and associated data, if it was invoked due to an
+@c error).
 
 @vindex debugger-bury-or-kill
-  The backtrace buffer is read-only and uses a special major mode,
-Debugger mode, in which letters are defined as debugger commands.  The
-usual Emacs editing commands are available; thus, you can switch windows
-to examine the buffer that was being edited at the time of the error,
-switch buffers, visit files, or do any other sort of editing.  However,
-the debugger is a recursive editing level (@pxref{Recursive Editing})
-and it is wise to go back to the backtrace buffer and exit the debugger
-(with the @kbd{q} command) when you are finished with it.  Exiting
-the debugger gets out of the recursive edit and buries the backtrace
-buffer.  (You can customize what the @kbd{q} command does with the
-backtrace buffer by setting the variable @code{debugger-bury-or-kill}.
-For example, set it to @code{kill} if you prefer to kill the buffer
-rather than bury it.  Consult the variable's documentation for more
-possibilities.)
+  Буфер отладки находится в режиме только чтения и использует
+особый основно   режим, Режим Отладки (Debugger mode), в котором
+с кнопками символов (кнопки букв) вязаны команды отладчика.
+Обычные команды Emacs для редактирования доступны, поэтому
+можно выполнить переключение в буфер который редактировался до
+появления ошибки, переключиться на другие буферы, открыть
+и посмотреть файлы, или выполнить что-то другое. Но,
+при отладке выполняется рекурсивное редактирование (@pxref{Recursive Editing}),
+поэтому стоит возвращаться в буфер отладки и выходить из режима отладки
+(@kbd{q}) после того как отладка завершена. Выход из отладчика
+выполняет выход из рекурсивного редактирования и уничтожает
+окно отладки. (Можно настроить действие для команды @kbd{q} с
+буффером отладки с помощью переменной @code{debugger-bury-or-kill}.
+Например, установить в @code{kill} если нужно kill, а не bury (
+Прим. bury означает удалить окно, и поместить буффер в конец списка
+буфферов, kill подразумевает удаление и окна отображающего буфер
+и самого буфера). Другие возможности можно
+посмотреть в документации к переменной @code{debugger-bury-or-kill}.)
 
-  When the debugger has been entered, the @code{debug-on-error}
-variable is temporarily set according to
-@code{eval-expression-debug-on-error}.  If the latter variable is
-non-@code{nil}, @code{debug-on-error} will temporarily be set to
-@code{t}.  This means that any further errors that occur while doing a
-debugging session will (by default) trigger another backtrace.  If
-this is not what you want, you can either set
-@code{eval-expression-debug-on-error} to @code{nil}, or set
-@code{debug-on-error} to @code{nil} in @code{debugger-mode-hook}.
+@c The backtrace buffer is read-only and uses a special major mode,
+@c Debugger mode, in which letters are defined as debugger commands.  The
+@c usual Emacs editing commands are available; thus, you can switch windows
+@c to examine the buffer that was being edited at the time of the error,
+@c switch buffers, visit files, or do any other sort of editing.  However,
+@c the debugger is a recursive editing level (@pxref{Recursive Editing})
+@c and it is wise to go back to the backtrace buffer and exit the debugger
+@c (with the @kbd{q} command) when you are finished with it.  Exiting
+@c the debugger gets out of the recursive edit and buries the backtrace
+@c buffer.  (You can customize what the @kbd{q} command does with the
+@c backtrace buffer by setting the variable @code{debugger-bury-or-kill}.
+@c For example, set it to @code{kill} if you prefer to kill the buffer
+@c rather than bury it.  Consult the variable's documentation for more
+@c possibilities.)
+
+  При входе в отладчик переменная @code{debug-on-error}
+временно устанавливается в значение соответствующее
+@code{eval-expression-debug-on-error}. Если @code{eval-expression-debug-on-error}
+не-@code{nil}, @code{debug-on-error} будет выставлена в @code{t}.
+Что будет значить, что другие ошибки, возникающие при
+работе сессии отладки, будут переключаться на стек
+вызовов соответствующий этим ошибкам. Если
+этого не требуется нужно установить @code{eval-expression-debug-on-error}
+в @code{nil}, или устаноавить @code{debug-on-error} в @code{nil}
+с помощью @code{debugger-mode-hook}.
+
+@c   When the debugger has been entered, the @code{debug-on-error}
+@c variable is temporarily set according to
+@c @code{eval-expression-debug-on-error}.  If the latter variable is
+@c non-@code{nil}, @code{debug-on-error} will temporarily be set to
+@c @code{t}.  This means that any further errors that occur while doing a
+@c debugging session will (by default) trigger another backtrace.  If
+@c this is not what you want, you can either set
+@c @code{eval-expression-debug-on-error} to @code{nil}, or set
+@c @code{debug-on-error} to @code{nil} in @code{debugger-mode-hook}.
 
 @cindex current stack frame
-  The backtrace buffer shows you the functions that are executing and
-their argument values.  It also allows you to specify a stack frame by
-moving point to the line describing that frame.  (A stack frame is the
-place where the Lisp interpreter records information about a particular
-invocation of a function.)  The frame whose line point is on is
-considered the @dfn{current frame}.  Some of the debugger commands
-operate on the current frame.  If a line starts with a star, that means
-that exiting that frame will call the debugger again.  This is useful
-for examining the return value of a function.
+  Буфер с трассной вызова показывает выполненные функции и их аргументы.
+В нем возможно перейти в определенный фрейм стека, путем перемещения точки (курсора)
+на строку описывающую этот фрейм. (Фрейм стека место где
+интерпретатор Lisp хранит информацию о частичном выполнении функции.)
+Фрейм на строке которого находится точка(указатель) считается
+@dfn{текущим} (@dfn{current frame}). Некоторые команды отладчика
+выполняются с текущим фреймом. Если строка начинается со звездочки,
+выход из этого фрейма снова приведет к вызову отладчика. Такое поведение
+полезно для проверки возвращаемого функцией значения.
+ 
+@c   The backtrace buffer shows you the functions that are executing and
+@c their argument values.  It also allows you to specify a stack frame by
+@c moving point to the line describing that frame.  (A stack frame is the
+@c place where the Lisp interpreter records information about a particular
+@c invocation of a function.)  The frame whose line point is on is
+@c considered the @dfn{current frame}.  Some of the debugger commands
+@c operate on the current frame.  If a line starts with a star, that means
+@c that exiting that frame will call the debugger again.  This is useful
+@c for examining the return value of a function.
 
-  If a function name is underlined, that means the debugger knows
-where its source code is located.  You can click with the mouse on
-that name, or move to it and type @key{RET}, to visit the source code.
+  Если имя функции подчеркнуто, отладчик знает где находится ее исходный
+код. Можно кликнуть на имя мышкой, или перевести курсор на него и
+нажать @kbd{RET}, чтобы перейти к исходному коду.
 
-  The debugger itself must be run byte-compiled, since it makes
-assumptions about how many stack frames are used for the debugger
-itself.  These assumptions are false if the debugger is running
-interpreted.
+@c   If a function name is underlined, that means the debugger knows
+@c where its source code is located.  You can click with the mouse on
+@c that name, or move to it and type @key{RET}, to visit the source code.
+
+  Отладчик должен запускаться скомпилированным, так как
+в нем делается предположение о том, как много кадров стека
+используется для отладчика. Предположение будет не верным,
+если отладчик запущен интерпретируемым.
+
+@c   The debugger itself must be run byte-compiled, since it makes
+@c assumptions about how many stack frames are used for the debugger
+@c itself.  These assumptions are false if the debugger is running
+@c interpreted.
 
 @node Debugger Commands
-@subsection Debugger Commands
+@subsection Команды Отладки
+@c @subsection Debugger Commands
 @cindex debugger command list
 
-  The debugger buffer (in Debugger mode) provides special commands in
-addition to the usual Emacs commands.  The most important use of
-debugger commands is for stepping through code, so that you can see
-how control flows.  The debugger can step through the control
-structures of an interpreted function, but cannot do so in a
-byte-compiled function.  If you would like to step through a
-byte-compiled function, replace it with an interpreted definition of
-the same function.  (To do this, visit the source for the function and
-type @kbd{C-M-x} on its definition.)  You cannot use the Lisp debugger
-to step through a primitive function.
+  Буфер отладки (в Режиме Отладки) предоставляет спциальные
+команды дополнительно к обычным Emacs командам. Наиболее полезные
+из них используется для перемещения по коду, с помощью которых
+можно изучить поток выполнения. Отладчик может пройти через
+структуру интерпретируемой функции, но не может этого сделать для
+скомпилированной функции. Если нужно отладить скомпилированную
+функцию, нужно заменить ее на интерпретируемую версию. (Это можно
+сделать например открыв исходный код функции на нажав @code{C-M-x} (@code{eval-defun})).
+Отладчек не может пройти через примитивные функции.
+
+@c   The debugger buffer (in Debugger mode) provides special commands in
+@c addition to the usual Emacs commands.  The most important use of
+@c debugger commands is for stepping through code, so that you can see
+@c how control flows.  The debugger can step through the control
+@c structures of an interpreted function, but cannot do so in a
+@c byte-compiled function.  If you would like to step through a
+@c byte-compiled function, replace it with an interpreted definition of
+@c the same function.  (To do this, visit the source for the function and
+@c type @kbd{C-M-x} on its definition.)  You cannot use the Lisp debugger
+@c to step through a primitive function.
 
 @c FIXME: Add @findex for the following commands?  --xfq
-  Here is a list of Debugger mode commands:
+  Далее приводится список команда Отладчика:
+  @c Here is a list of Debugger mode commands:
 
 @table @kbd
 @item c
-Exit the debugger and continue execution.  This resumes execution of
-the program as if the debugger had never been entered (aside from any
-side-effects that you caused by changing variable values or data
-structures while inside the debugger).
+Выйти из отладчика и продолжить выполнение программы. Побочные
+эффекты такие как изменение переменных или структур данных сохранятся,
+но в остальном программа будет реботать как если бы отладчик не запускали.
+
+@c Exit the debugger and continue execution.  This resumes execution of
+@c the program as if the debugger had never been entered (aside from any
+@c side-effects that you caused by changing variable values or data
+@c structures while inside the debugger).
 
 @item d
-Continue execution, but enter the debugger the next time any Lisp
-function is called.  This allows you to step through the
-subexpressions of an expression, seeing what values the subexpressions
-compute, and what else they do.
+Продолжить выполнение, но запустить отладку при вызове любой
+Lisp функции. Команда позволяет проходить подвыражения выражения,
+и просматривать вычисляемые значения.
 
-The stack frame made for the function call which enters the debugger in
-this way will be flagged automatically so that the debugger will be
-called again when the frame is exited.  You can use the @kbd{u} command
-to cancel this flag.
+@c Continue execution, but enter the debugger the next time any Lisp
+@c function is called.  This allows you to step through the
+@c subexpressions of an expression, seeing what values the subexpressions
+@c compute, and what else they do.
+
+Кадр стека для вызова функции, в которой выполняется вход в отладчик
+будет автоматически помечен, и отладчик будет вызван повторно
+при выходе из фрейма. Можно использовать команду @kbd{u} для
+отмены флага.
+
+@c The stack frame made for the function call which enters the debugger in
+@c this way will be flagged automatically so that the debugger will be
+@c called again when the frame is exited.  You can use the @kbd{u} command
+@c to cancel this flag.
 
 @item b
+Помечает текущий кадр, после чего отладчик будет вызван при выходе
+из кадра. Кадры помеченные 
 Flag the current frame so that the debugger will be entered when the
 frame is exited.  Frames flagged in this way are marked with stars
 in the backtrace buffer.
 
 @item u
-Don't enter the debugger when the current frame is exited.  This
-cancels a @kbd{b} command on that frame.  The visible effect is to
-remove the star from the line in the backtrace buffer.
+Указывает не входить в отладчик при выходе из текущего фрейма.
+Выполняется отмена команды @kbd{b} для фрейма. Визуально выражается
+в том, что убирается звездочка с соответствующей строки буфера
+со стеком вызовов.
+
+@c Don't enter the debugger when the current frame is exited.  This
+@c cancels a @kbd{b} command on that frame.  The visible effect is to
+@c remove the star from the line in the backtrace buffer.
 
 @item j
-Flag the current frame like @kbd{b}.  Then continue execution like
-@kbd{c}, but temporarily disable break-on-entry for all functions that
-are set up to do so by @code{debug-on-entry}.
+Помечает текущий фрейм как @kbd{b}. После чего продолжает выполнение
+как @kbd{c}, но выполняется временной отключение действий break-on-entry
+(отладка при входе) для всех функций для которых это было установлено
+с использованием @code{debug-on-entry}.
+
+@c Flag the current frame like @kbd{b}.  Then continue execution like
+@c @kbd{c}, but temporarily disable break-on-entry for all functions that
+@c are set up to do so by @code{debug-on-entry}.
 
 @item e
-Read a Lisp expression in the minibuffer, evaluate it (with the
-relevant lexical environment, if applicable), and print the
-value in the echo area.  The debugger alters certain important
-variables, and the current buffer, as part of its operation; @kbd{e}
-temporarily restores their values from outside the debugger, so you can
-examine and change them.  This makes the debugger more transparent.  By
-contrast, @kbd{M-:} does nothing special in the debugger; it shows you
-the variable values within the debugger.
+Выполняется считывание Lisp выражения из мини-буфера, его
+вычисление (в соответствующем лексическом окружении), и печать
+результата в эхо области. Отладчик изменяет несколько
+важных переменных и текущий буфер, как часть своей работы;
+@kbd{e} временно восстанавливает значения вне отладчика,
+и поэтому в выражении можно использовать и изменять их значения.
+Такое поведение делает отладчик более прозрачным. В отличие от, @kbd{M-:}
+которая не делает никаких преобразований и показывает значения переменных
+внутри отладчика.
+
+@c Read a Lisp expression in the minibuffer, evaluate it (with the
+@c relevant lexical environment, if applicable), and print the
+@c value in the echo area.  The debugger alters certain important
+@c variables, and the current buffer, as part of its operation; @kbd{e}
+@c temporarily restores their values from outside the debugger, so you can
+@c examine and change them.  This makes the debugger more transparent.  By
+@c contrast, @kbd{M-:} does nothing special in the debugger; it shows you
+@c the variable values within the debugger.
 
 @item R
-Like @kbd{e}, but also save the result of evaluation in the
-buffer @file{*Debugger-record*}.
+Работает как @kbd{e}, но в дополнение сохраняет разультат
+вычисления в буфер @file{*Debugger-record*}.
+
+@c Like @kbd{e}, but also save the result of evaluation in the
+@c buffer @file{*Debugger-record*}.
 
 @item q
-Terminate the program being debugged; return to top-level Emacs
-command execution.
+Останавливает отлаживаемую программу; выполняет возврат
+в top-level (верхний уровень) выполнения команд.
 
-If the debugger was entered due to a @kbd{C-g} but you really want
-to quit, and not debug, use the @kbd{q} command.
+@c Terminate the program being debugged; return to top-level Emacs
+@c command execution.
+
+Если вход в отладчик был выполнен в результате @kbd{C-g},
+но в действительности нужно выполнить выход, а не отладку
+можно просто использовать @kbd{q}.
+
+@c If the debugger was entered due to a @kbd{C-g} but you really want
+@c to quit, and not debug, use the @kbd{q} command.
 
 @item r
-Return a value from the debugger.  The value is computed by reading an
-expression with the minibuffer and evaluating it.
+Возвращает значение из отладчика. Вычисляется значение
+запрашиваемое с помощью мини-буфера.
 
-The @kbd{r} command is useful when the debugger was invoked due to exit
-from a Lisp call frame (as requested with @kbd{b} or by entering the
-frame with @kbd{d}); then the value specified in the @kbd{r} command is
-used as the value of that frame.  It is also useful if you call
-@code{debug} and use its return value.  Otherwise, @kbd{r} has the same
-effect as @kbd{c}, and the specified return value does not matter.
+@c Return a value from the debugger.  The value is computed by reading an
+@c expression with the minibuffer and evaluating it.
 
-You can't use @kbd{r} when the debugger was entered due to an error.
+Команда @kbd{r} полезна когда отладчик вызывается в результате выхода
+из фрейма Lisp вызова (в результате использования @kbd{b} или @kbd{d});
+тогда значение заданное с исползованием @kbd{r} будет использовано как значение
+этого фрейма. А так же полезно если вызван @code{debug} и результат
+команды используется как возвращаемое значение. В противном случае,
+@kbd{r} аналогичен @kbd{c} и возвращаемое значение по умолчанию не используется.
+
+@c The @kbd{r} command is useful when the debugger was invoked due to exit
+@c from a Lisp call frame (as requested with @kbd{b} or by entering the
+@c frame with @kbd{d}); then the value specified in the @kbd{r} command is
+@c used as the value of that frame.  It is also useful if you call
+@c @code{debug} and use its return value.  Otherwise, @kbd{r} has the same
+@c effect as @kbd{c}, and the specified return value does not matter.
+
+@kbd{r} нельзя использовать если вход в отладчик выполнен из-за
+ошибки.
+@c You can't use @kbd{r} when the debugger was entered due to an error.
 
 @item l
-Display a list of functions that will invoke the debugger when called.
-This is a list of functions that are set to break on entry by means of
-@code{debug-on-entry}.
+Отобразит список функций, вызов которых приведет к вызову отладчика.
+Это список функций для которых установлен останов при входе
+в функцмю в том же смысле, что и у @code{debug-on-entry}.
+
+@c Display a list of functions that will invoke the debugger when called.
+@c This is a list of functions that are set to break on entry by means of
+@c @code{debug-on-entry}.
 
 @item v
-Toggle the display of local variables of the current stack frame.
+Вклюючает-выключает режим отображения локальных переменных
+для текущего фрейма стека.
+@c Toggle the display of local variables of the current stack frame.
 @end table
 
 @node Invoking the Debugger
-@subsection Invoking the Debugger
+@subsection Вызов Отлачика
+@c @subsection Invoking the Debugger
 @cindex invoking lisp debugger
 
-  Here we describe in full detail the function @code{debug} that is used
-to invoke the debugger.
+  В данном разделе дается полное описание функции @code{debug} которая
+используется для запуска отладчика.
+
+@c   Here we describe in full detail the function @code{debug} that is used
+@c to invoke the debugger.
 
 @deffn Command debug &rest debugger-args
-This function enters the debugger.  It switches buffers to a buffer
-named @file{*Backtrace*} (or @file{*Backtrace*<2>} if it is the second
-recursive entry to the debugger, etc.), and fills it with information
-about the stack of Lisp function calls.  It then enters a recursive
-edit, showing the backtrace buffer in Debugger mode.
+Функция выполняет вход в отладчик. Функция выполняет переключение
+буфера на @file{*Backtrace*} (или @file{*Backtarace*<2>} если это
+второй рекурсивный вход в отладчик и так далее.), и выводит в него информацию
+о стеке вызово Lisp функций. Затем включается рекурсивное редактирование,
+отображающее стек вызовов в Debugger(Отлаки) режиме.
 
-The Debugger mode @kbd{c}, @kbd{d}, @kbd{j}, and @kbd{r} commands exit
-the recursive edit; then @code{debug} switches back to the previous
-buffer and returns to whatever called @code{debug}.  This is the only
-way the function @code{debug} can return to its caller.
+@c This function enters the debugger.  It switches buffers to a buffer
+@c named @file{*Backtrace*} (or @file{*Backtrace*<2>} if it is the second
+@c recursive entry to the debugger, etc.), and fills it with information
+@c about the stack of Lisp function calls.  It then enters a recursive
+@c edit, showing the backtrace buffer in Debugger mode.
 
-The use of the @var{debugger-args} is that @code{debug} displays the
-rest of its arguments at the top of the @file{*Backtrace*} buffer, so
-that the user can see them.  Except as described below, this is the
-@emph{only} way these arguments are used.
+Команды @kbd{c}, @kbd{d}, @kbd{j} и @kbd{r} Debugger режима выходят из
+рекурсивного редактирования; после чего @code{debug} переключается на предыдущий
+буфер и возвращается туда где был вызван @code{debug}. Это единственный
+способ как функция @code{debug} может вернуться в вызвавшую
+ее функцию.
 
-However, certain values for first argument to @code{debug} have a
-special significance.  (Normally, these values are used only by the
-internals of Emacs, and not by programmers calling @code{debug}.)  Here
-is a table of these special values:
+@c The Debugger mode @kbd{c}, @kbd{d}, @kbd{j}, and @kbd{r} commands exit
+@c the recursive edit; then @code{debug} switches back to the previous
+@c buffer and returns to whatever called @code{debug}.  This is the only
+@c way the function @code{debug} can return to its caller.
+
+Использование дополнительных аргументов @var{debugger-args}, приведет
+к тому тому, что они будут отображаться вверху буфера @file{*Backtrace*},
+и пользователь их сможет видеть. Кроме описанного ниже исключения,
+это @emph{единственный} способ использования этих аргументов.
+
+@c The use of the @var{debugger-args} is that @code{debug} displays the
+@c rest of its arguments at the top of the @file{*Backtrace*} buffer, so
+@c that the user can see them.  Except as described below, this is the
+@c @emph{only} way these arguments are used.
+
+Но, некоторые значения первого аргумента @code{debug} имеют
+особое значение. (Обычно эти значние используются как внутренние,
+самим Emacs и не используются программистами при вызове
+@code{debug}.) Ниже приведена таблица специальных значений:
+
+@c However, certain values for first argument to @code{debug} have a
+@c special significance.  (Normally, these values are used only by the
+@c internals of Emacs, and not by programmers calling @code{debug}.)  Here
+@c is a table of these special values:
 
 @table @code
 @item lambda
 @cindex @code{lambda} in debug
-A first argument of @code{lambda} means @code{debug} was called
-because of entry to a function when @code{debug-on-next-call} was
-non-@code{nil}.  The debugger displays @samp{Debugger
-entered--entering a function:} as a line of text at the top of the
-buffer.
+Первый аргумент @code{lambda} означает, что @code{debug} был вызван в
+результате входа в функцию, когда @code{debug-on-next-call} был
+не-@code{nil}. Отладчик отображает в верхней строке буфера
+@samp{Debugger enetered--entering a function:}.
+
+@c A first argument of @code{lambda} means @code{debug} was called
+@c because of entry to a function when @code{debug-on-next-call} was
+@c non-@code{nil}.  The debugger displays @samp{Debugger
+@c entered--entering a function:} as a line of text at the top of the
+@c buffer.
 
 @item debug
-@code{debug} as first argument means @code{debug} was called because
-of entry to a function that was set to debug on entry.  The debugger
-displays the string @samp{Debugger entered--entering a function:},
-just as in the @code{lambda} case.  It also marks the stack frame for
-that function so that it will invoke the debugger when exited.
+@code{debug} в качестве первого аргумента означает, что @code{debug}
+был вызван через функцию для которой было задано включение отладчика
+при входе. В верхней строке отладчика отображается строка
+@samp{Debugger entered--entering a function:}, как и для случая
+@code{lambda}. При этом помечается фрейм стека этой функции, в
+результате чего будет вызван отладчик при выходе.
+
+@c @code{debug} as first argument means @code{debug} was called because
+@c of entry to a function that was set to debug on entry.  The debugger
+@c displays the string @samp{Debugger entered--entering a function:},
+@c just as in the @code{lambda} case.  It also marks the stack frame for
+@c that function so that it will invoke the debugger when exited.
 
 @item t
-When the first argument is @code{t}, this indicates a call to
-@code{debug} due to evaluation of a function call form when
-@code{debug-on-next-call} is non-@code{nil}.  The debugger displays
-@samp{Debugger entered--beginning evaluation of function call form:}
-as the top line in the buffer.
+Если первый аргумент t, вход в отладчек выполнен в результате
+вычисления функции при не-@code{nil} значении @code{debug-on-next-call}.
+Верхняя строка отладчика при этом отображает @samp{Debugger entered--beginning evaluation
+of function call form:}.
+
+@c When the first argument is @code{t}, this indicates a call to
+@c @code{debug} due to evaluation of a function call form when
+@c @code{debug-on-next-call} is non-@code{nil}.  The debugger displays
+@c @samp{Debugger entered--beginning evaluation of function call form:}
+@c as the top line in the buffer.
 
 @item exit
-When the first argument is @code{exit}, it indicates the exit of a
-stack frame previously marked to invoke the debugger on exit.  The
-second argument given to @code{debug} in this case is the value being
-returned from the frame.  The debugger displays @samp{Debugger
-entered--returning value:} in the top line of the buffer, followed by
-the value being returned.
+Когда первый аргумент @code{exit}, вход в отладчик произошел в результате
+выхода из фрейма помеченного для запуска отладчика при выходе.
+Второй аргумент @code{debug} в этом случае значение возвращенное фреймом.
+Верхняя строка отладчика при этом отображает @samp{Debugger entered--returning
+value:} и возвращенное значение.
+
+@c When the first argument is @code{exit}, it indicates the exit of a
+@c stack frame previously marked to invoke the debugger on exit.  The
+@c second argument given to @code{debug} in this case is the value being
+@c returned from the frame.  The debugger displays @samp{Debugger
+@c entered--returning value:} in the top line of the buffer, followed by
+@c the value being returned.
 
 @item error
 @cindex @code{error} in debug
-When the first argument is @code{error}, the debugger indicates that
-it is being entered because an error or @code{quit} was signaled and
-not handled, by displaying @samp{Debugger entered--Lisp error:}
-followed by the error signaled and any arguments to @code{signal}.
-For example,
+Когда первый аргумент @code{error} значит вход в отладчик выполнен
+из-за ошибки или не обработанного сигнала @code{quit}. Верхняя строка
+отображает @samp{Debugger entered--Lisp error:} и ошибка и параметры
+переданные в @code{signal}. Например:
+
+@c When the first argument is @code{error}, the debugger indicates that
+@c it is being entered because an error or @code{quit} was signaled and
+@c not handled, by displaying @samp{Debugger entered--Lisp error:}
+@c followed by the error signaled and any arguments to @code{signal}.
+@c For example,
 
 @example
 @group
@@ -547,55 +947,91 @@ Debugger entered--Lisp error: (arith-error)
 @end group
 @end example
 
-If an error was signaled, presumably the variable
-@code{debug-on-error} is non-@code{nil}.  If @code{quit} was signaled,
-then presumably the variable @code{debug-on-quit} is non-@code{nil}.
+Если была ошибка, предположительно переменная
+@code{debug-on-error} не-@code{nil}. Если был сигнал
+@code{quit} предположительно переменная @code{debug-on-quit}
+не-@code{nil}.
+
+@c If an error was signaled, presumably the variable
+@c @code{debug-on-error} is non-@code{nil}.  If @code{quit} was signaled,
+@c then presumably the variable @code{debug-on-quit} is non-@code{nil}.
 
 @item nil
-Use @code{nil} as the first of the @var{debugger-args} when you want
-to enter the debugger explicitly.  The rest of the @var{debugger-args}
-are printed on the top line of the buffer.  You can use this feature to
-display messages---for example, to remind yourself of the conditions
-under which @code{debug} is called.
+Использование @code{nil} в каствер первого аргумент, означает
+явный вход в отладчик. Остальные @var{debugger-args} печаются в
+верхней строке буфера отладчика. Эти переменые можно использовать
+для отображения сообщения--например, в качестве собственной напоминалки
+усливий при которых потребовалось вызвать отладчик.
+
+@c Use @code{nil} as the first of the @var{debugger-args} when you want
+@c to enter the debugger explicitly.  The rest of the @var{debugger-args}
+@c are printed on the top line of the buffer.  You can use this feature to
+@c display messages---for example, to remind yourself of the conditions
+@c under which @code{debug} is called.
 @end table
 @end deffn
 
 @node Internals of Debugger
-@subsection Internals of the Debugger
+@subsection Внутреннее Устройство Отладчика
+@c @subsection Internals of the Debugger
 
-  This section describes functions and variables used internally by the
-debugger.
+  Данный раздел описывает функции и переменные, используемые внутри отладчика.
+@c   This section describes functions and variables used internally by the
+@c debugger.
 
 @defvar debugger
-The value of this variable is the function to call to invoke the
-debugger.  Its value must be a function of any number of arguments, or,
-more typically, the name of a function.  This function should invoke
-some kind of debugger.  The default value of the variable is
-@code{debug}.
+Значением данной переменной является функция для вызова отладчика.
+Значением должна быть функция принимающая произвольное количество аргументов,
+или, что более типично, имя функции. Данная функция должна вызывать
+отладчик. Значение по умолчанию @code{debug}.
 
-The first argument that Lisp hands to the function indicates why it
-was called.  The convention for arguments is detailed in the description
-of @code{debug} (@pxref{Invoking the Debugger}).
+@c The value of this variable is the function to call to invoke the
+@c debugger.  Its value must be a function of any number of arguments, or,
+@c more typically, the name of a function.  This function should invoke
+@c some kind of debugger.  The default value of the variable is
+@c @code{debug}.
+
+Первый аргумент, который передает Lisp указывает на причину вызова данной
+функции. Соглашение по значениям аргументов детально рассматривается
+в описании функции @code{debug} (@pxref{Invoking The Debugger}).
+
+@c The first argument that Lisp hands to the function indicates why it
+@c was called.  The convention for arguments is detailed in the description
+@c of @code{debug} (@pxref{Invoking the Debugger}).
 @end defvar
 
 @deffn Command backtrace
 @cindex run time stack
 @cindex call stack
-This function prints a trace of Lisp function calls currently active.
-This is the function used by @code{debug} to fill up the
-@file{*Backtrace*} buffer.  It is written in C, since it must have access
-to the stack to determine which function calls are active.  The return
-value is always @code{nil}.
+Функция перчатает трасу вызовов Lisp функций. Функция используется
+@code{debug} для заполнения буфера @file{*Backtrace*}. Функция написана на
+C, так как она должна иметь доступ к стеку для определения
+того какие вызова активны на данный момент. Возвращаемое значение
+всегда @code{nil}.
 
-In the following example, a Lisp expression calls @code{backtrace}
-explicitly.  This prints the backtrace to the stream
-@code{standard-output}, which, in this case, is the buffer
-@samp{backtrace-output}.
+@c This function prints a trace of Lisp function calls currently active.
+@c This is the function used by @code{debug} to fill up the
+@c @file{*Backtrace*} buffer.  It is written in C, since it must have access
+@c to the stack to determine which function calls are active.  The return
+@c value is always @code{nil}.
 
-Each line of the backtrace represents one function call.  The line shows
-the values of the function's arguments if they are all known; if they
-are still being computed, the line says so.  The arguments of special
-forms are elided.
+В следующем примере, @code{backtrace} вызывается явно. В результате
+стек печатается в поток @code{stardad-output}, который, в данном случае
+является @samp{backtrace-output}.
+
+@c In the following example, a Lisp expression calls @code{backtrace}
+@c explicitly.  This prints the backtrace to the stream
+@c @code{standard-output}, which, in this case, is the buffer
+@c @samp{backtrace-output}.
+
+Каждая строка стека, представляет один вызов функции. Если аргументы вызова
+известны они отображаются строке вызова функции, либо сообщается о том,
+что они еще вычисляются. Для специальных форм аргументы опускаются.
+
+@c Each line of the backtrace represents one function call.  The line shows
+@c the values of the function's arguments if they are all known; if they
+@c are still being computed, the line says so.  The arguments of special
+@c forms are elided.
 
 @smallexample
 @group
@@ -634,250 +1070,445 @@ forms are elided.
 @cindex @code{eval}, and debugging
 @cindex @code{apply}, and debugging
 @cindex @code{funcall}, and debugging
-If this variable is non-@code{nil}, it says to call the debugger before
-the next @code{eval}, @code{apply} or @code{funcall}.  Entering the
-debugger sets @code{debug-on-next-call} to @code{nil}.
+Если переменная не-@code{nil}, отладчик будет вызван перед выполненением
+одного из следующих вызовов @code{eval}, @code{apply}, @code{funcall}.
+Вход в отладчик устанавливает @code{debug-on-next-call} в @code{nil}.
 
-The @kbd{d} command in the debugger works by setting this variable.
+@c If this variable is non-@code{nil}, it says to call the debugger before
+@c the next @code{eval}, @code{apply} or @code{funcall}.  Entering the
+@c debugger sets @code{debug-on-next-call} to @code{nil}.
+
+В отладчике @kbd{d} устанавливает эту переменную.
+@c The @kbd{d} command in the debugger works by setting this variable.
 @end defvar
 
 @defun backtrace-debug level flag
-This function sets the debug-on-exit flag of the stack frame @var{level}
-levels down the stack, giving it the value @var{flag}.  If @var{flag} is
-non-@code{nil}, this will cause the debugger to be entered when that
-frame later exits.  Even a nonlocal exit through that frame will enter
-the debugger.
+Функция устанавливает флаг debug-on-exit в значение @var{flag}
+для стек фрейма уровня @var{level} вних по стеку. Если @var{flag}
+не-@code{nil}, будет выпонен вход в отладчик при выходе из фрейма,
+даже в случае не локального выхода (через этот кадр).
 
-This function is used only by the debugger.
+@c This function sets the debug-on-exit flag of the stack frame @var{level}
+@c levels down the stack, giving it the value @var{flag}.  If @var{flag} is
+@c non-@code{nil}, this will cause the debugger to be entered when that
+@c frame later exits.  Even a nonlocal exit through that frame will enter
+@c the debugger.
+
+Функция используется только отладчиком.
+@c This function is used only by the debugger.
 @end defun
 
 @defvar command-debug-status
-This variable records the debugging status of the current interactive
-command.  Each time a command is called interactively, this variable is
-bound to @code{nil}.  The debugger can set this variable to leave
-information for future debugger invocations during the same command
-invocation.
+Переменная хранит статус текущей интерактивной команды. Каждый раз
+при интерактивном выозове команды, переменная устанавливается в @code{nil}.
+Отладчик может записать в эту переменную дополнительную информацию
+для дальнейшего использования в рамках выполнения одной команды. 
 
-The advantage of using this variable rather than an ordinary global
-variable is that the data will never carry over to a subsequent command
-invocation.
+@c This variable records the debugging status of the current interactive
+@c command.  Each time a command is called interactively, this variable is
+@c bound to @code{nil}.  The debugger can set this variable to leave
+@c information for future debugger invocations during the same command
+@c invocation.
 
-This variable is obsolete and will be removed in future versions.
+В отличие от обычной глобальной переменной данный в этой переменной
+не будут перемесены на выполнение следующих команд.
+
+@c The advantage of using this variable rather than an ordinary global
+@c variable is that the data will never carry over to a subsequent command
+@c invocation.
+
+Данная переменная устаревшая и в дальнейшем будет удалена.
+@c This variable is obsolete and will be removed in future versions.
 @end defvar
 
 @defun backtrace-frame frame-number
-The function @code{backtrace-frame} is intended for use in Lisp
-debuggers.  It returns information about what computation is happening
-in the stack frame @var{frame-number} levels down.
+Функция @code{backtrace-frame} используется в отладчике для показа
+вычисления которое выполняется во фрейме уровня @var{frame-number}
+(считая вниз).
 
-If that frame has not evaluated the arguments yet, or is a special
-form, the value is @code{(nil @var{function} @var{arg-forms}@dots{})}.
+@c The function @code{backtrace-frame} is intended for use in Lisp
+@c debuggers.  It returns information about what computation is happening
+@c in the stack frame @var{frame-number} levels down.
 
-If that frame has evaluated its arguments and called its function
-already, the return value is @code{(t @var{function}
-@var{arg-values}@dots{})}.
+Если аргументы для этого фрейма еще не вычислены, или фрейм
+соответствует специальной форме, значением функции будет
+@code{(nil @var{function} @var{arg-forms}@dots{})}.
 
-In the return value, @var{function} is whatever was supplied as the
-@sc{car} of the evaluated list, or a @code{lambda} expression in the
-case of a macro call.  If the function has a @code{&rest} argument, that
-is represented as the tail of the list @var{arg-values}.
+@c If that frame has not evaluated the arguments yet, or is a special
+@c form, the value is @code{(nil @var{function} @var{arg-forms}@dots{})}.
 
-If @var{frame-number} is out of range, @code{backtrace-frame} returns
+Если аргументы вычислены и функция вызвана значением будет
+@code{(t @var{function} @var{arg-values}@dots{})}.
+
+@c If that frame has evaluated its arguments and called its function
+@c already, the return value is @code{(t @var{function}
+@c @var{arg-values}@dots{})}.
+
+В результате, @var{function} соответствует @sc{car} списка вызова для фрейма
+или @code{lambda} выражение в случае макро вызова. Если функция имеет
+@code{&rest} аргументы, тогда они представлены в хвосте списка @var{arg-values}.
+
+@c In the return value, @var{function} is whatever was supplied as the
+@c @sc{car} of the evaluated list, or a @code{lambda} expression in the
+@c case of a macro call.  If the function has a @code{&rest} argument, that
+@c is represented as the tail of the list @var{arg-values}.
+
+Если @var{frame-number} вне диапазона стека, @code{backtrace-frame} возвращает
 @code{nil}.
+
+@c If @var{frame-number} is out of range, @code{backtrace-frame} returns
+@c @code{nil}.
 @end defun
 
 @include edebug.texi
 
 @node Syntax Errors
-@section Debugging Invalid Lisp Syntax
+@section Отладка Lisp Кода с Ошибкой в Синтаксисе
+@c @section Debugging Invalid Lisp Syntax
 @cindex debugging invalid Lisp syntax
 
-  The Lisp reader reports invalid syntax, but cannot say where the real
-problem is.  For example, the error @samp{End of file during parsing} in
-evaluating an expression indicates an excess of open parentheses (or
-square brackets).  The reader detects this imbalance at the end of the
-file, but it cannot figure out where the close parenthesis should have
-been.  Likewise, @samp{Invalid read syntax: ")"} indicates an excess close
-parenthesis or missing open parenthesis, but does not say where the
-missing parenthesis belongs.  How, then, to find what to change?
+  Lisp считыватель (reader) может сообщить об ошибке синтаксиса, но
+не может точно сказать где она. Например в случае ошибки @samp{End of file during parsing}
+при вычислении выражения обнаруживается, недостаточное количество закрывающих скобок
+(круглых или фигурных). Считыватель обнаруживает это в конце файла, но при этом
+он не может определить где именно не хватает закрывающей скобки. Аналогично,
+@samp{Invalid read syntax:  ")"} указывает на избыточное количество закрывающих скобок
+или недостаток открывающих, но не может определить где должны находится
+недостающие скобки. Возникает вопрос, как определить место, которое нужно исправить.
 
-  If the problem is not simply an imbalance of parentheses, a useful
-technique is to try @kbd{C-M-e} at the beginning of each defun, and see
-if it goes to the place where that defun appears to end.  If it does
-not, there is a problem in that defun.
+@c   The Lisp reader reports invalid syntax, but cannot say where the real
+@c problem is.  For example, the error @samp{End of file during parsing} in
+@c evaluating an expression indicates an excess of open parentheses (or
+@c square brackets).  The reader detects this imbalance at the end of the
+@c file, but it cannot figure out where the close parenthesis should have
+@c been.  Likewise, @samp{Invalid read syntax: ")"} indicates an excess close
+@c parenthesis or missing open parenthesis, but does not say where the
+@c missing parenthesis belongs.  How, then, to find what to change?
+
+  Если проблема не просто в несбалансированности скобок, полезным
+будет прем выполнить @kbd{C-M-e} в начале каждого defun, и посмотреть
+соответсвует ли место куда переменстился курсор ожидаемому месту завершения
+функции. Если нет, то проблема в текущей defun.
+
+@c   If the problem is not simply an imbalance of parentheses, a useful
+@c technique is to try @kbd{C-M-e} at the beginning of each defun, and see
+@c if it goes to the place where that defun appears to end.  If it does
+@c not, there is a problem in that defun.
 
 @cindex unbalanced parentheses
 @cindex parenthesis mismatch, debugging
-  However, unmatched parentheses are the most common syntax errors in
-Lisp, and we can give further advice for those cases.  (In addition,
-just moving point through the code with Show Paren mode enabled might
-find the mismatch.)
+  Но, несоответствие скобок одна из наболее часто встречаемых ошибок
+в Lisp, ниже приводится несколько советом для разных случаев.
+(Кроме того можно пройтись курсором по коду, с активным режимом
+Show Paren (показывать соответствующую скобку), чтобы найти не соответствие).
+
+@c   However, unmatched parentheses are the most common syntax errors in
+@c Lisp, and we can give further advice for those cases.  (In addition,
+@c just moving point through the code with Show Paren mode enabled might
+@c find the mismatch.)
 
 @menu
-* Excess Open::     How to find a spurious open paren or missing close.
-* Excess Close::    How to find a spurious close paren or missing open.
+* Excess Open:: Как найти лишнюю отркывающую или пропущенную закрывающую.
+* Excess Close:: Как найти лишнюю закрывающую или пропущенную открывающую.
 @end menu
 
+@c @menu
+@c * Excess Open::     How to find a spurious open paren or missing close.
+@c * Excess Close::    How to find a spurious close paren or missing open.
+@c @end menu
+
 @node Excess Open
-@subsection Excess Open Parentheses
+@subsection Лишние Открывающие Скобки
+@c @subsection Excess Open Parentheses
 @cindex excess open parentheses
 
-  The first step is to find the defun that is unbalanced.  If there is
-an excess open parenthesis, the way to do this is to go to the end of
-the file and type @kbd{C-u C-M-u}.  This will move you to the
-beginning of the first defun that is unbalanced.
+  Первым шагом нужно найти defun в котором не сбалансированы скобки.
+Для этого нужно переместить курсор в конец файла и нажать @kbd{C-u C-M-u},
+в результате курсор переместится на первую defun в которой скобки не сбалансированы.
 
-  The next step is to determine precisely what is wrong.  There is no
-way to be sure of this except by studying the program, but often the
-existing indentation is a clue to where the parentheses should have
-been.  The easiest way to use this clue is to reindent with @kbd{C-M-q}
-and see what moves.  @strong{But don't do this yet!}  Keep reading,
-first.
+@c   The first step is to find the defun that is unbalanced.  If there is
+@c an excess open parenthesis, the way to do this is to go to the end of
+@c the file and type @kbd{C-u C-M-u}.  This will move you to the
+@c beginning of the first defun that is unbalanced.
 
-  Before you do this, make sure the defun has enough close parentheses.
-Otherwise, @kbd{C-M-q} will get an error, or will reindent all the rest
-of the file until the end.  So move to the end of the defun and insert a
-close parenthesis there.  Don't use @kbd{C-M-e} to move there, since
-that too will fail to work until the defun is balanced.
+  Следующим шагом нужно точно опредделить, что не правильно. Для этого
+нет другого способа, кроме как изучить программу, при этом стоит обратить
+внимание на то, что места отступов, как правило являются и местами,
+где находятся скобки. Чтобы воспользоваться такой подсказкой, стоит
+обновить растановку оступов с помощью @kbd{C-M-q} и посмотреть,
+что изменилось. @strong{Но сначала, все таки прочитайте программу}.
 
-  Now you can go to the beginning of the defun and type @kbd{C-M-q}.
-Usually all the lines from a certain point to the end of the function
-will shift to the right.  There is probably a missing close parenthesis,
-or a superfluous open parenthesis, near that point.  (However, don't
-assume this is true; study the code to make sure.)  Once you have found
-the discrepancy, undo the @kbd{C-M-q} with @kbd{C-_}, since the old
-indentation is probably appropriate to the intended parentheses.
+@c   The next step is to determine precisely what is wrong.  There is no
+@c way to be sure of this except by studying the program, but often the
+@c existing indentation is a clue to where the parentheses should have
+@c been.  The easiest way to use this clue is to reindent with @kbd{C-M-q}
+@c and see what moves.  @strong{But don't do this yet!}  Keep reading,
+@c first.
 
-  After you think you have fixed the problem, use @kbd{C-M-q} again.  If
-the old indentation actually fit the intended nesting of parentheses,
-and you have put back those parentheses, @kbd{C-M-q} should not change
-anything.
+  Перед выполнением @kbd{C-M-q} убедитесь, что в defun достаточно
+закрывающих скобок, иначе возможна ошибка, или перерастановка отступов
+за defun. Поэтому стоит перейти в конец defun и добавить недостающее
+количество скобок. Для перехода в конец нельзя исползовать @kbd{C-M-e}
+так как она будет работать не корректно, пока закрывающих скобок недостаточно.
+
+@c   Before you do this, make sure the defun has enough close parentheses.
+@c Otherwise, @kbd{C-M-q} will get an error, or will reindent all the rest
+@c of the file until the end.  So move to the end of the defun and insert a
+@c close parenthesis there.  Don't use @kbd{C-M-e} to move there, since
+@c that too will fail to work until the defun is balanced.
+
+  После добавления скобок, нужно перейти в начало defun и
+вызвать @kbd{C-M-q}. Как правило при этом часть строк в конце
+функции сместится в право. В этом месте предположительно не хватает
+закрывающих скобок, или присутствуют лишние открывающие скобки рядом
+с этим местом. (Но это не всегда так, поэтому проверьте код.)
+После того как несоответствие найдено, нужно отменить @kbd{C-M-q} с помощью
+@kbd{C-_}, так как по идее старая растановка оступов должна соответствовать
+корректному коду.
+
+@c   Now you can go to the beginning of the defun and type @kbd{C-M-q}.
+@c Usually all the lines from a certain point to the end of the function
+@c will shift to the right.  There is probably a missing close parenthesis,
+@c or a superfluous open parenthesis, near that point.  (However, don't
+@c assume this is true; study the code to make sure.)  Once you have found
+@c the discrepancy, undo the @kbd{C-M-q} with @kbd{C-_}, since the old
+@c indentation is probably appropriate to the intended parentheses.
+
+  Когда будет решено, что проблема исправлена, стоит снова вызывать @kbd{C-M-q}.
+Если старая расстановка оступов соответствовала предполагаемой вложенности,
+и недостающие скобки были поставлены куда нужо, @kbd{C-M-q} не должно ничего изменить.
+
+@c   After you think you have fixed the problem, use @kbd{C-M-q} again.  If
+@c the old indentation actually fit the intended nesting of parentheses,
+@c and you have put back those parentheses, @kbd{C-M-q} should not change
+@c anything.
 
 @node Excess Close
-@subsection Excess Close Parentheses
+@subsection Лишние Закрывающие Скобки
+@c @subsection Excess Close Parentheses
 @cindex excess close parentheses
 
-  To deal with an excess close parenthesis, first go to the beginning
-of the file, then type @kbd{C-u -1 C-M-u} to find the end of the first
-unbalanced defun.
+  Аналогично открывающей скобке нужно сначала найти defun в которой нарушен
+баланс скобок, для этого нужно перейти в начало файла и нажать @kbd{C-u 1 C-M-u},
+в результате чего курсор переместится в конец первого defun с несбалансированным
+количеством скобок.
 
-  Then find the actual matching close parenthesis by typing @kbd{C-M-f}
-at the beginning of that defun.  This will leave you somewhere short of
-the place where the defun ought to end.  It is possible that you will
-find a spurious close parenthesis in that vicinity.
+@c   To deal with an excess close parenthesis, first go to the beginning
+@c of the file, then type @kbd{C-u -1 C-M-u} to find the end of the first
+@c unbalanced defun.
 
-  If you don't see a problem at that point, the next thing to do is to
-type @kbd{C-M-q} at the beginning of the defun.  A range of lines will
-probably shift left; if so, the missing open parenthesis or spurious
-close parenthesis is probably near the first of those lines.  (However,
-don't assume this is true; study the code to make sure.)  Once you have
-found the discrepancy, undo the @kbd{C-M-q} with @kbd{C-_}, since the
-old indentation is probably appropriate to the intended parentheses.
+  Затем нужно найти скобку соответствующую открывающей скобке defun
+введя @kbd{C-M-f} когда курсор находится на этой скобке. В результате
+курсор переместится на скобку где функция заканчивается в текущем коде.
+Вероятно получится найти лишнюю скобку в окрестности курсора.
 
-  After you think you have fixed the problem, use @kbd{C-M-q} again.  If
-the old indentation actually fits the intended nesting of parentheses,
-and you have put back those parentheses, @kbd{C-M-q} should not change
-anything.
+@c   Then find the actual matching close parenthesis by typing @kbd{C-M-f}
+@c at the beginning of that defun.  This will leave you somewhere short of
+@c the place where the defun ought to end.  It is possible that you will
+@c find a spurious close parenthesis in that vicinity.
+
+  Если проблемы не видно, нужно ввести @kbd{C-M-q} в начале defun.
+Часть строк в начале функции при этом вероятно сместится влево, если так,
+то вероятно недостающая открывающая скобка или лишняя закрывающая находится
+около начала смещенных строк. (Но это не всегда так, поэтому проверьте код.)
+Когда не соответствие найдено, нужно отменить обновление расстановки отступов
+@kbd{C-M-q} с помощью @kbd{C-_}, так как изначальная расстановка вероятно была правильной.
+
+@c   If you don't see a problem at that point, the next thing to do is to
+@c type @kbd{C-M-q} at the beginning of the defun.  A range of lines will
+@c probably shift left; if so, the missing open parenthesis or spurious
+@c close parenthesis is probably near the first of those lines.  (However,
+@c don't assume this is true; study the code to make sure.)  Once you have
+@c found the discrepancy, undo the @kbd{C-M-q} with @kbd{C-_}, since the
+@c old indentation is probably appropriate to the intended parentheses.
+
+  Когда будет решено, что проблема исправлена, нужно повторно выполнить
+@kbd{C-M-q}. Если старая расстановка оступов была верной, и растановка
+скобок исправлена корректно, в результате @kbd{C-M-q} ничего не изменится.
+
+@c   After you think you have fixed the problem, use @kbd{C-M-q} again.  If
+@c the old indentation actually fits the intended nesting of parentheses,
+@c and you have put back those parentheses, @kbd{C-M-q} should not change
+@c anything.
 
 @node Test Coverage
-@section Test Coverage
+@section Тестовое Покрытие
+@c @section Test Coverage
 @cindex coverage testing
 
 @findex testcover-start
 @findex testcover-mark-all
 @findex testcover-next-mark
-  You can do coverage testing for a file of Lisp code by loading the
-@code{testcover} library and using the command @kbd{M-x
-testcover-start @key{RET} @var{file} @key{RET}} to instrument the
-code.  Then test your code by calling it one or more times.  Then use
-the command @kbd{M-x testcover-mark-all} to display colored highlights
-on the code to show where coverage is insufficient.  The command
-@kbd{M-x testcover-next-mark} will move point forward to the next
-highlighted spot.
+  Можно выполнить тестирование с расчетом покрытия для файла с Lisp
+кодом. Для этого нужно загрузить библиотеку @code{testcover} и выполнить
+команду @kbd{M-x testcover-start @kbd{RET} @var{file} @kbd{RET}}.
+После этого нужно выполнить тестирование кода один или несколько раз.
+Выполнить команду @kbd{M-x testcover-mark-all}, чтобы выделить цветом
+код который не был покрыт при тестировании. Команда @kbd{M-x testcover-next-mark}
+переместит курсор на следующую часть выделенного кода.
 
-  Normally, a red highlight indicates the form was never completely
-evaluated; a brown highlight means it always evaluated to the same
-value (meaning there has been little testing of what is done with the
-result).  However, the red highlight is skipped for forms that can't
-possibly complete their evaluation, such as @code{error}.  The brown
-highlight is skipped for forms that are expected to always evaluate to
-the same value, such as @code{(setq x 14)}.
+@c   You can do coverage testing for a file of Lisp code by loading the
+@c @code{testcover} library and using the command @kbd{M-x
+@c testcover-start @key{RET} @var{file} @key{RET}} to instrument the
+@c code.  Then test your code by calling it one or more times.  Then use
+@c the command @kbd{M-x testcover-mark-all} to display colored highlights
+@c on the code to show where coverage is insufficient.  The command
+@c @kbd{M-x testcover-next-mark} will move point forward to the next
+@c highlighted spot.
 
-  For difficult cases, you can add do-nothing macros to your code to
-give advice to the test coverage tool.
+  Как правило, красным выделяются формы коотрые не были полностью вычислены,
+коричневывм формы, всегда возвращающие одно и тоже значение (подразумевая,
+что тестирования для возвращаемых результатов не достаточно). Но,
+красным не выделяются формы, для которых не возможно завершение вычисления,
+такие как @code{error}. Коричневая подстветка пропускается для форм, для
+которых предполагается всегда возвращать одно и тоже значение, таких
+как @code{(setq x 14)}.
+
+@c   Normally, a red highlight indicates the form was never completely
+@c evaluated; a brown highlight means it always evaluated to the same
+@c value (meaning there has been little testing of what is done with the
+@c result).  However, the red highlight is skipped for forms that can't
+@c possibly complete their evaluation, such as @code{error}.  The brown
+@c highlight is skipped for forms that are expected to always evaluate to
+@c the same value, such as @code{(setq x 14)}.
+
+  Для сложных случаев, можно добавить макрос do-nothing, чтобы дать
+подсказку утилите тестирования.
+
+@c   For difficult cases, you can add do-nothing macros to your code to
+@c give advice to the test coverage tool.
 
 @defmac 1value form
-Evaluate @var{form} and return its value, but inform coverage testing
-that @var{form}'s value should always be the same.
+Вычислить @var{form} и вернуть ее значение, но при этом утилите тестирования
+дается указание, что результат вычисления формы всегда одинаков.
+
+@c Evaluate @var{form} and return its value, but inform coverage testing
+@c that @var{form}'s value should always be the same.
 @end defmac
 
 @defmac noreturn form
-Evaluate @var{form}, informing coverage testing that @var{form} should
-never return.  If it ever does return, you get a run-time error.
+Макрос вычисляет @var{form}, указывая утилите тестирования, что @var{form}
+не завершается. Если форма завершится, будет ошибка выполнения.
+
+@c Evaluate @var{form}, informing coverage testing that @var{form} should
+@c never return.  If it ever does return, you get a run-time error.
 @end defmac
 
-  Edebug also has a coverage testing feature (@pxref{Coverage
-Testing}).  These features partly duplicate each other, and it would
-be cleaner to combine them.
+  Edebug тоже имеет возможность выполнять тестирование с покрытием
+(@pxref{Coverage Testing}). Данные возможности частично дублируют друг
+друга, и было бы более понятно если бы они были объединены.
+
+@c   Edebug also has a coverage testing feature (@pxref{Coverage
+@c Testing}).  These features partly duplicate each other, and it would
+@c be cleaner to combine them.
 
 
 @node Profiling
-@section Profiling
+@section Профилировка
+@c @section Profiling
 @cindex profiling
 @cindex profile
 @cindex measuring resource usage
 @cindex memory usage
 
-If your program is working correctly, but you want to make it run more
-quickly or efficiently, the first thing to do is @dfn{profile} your
-code so that you know how it is using resources.  If you find that one
-particular function is responsible for a significant portion of the
-runtime, you can start looking for ways to optimize that piece.
+Если программа работает правильно, но хочется ее сделать более
+быстрой и эффективной, в первую очередь нужно выполнить
+@dfn{профилировку} (@dfn{profile}), чтобы определить места
+кода которые наиболее активно используют ресурсы. Если будет найдена
+функция выполняющаяся большую часть времени программы, можно попытаться
+ее оптимизировать.
 
-Emacs has built-in support for this.  To begin profiling, type
-@kbd{M-x profiler-start}.  You can choose to profile by processor
-usage, memory usage, or both.  After doing some work, type
-@kbd{M-x profiler-report} to display a summary buffer for each
-resource that you chose to profile.  The names of the report buffers
-include the times at which the reports were generated, so you can
-generate another report later on without erasing previous results.
-When you have finished profiling, type @kbd{M-x profiler-stop} (there
-is a small overhead associated with profiling).
+@c If your program is working correctly, but you want to make it run more
+@c quickly or efficiently, the first thing to do is @dfn{profile} your
+@c code so that you know how it is using resources.  If you find that one
+@c particular function is responsible for a significant portion of the
+@c runtime, you can start looking for ways to optimize that piece.
 
-The profiler report buffer shows, on each line, a function that was
-called, followed by how much resource (processor or memory) it used in
-absolute and percentage times since profiling started.  If a given
-line has a @samp{+} symbol at the left-hand side, you can expand that
-line by typing @key{RET}, in order to see the function(s) called by
-the higher-level function.  Use a prefix argument (@key{C-u RET}) to
-see the whole call tree below a function.  Pressing @key{RET} again
-will collapse back to the original state.
+Emacs имеет встроенную поддержку для профилирования. Чтобы начать
+нужно ввести @kbd{M-x profiler-start}. Можно выбрать профилирование
+использования процессора, использования памяти или и то и другое.
+После выполнения Lisp кода, нужно ввести @kbd{M-x profiler-report},
+чтобы отобразить буферы с использованием каждого из запрошенных
+для профилировки ресурсов. Имена буферов с отчетами включают
+время в которое отчет был сгенерирован, поэтому позднее
+можно сгенерировать еще один отчет, не теряя предыдущих.
+Когда профилирование будет завершено, нужно ввести @kbd{M-x profiler-stop}
+(Так как при выполнении с профилирования есть неболшие накладные расходы).
 
-Press @kbd{j} or @kbd{mouse-2} to jump to the definition of a function.
-Press @kbd{d} to view a function's documentation.
-You can save a profile to a file using @kbd{C-x C-w}.
-You can compare two profiles using @kbd{=}.
+@c Emacs has built-in support for this.  To begin profiling, type
+@c @kbd{M-x profiler-start}.  You can choose to profile by processor
+@c usage, memory usage, or both.  After doing some work, type
+@c @kbd{M-x profiler-report} to display a summary buffer for each
+@c resource that you chose to profile.  The names of the report buffers
+@c include the times at which the reports were generated, so you can
+@c generate another report later on without erasing previous results.
+@c When you have finished profiling, type @kbd{M-x profiler-stop} (there
+@c is a small overhead associated with profiling).
+
+В бефере отчета профилирования, каждая строка содержит функцию
+которая вызывалась при выполнении и как много ресурса (процессорного времени или памяти)
+она использовала в абсолютных значениях и процентном соотношении с начала
+выполнения профилирования. Если строка имеет символ @samp{+} с левой стороны,
+данная строка может быть раскрыта нажатием @kbd{RET}, чтобы увидеть
+функции вызываемые функцией на строке. Использование префикса
+(@kbd{C-u RET}) позволяет увидеть все дерево вызовов начиная с функции на строке.
+Повторное нажатие @kbd{RET} приведет к сворачиванию дерева.
+
+@c The profiler report buffer shows, on each line, a function that was
+@c called, followed by how much resource (processor or memory) it used in
+@c absolute and percentage times since profiling started.  If a given
+@c line has a @samp{+} symbol at the left-hand side, you can expand that
+@c line by typing @key{RET}, in order to see the function(s) called by
+@c the higher-level function.  Use a prefix argument (@key{C-u RET}) to
+@c see the whole call tree below a function.  Pressing @key{RET} again
+@c will collapse back to the original state.
+
+Нажатие @kbd{j} или @kbd{mouse-2} позволяет выполнить переход
+на определение функции. Нажатие @kbd{d} покажет документацию по функции.
+Результат профилирования можно сохранить в файл используя
+@kbd{C-x C-w}.
+Два результата профилирования можно сравнить используя @kbd{=}.
+
+@c Press @kbd{j} or @kbd{mouse-2} to jump to the definition of a function.
+@c Press @kbd{d} to view a function's documentation.
+@c You can save a profile to a file using @kbd{C-x C-w}.
+@c You can compare two profiles using @kbd{=}.
 
 @c FIXME reversed calltree?
 
 @cindex @file{elp.el}
 @cindex timing programs
-The @file{elp} library offers an alternative approach.  See the file
-@file{elp.el} for instructions.
+Библиотека @file{elp} предоставляет альтернативный вариант. Подробности
+можно найти в файле @file{elp.el}.
+
+@c The @file{elp} library offers an alternative approach.  See the file
+@c @file{elp.el} for instructions.
 
 @cindex @file{benchmark.el}
 @cindex benchmarking
-You can check the speed of individual Emacs Lisp forms using the
-@file{benchmark} library.  See the functions @code{benchmark-run} and
-@code{benchmark-run-compiled} in @file{benchmark.el}.
+Проверить скорость выполнения отдельной формы Emacs Lisp можно с помощью
+библиотеки @file{benchmark}. Стоит посмотреть функции @code{benchmark-run} и
+@code{benchmark-run-compiled} в @file{benchmark.el}.
+
+@c You can check the speed of individual Emacs Lisp forms using the
+@c @file{benchmark} library.  See the functions @code{benchmark-run} and
+@c @code{benchmark-run-compiled} in @file{benchmark.el}.
 
 @c Not worth putting in the printed manual.
 @ifnottex
 @cindex --enable-profiling option of configure
-To profile Emacs at the level of its C code, you can build it using the
-@option{--enable-profiling} option of @command{configure}.  When Emacs
-exits, it generates a file @file{gmon.out} that you can examine using
-the @command{gprof} utility.  This feature is mainly useful for
-debugging Emacs.  It actually stops the Lisp-level @kbd{M-x
-profiler-@dots{}} commands described above from working.
+Чтобы выполнить профилирование на уровне C кода, нужно чтобы он был собран
+с опцией @option{--enable-profiling} при выполнении @command{configure}.
+При выходе из Emacs будет сгенерирован файл @file{gmon.out} который можно узучить
+используя утилиту @command{gprof}. Данная возможность преимущественно полезна
+для отладки Emacs. В реальности при этом останавливаются
+команды @kbd{M-x profiler-@dots{}} описанные выше, используемые
+для профилирования кода Lisp уровня.
+
+@c To profile Emacs at the level of its C code, you can build it using the
+@c @option{--enable-profiling} option of @command{configure}.  When Emacs
+@c exits, it generates a file @file{gmon.out} that you can examine using
+@c the @command{gprof} utility.  This feature is mainly useful for
+@c debugging Emacs.  It actually stops the Lisp-level @kbd{M-x
+@c profiler-@dots{}} commands described above from working.
 @end ifnottex
