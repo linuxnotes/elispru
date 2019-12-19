@@ -3,7 +3,7 @@
 @c Copyright (C) 1990-1995, 1998-1999, 2001-2017 Free Software
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
-@node Minibuffer
+@node Minibuffers
 @chapter Мини-буферы
 @c @chapter Minibuffers
 @cindex arguments, reading
@@ -168,7 +168,7 @@ the указывает на конкретный мини-буфер котор�
 которая вызывает мини-буфер в дополнение задает локальные клавиатурные
 сочетания. По настройке локальных клавиатурных сочетаний
 отличных от автодополнения @xref{Text from Minibuffer}.
-Настройку клавиатурных сочетания автодополнения @xref{Completion Commands.
+Настройку клавиатурных сочетания автодополнения @xref{Completion Commands}.
 
 @c   Like other buffers, a minibuffer uses a local keymap
 @c (@pxref{Keymaps}) to specify special key bindings.  The function that
@@ -460,7 +460,7 @@ Lisp функции. Как правило получение данных из 
 @c @code{read-regexp} then appends a few potentially useful candidates for
 @c input.  These are:
 
-@imeize @minux
+@itemize @minux
 @item
 Слово или символ под курсором.
 @item
@@ -1054,7 +1054,7 @@ Please edit: (forward-word 1)@point{}
 @c @var{initial} argument.  This is when you specify a cons cell for the
 @c @var{history} argument.  @xref{Minibuffer History}.
 
-@var{initial} может быть cons ячейкой в форме @code{(@var{string} . @var{position}).
+@var{initial} может быть cons ячейкой в форме @code{(@var{string} . @var{position})}.
 Что будет значить, что в мини-буфере будет начальное значение
 @var{string} и курсор будет в позиции @var{position} (По умолчанию к конце строки).
 

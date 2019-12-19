@@ -1,4 +1,8 @@
-\input texinfo  @c -*-texinfo-*-
+\def\fontprefix{ycm}
+@c \input texinfo  @c -*-texinfo-*-
+@documentencoding UTF-8
+@documentlanguage ru
+
 @c %**start of header
 @setfilename ../../info/elisp.info
 

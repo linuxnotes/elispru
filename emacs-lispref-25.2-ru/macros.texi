@@ -357,7 +357,7 @@
 @c practice, all Lisp macros have names, and they are almost always
 @c defined with the @code{defmacro} macro.
 
-@Defmac defmacro name args [doc] [declare] body@dots{}
+@defmac defmacro name args [doc] [declare] body@dots{}
 @code{defmacro} определяет символ @var{name} (которые не нужно заковычивать)
 как макрос, который выглядит как:
 
