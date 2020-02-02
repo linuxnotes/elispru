@@ -708,7 +708,7 @@ buffer-auto-save-file-name
 @deffn Command auto-save-mode arg
 Команда режима авто-сохранения, дополнительного режима буфера. Когда
 Auto Save режим активен, авто-сохранение активно в буфере. Вызов выполняется
-так же как любой другой команды дополнительного режима (@pxref{Minor MOde Conventions}).
+так же как любой другой команды дополнительного режима (@pxref{Minor Mode Conventions}).
 
 @c This is the mode command for Auto Save mode, a buffer-local minor
 @c mode.  When Auto Save mode is enabled, auto-saving is enabled in the
@@ -994,7 +994,7 @@ of current buffer.."
 @c used to detect a substantial decrease in size, and turn off auto-saving
 @c in response.
 
-Если значение @minux{}1, в текущем буфере авто-сохранение временно
+Если значение @minus{}1, в текущем буфере авто-сохранение временно
 выключено по причине сильного уменьшения размера. Явное сохранение
 записывает новое положительное значение в переменную, и соответственно
 включает авто-сохранение. Включение-выключение авто-сохранения тоже

@@ -2506,7 +2506,7 @@ UPatter может быть одной из следующих форм:
 @c when you write an error handler.  Using error symbols alone would
 @c eliminate all but the narrowest level of classification.
 
-  Основные символы ошибок и их условия описаны в @xref{Standr Errors}.
+  Основные символы ошибок и их условия описаны в @xref{Standard Errors}.
 
 @c   @xref{Standard Errors}, for a list of the main error symbols
 @c and their conditions.
