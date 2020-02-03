@@ -4,60 +4,89 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Standard Keymaps
-@appendix Standard Keymaps
+@appendix Стандартные Раскладки
+@c @appendix Standard Keymaps
 @cindex keymaps, standard
 
-In this section we list some of the more general keymaps.  Many of
-these exist when Emacs is first started, but some are loaded only when
-the respective feature is accessed.
+В данном разделе перечисляются некоторые из стандартных сочетаний
+клавиш. Многие из них работают сразу после старта Emacs, а некоторые
+становятся активными при включении некоторой опции.
 
-There are many other, more specialized, maps than these; in particular
-those associated with major and minor modes.  The minibuffer uses
-several keymaps (@pxref{Completion Commands}).  For more details on
-keymaps, @pxref{Keymaps}.
+@c In this section we list some of the more general keymaps.  Many of
+@c these exist when Emacs is first started, but some are loaded only when
+@c the respective feature is accessed.
+
+Есть много других более специализированных комбинаций, в особенности
+устанавливаемых основными и дополнительными режимами. Мини-буфер
+использует несколько раскладок (@pxref{Completion Commands}). Более
+подробно раскладки описаны в @pxref{Keymaps}.
+
+@c There are many other, more specialized, maps than these; in particular
+@c those associated with major and minor modes.  The minibuffer uses
+@c several keymaps (@pxref{Completion Commands}).  For more details on
+@c keymaps, @pxref{Keymaps}.
 
 @c Don't list individual major mode keymaps here, only more general things.
 @c Only add vindex for things not covered elsewhere in this manual.
 @c Don't add xrefs to things covered in {Keymaps}.
 @table @code
 @item 2C-mode-map
-A sparse keymap for subcommands of the prefix @kbd{C-x 6}.@*
+Разреженная раскладка для команд с префиксом @kbd{C-x 6}.@*
 @xref{Two-Column,, Two-Column Editing, emacs, The GNU Emacs Manual}.
+
+@c A sparse keymap for subcommands of the prefix @kbd{C-x 6}.@*
+@c @xref{Two-Column,, Two-Column Editing, emacs, The GNU Emacs Manual}.
 
 @item abbrev-map
 @vindex abbrev-map
-A sparse keymap for subcommands of the prefix @kbd{C-x a}.@*
-@xref{Defining Abbrevs,,, emacs, The GNU Emacs Manual}.
+Разреженная раскладка для команд с префиксом @kbd{C-x a}.@*
+@xref{Definition Abbrevs,,, emasc, The GNU Emacs Manual}.
+
+@c A sparse keymap for subcommands of the prefix @kbd{C-x a}.@*
+@c @xref{Defining Abbrevs,,, emacs, The GNU Emacs Manual}.
 
 @item button-buffer-map
-A sparse keymap useful for buffers containing buffers.@*
-You may want to use this as a parent keymap.  @xref{Buttons}.
+Разреженная раскладка полезная для буферов содержащих
+buffers.@*. @xref{Buttons}.
+
+@c A sparse keymap useful for buffers containing buffers.@*
+@c You may want to use this as a parent keymap.  @xref{Buttons}.
 
 @item button-map
-A sparse keymap used by buttons.
+Разреженная раскладка используемая кнопками.
+@c A sparse keymap used by buttons.
 
 @item ctl-x-4-map
-A sparse keymap for subcommands of the prefix @kbd{C-x 4}.
+Разреженная раскладка для команд с префиксом @kbd{C-x 4}.
+@c A sparse keymap for subcommands of the prefix @kbd{C-x 4}.
 
 @item ctl-x-5-map
-A sparse keymap for subcommands of the prefix @kbd{C-x 5}.
+Разреженная раскладка для команд с префиксом @kbd{C-x 5}.
+@c A sparse keymap for subcommands of the prefix @kbd{C-x 5}.
 
 @item ctl-x-map
-A full keymap for @kbd{C-x} commands.
+Полная раскладка для @kbd{C-x} команд.
+@c A full keymap for @kbd{C-x} commands.
 
 @item ctl-x-r-map
 @vindex ctl-x-r-map
-A sparse keymap for subcommands of the prefix @kbd{C-x r}.@*
-@xref{Registers,,, emacs, The GNU Emacs Manual}.
+Разреженная раскладка для команд с префиксом @kbd{C-x 5}.@*
+@xref{Registers,,, emacs, The Gnu Emacs Manual}.
+
+@c A sparse keymap for subcommands of the prefix @kbd{C-x r}.@*
+@c@xref{Registers,,, emacs, The GNU Emacs Manual}.
 
 @item esc-map
-A full keymap for @kbd{ESC} (or @kbd{Meta}) commands.
+Полная раскладка для @kbd{ESC} (или @kbd{Meta}) команд.
+@c A full keymap for @kbd{ESC} (or @kbd{Meta}) commands.
 
 @item facemenu-keymap
-A sparse keymap used for the @kbd{M-o} prefix key.
+Разреженная раскладка используемая для префикса @kbd{M-o}.
+@c A sparse keymap used for the @kbd{M-o} prefix key.
 
 @item function-key-map
-The parent keymap of all @code{local-function-key-map} (q.v.@:) instances.
+Родительская раскладка для всех экземпляров @code{local-function-key-map}.
+@c The parent keymap of all @code{local-function-key-map} (q.v.@:) instances.
 
 @ignore
 @c Doesn't exist.
@@ -68,39 +97,64 @@ It is empty and should not be changed.
 @end ignore
 
 @item global-map
-The full keymap containing default global key bindings.@*
-Modes should not modify the Global map.
+Полная раскладка содержащая глобальные назначения клавиш
+по умолчанию. @*. Режимы не должны изменять Глобальную раскладку.
+
+@c The full keymap containing default global key bindings.@*
+@c Modes should not modify the Global map.
 
 @item goto-map
-A sparse keymap used for the @kbd{M-g} prefix key.
+Разреженная раскладка для команд с префиксом @kbd{M-g}.
+@c A sparse keymap used for the @kbd{M-g} prefix key.
 
 @item help-map
-A sparse keymap for the keys following the help character @kbd{C-h}.@*
+Разреженная раскладка для команд с префиксом @kbd{C-h}.@*
 @xref{Help Functions}.
 
+@c A sparse keymap for the keys following the help character @kbd{C-h}.@*
+@c @xref{Help Functions}.
+
 @item Helper-help-map
-A full keymap used by the help utility package.@*
-It has the same keymap in its value cell and in its function cell.
+Полная раскладка используемая утилитой помощи package.@*
+Данная раскладка хранится в и ячейке значения и в ячейке функции.
+
+@c A full keymap used by the help utility package.@*
+@c It has the same keymap in its value cell and in its function cell.
 
 @item input-decode-map
-The keymap for translating keypad and function keys.@*
-If there are none, then it contains an empty sparse keymap.
-@xref{Translation Keymaps}.
+Раскладка для преобразования цифрового блока (keypad) и
+функциональных клавиш.@* Если ничего нет, то пустая
+разреженная раскладка. @xref{Translation Keymaps}.
+
+@c The keymap for translating keypad and function keys.@*
+@c If there are none, then it contains an empty sparse keymap.
+@c @xref{Translation Keymaps}.
 
 @item key-translation-map
-A keymap for translating keys.  This one overrides ordinary key
-bindings, unlike @code{local-function-key-map}.  @xref{Translation
-Keymaps}.
+Раскладка для преобразования клавиш. Используется для
+переопределения обычных назначений клавиш, в отличие
+от @code{local-function-key-map}. @xref{Translation Keymaps}.
+
+@c A keymap for translating keys.  This one overrides ordinary key
+@c bindings, unlike @code{local-function-key-map}.  @xref{Translation
+@c Keymaps}.
 
 @item kmacro-keymap
 @vindex kmacro-keymap
-A sparse keymap for keys that follows the @kbd{C-x C-k} prefix search.@*
+Разреженная раскладка для используемая для префикса @kbd{C-x C-k}.@*
 @xref{Keyboard Macros,,, emacs, The GNU Emacs Manual}.
 
+@c A sparse keymap for keys that follows the @kbd{C-x C-k} prefix search.@*
+@c @xref{Keyboard Macros,,, emacs, The GNU Emacs Manual}.
+
 @item local-function-key-map
-The keymap for translating key sequences to preferred alternatives.@*
-If there are none, then it contains an empty sparse keymap.
+Раскладка для преобразования последовательностей ключей в альтернативы.@*
+Если преобразований нет, содержит пустую разреженную раскладку.
 @xref{Translation Keymaps}.
+
+@c The keymap for translating key sequences to preferred alternatives.@*
+@c If there are none, then it contains an empty sparse keymap.
+@c @xref{Translation Keymaps}.
 
 @item menu-bar-file-menu
 @itemx menu-bar-edit-menu
@@ -114,9 +168,13 @@ If there are none, then it contains an empty sparse keymap.
 @vindex global-buffers-menu-map
 @vindex menu-bar-tools-menu
 @vindex menu-bar-help-menu
-These keymaps display the main, top-level menus in the menu bar.@*
-Some of them contain sub-menus.  For example, the Edit menu contains
-@code{menu-bar-search-menu}, etc.  @xref{Menu Bar}.
+Раскладки отображают меню в верхней панели инструментов.@*
+Некоторые из меню содержат подменю. Например, меню Edit (Редактировать)
+содержит @code{menu-bar-search-menu} и т.к. @xref{Menu Bar}.
+
+@c These keymaps display the main, top-level menus in the menu bar.@*
+@c Some of them contain sub-menus.  For example, the Edit menu contains
+@c @code{menu-bar-search-menu}, etc.  @xref{Menu Bar}.
 @ignore
 TODO list all submenus?
 There are probably too many, and it would not be useful to do so, e.g.:
@@ -129,8 +187,11 @@ menu-bar-epatch-menu, menu-bar-ediff-merge-menu, menu-bar-ediff-menu, etc.
 @end ignore
 
 @item minibuffer-inactive-mode-map
-A full keymap used in the minibuffer when it is not active.@*
+Полная раскладка используемая в мини-буфере, когда он активен.@*
 @xref{Minibuffer Edit,, Editing in the Minibuffer, emacs, The GNU Emacs Manual}.
+
+@c A full keymap used in the minibuffer when it is not active.@*
+@c @xref{Minibuffer Edit,, Editing in the Minibuffer, emacs, The GNU Emacs Manual}.
 
 @item mode-line-coding-system-map
 @itemx mode-line-input-method-map
@@ -138,62 +199,97 @@ A full keymap used in the minibuffer when it is not active.@*
 @vindex mode-line-coding-system-map
 @vindex mode-line-input-method-map
 @vindex mode-line-column-line-number-mode-map
-These keymaps control various areas of the mode line.@*
+Раскладки контролируют разные области строки режима.@*
 @xref{Mode Line Format}.
 
+@c These keymaps control various areas of the mode line.@*
+@c @xref{Mode Line Format}.
+
 @item mode-specific-map
-The keymap for characters following @kbd{C-c}.  Note, this is in the
-global map.  This map is not actually mode-specific: its name was chosen
-to be informative in @kbd{C-h b} (@code{display-bindings}),
-where it describes the main use of the @kbd{C-c} prefix key.
+Раскладка для символов следующих за @kbd{C-c}. Это глобальная раскладка.
+Раскладка не специфичная для буфера, а имя выбрано, чтобы
+быть информативным в @kbd{C-h b} (@code{display-bindings}),
+где описывается использование префикса @kbd{C-c}.
+
+@c The keymap for characters following @kbd{C-c}.  Note, this is in the
+@c global map.  This map is not actually mode-specific: its name was chosen
+@c to be informative in @kbd{C-h b} (@code{display-bindings}),
+@c where it describes the main use of the @kbd{C-c} prefix key.
 
 @c FIXME - don't mention this one?
 @item mouse-appearance-menu-map
 @vindex mouse-appearance-menu-map
-A sparse keymap used for the @kbd{S-mouse-1} key.
+Разреженная раскладка использующая @kbd{S-mouse-1} префикс. 
+@c A sparse keymap used for the @kbd{S-mouse-1} key.
 
 @item mule-keymap
-The global keymap used for the @kbd{C-x @key{RET}} prefix key.
+Глобальная раскладка используемая для префикса @kbd{C-x @kbd{C-x @key{RET}}}.
+@c The global keymap used for the @kbd{C-x @key{RET}} prefix key.
 
 @item narrow-map
 @vindex narrow-map
-A sparse keymap for subcommands of the prefix @kbd{C-x n}.
+Разреженная раскладка для команд с префиксом @kbd{C-x n}.
+@c A sparse keymap for subcommands of the prefix @kbd{C-x n}.
 
 @item prog-mode-map
-The keymap used by Prog mode.@*
+Раскладка используемая в Prog режиме.@*
 @xref{Basic Major Modes}.
+@c The keymap used by Prog mode.@*
+@c @xref{Basic Major Modes}.
 
 @item query-replace-map
 @itemx multi-query-replace-map
-A sparse keymap used for responses in @code{query-replace} and related
-commands; also for @code{y-or-n-p} and @code{map-y-or-n-p}.  The functions
-that use this map do not support prefix keys; they look up one event at a
-time.  @code{multi-query-replace-map} extends @code{query-replace-map}
-for multi-buffer replacements.  @xref{Search and Replace, query-replace-map}.
+Разреженная раскладка используемая в ответах @code{query-replace} и
+связанных командах, а так же для @code{y-or-n-p} и @code{map-y-or-n-p}.
+Функции, которые используют эту раскладку не поддерживают префиксы, рассматривается
+по одному событию за раз. @code{multi-query-replace-map} расширяет
+@code{query-replace-map} для замен в множестве буферов. @xref{Search
+and Replace, query-replace-map}.
+
+@c A sparse keymap used for responses in @code{query-replace} and related
+@c commands; also for @code{y-or-n-p} and @code{map-y-or-n-p}.  The functions
+@c that use this map do not support prefix keys; they look up one event at a
+@c time.  @code{multi-query-replace-map} extends @code{query-replace-map}
+@c for multi-buffer replacements.  @xref{Search and Replace, query-replace-map}.
 
 @item search-map
-A sparse keymap that provides global bindings for search-related commands.
+Разреженная раскладка содержащая комбинации для команд связанных с поиском.
+@c A sparse keymap that provides global bindings for search-related commands.
 
 @item special-mode-map
-The keymap used by Special mode.@*
+Раскладка используемая Special режимом.@*
 @xref{Basic Major Modes}.
 
+@c The keymap used by Special mode.@*
+@c @xref{Basic Major Modes}.
+
 @item tool-bar-map
-The keymap defining the contents of the tool bar.@*
+Раскладка определяющая содержимое панели инструментов.@*
 @xref{Tool Bar}.
+
+@c The keymap defining the contents of the tool bar.@*
+@c @xref{Tool Bar}.
 
 @item universal-argument-map
 @vindex universal-argument-map
-A sparse keymap used while processing @kbd{C-u}.@*
+Разреженная раскладка используемая при обработке @kbd{C-u}.@*
 @xref{Prefix Command Arguments}.
 
+@c A sparse keymap used while processing @kbd{C-u}.@*
+@c @xref{Prefix Command Arguments}.
+
 @item vc-prefix-map
-The global keymap used for the @kbd{C-x v} prefix key.
+Глобальная раскладка используемая для префикса @kbd{C-x v}.
+@c The global keymap used for the @kbd{C-x v} prefix key.
 
 @item x-alternatives-map
 @vindex x-alternatives-map
 @findex x-setup-function-keys
-A sparse keymap used to map certain keys under graphical frames.@*
-The function @code{x-setup-function-keys} uses this.
+Разреженная раскладка используемая для некоторых комбинация в графических
+фреймах. ЕЕ использует функция @code{x-setup-function-keys}, устанавливающая
+эту раскладку для графических фреймов.
+
+@c A sparse keymap used to map certain keys under graphical frames.@*
+@c The function @code{x-setup-function-keys} uses this.
 
 @end table
