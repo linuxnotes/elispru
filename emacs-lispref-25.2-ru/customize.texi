@@ -16,7 +16,7 @@
 и шрифтов без написания Lisp кода, с использованием
 интерфейса Настойки (Customieze interface). @xref{Easy
 Customization,,, emacs, The GNU Emacs Manual}. Данная
-глава описывает как определить @@dfn{элементы настройки}, с которыми
+глава описывает как определить @dfn{элементы настройки}, с которыми
 пользователь сможет взаимодействовать через интерфейс настройки (Customize interface).
 
 @c   Users of Emacs can customize variables and faces without writing
@@ -1136,7 +1136,7 @@ The Emacs Widget Library}.
 @item key-sequence
 Значением является последовательность клавиш. Буфер настройки показыват
 последовательности клавиш используя тот же синтаксис, что и функция @kbd{kdb}.
-@xref{Key Sequence}.
+@xref{Key Sequences}.
 
 @c The value is a key sequence.  The customization buffer shows the key
 @c sequence using the same syntax as the @kbd{kbd} function.  @xref{Key
@@ -1406,7 +1406,7 @@ Each element has the form (NAME AGE MALE-FLAG)."
 
 @item (plist :key-type @var{key-type} :value-type @var{value-type})
 Данный тип аналогичен @code{alist} (см. выше), за исключением
-того, что (i) информация хранится в списке свойств (@pxref{Property Lis}),
+того, что (i) информация хранится в списке свойств (@pxref{Property List}),
 и (ii) ели @var{key-type} пропускается, то по умолчанию используется
 @code{symbol}, а не @code{sexp}. 
 
